@@ -1,8 +1,12 @@
 # Project Plan
 
----
+Build a single RAG chatbot demo showcasing multiple use cases (Onboarding Assistant, Knowledge Hub, etc.)
 
-## **Refined Development Plan**
+## **Revisions (Latest: [1/25])**
+
+1. **Integrated Navigation**: Merged file upload and chat interfaces into a single page per use case.
+2. **Collapsible Components**: Added dynamic upload zones and fixed header navigation.
+3. **State Management**: Added Zustand/React Context for tracking use cases and files.
 
 ### **1. Core Requirements Clarified**
 
@@ -10,10 +14,9 @@
 - **User Flow**:
   1. Users land on a clean, Apple-inspired UI.
   2. They select a pre-built use case (e.g., "Sales Assistant").
-  3. They upload files (PDFs, docs, etc.) via drag-and-drop, CDN, or device storage.
-  4. They interact with the chatbot, which uses their uploaded data as context.
-  5. A CTA encourages users to contact you for custom solutions.
-- **No Customization Platform**: Avoid building a "create your own chatbot" tool. Focus on demonstrating your expertise via pre-built use cases.
+  3. **On the use case page**, they upload files and chat in a single view.
+  4. A CTA encourages users to contact Synthalyst for custom solutions.
+- **No Customization Platform**: Avoid building a "create your own chatbot" tool. Focus on demonstrating yexpertise via pre-built use cases.
 
 ---
 
@@ -32,15 +35,15 @@ For apps handling user-uploaded data, consider:
 
 #### **Web App (Priority: Launch in 1 Week)**
 
-| Component       | Technology                                                       | Why?                                                               |
-| --------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------ |
-| **Frontend**    | Next.js (React) + Vercel AI SDK                                  | Built-in API routes, fast deployment on Vercel, SSR for SEO.       |
-| **UI Library**  | Shadcn/ui (modern, Apple-like components) + Tailwind CSS         | Pre-built, customizable components for rapid development.          |
-| **File Upload** | `react-dropzone` + AWS S3 (or Vercel Blob for simplicity)        | Drag-and-drop, CDN support, easy integration.                      |
-| **Backend**     | Node.js (Express.js) + Python (optional for advanced RAG tweaks) | Use Node.js for APIs; Python microservices if needed for ML tasks. |
-| **Vector DB**   | Pinecone (serverless) / Supabase pgvector                        | Fast, scalable, minimal setup.                                     |
-| **Auth**        | Firebase Auth (Anonymous login for demo users)                   | Quick to implement; no passwords needed for trial.                 |
-| **Storage**     | Firebase Storage or Vercel Blob                                  | Simple integration with Next.js.                                   |
+Component | Technology
+Frontend | Next.js (React) + Vercel AI SDK
+UI Library | Shadcn/ui + Tailwind CSS
+File Upload | react-dropzone + Firebase Storage/Vercel Blob
+Backend | Node.js (Next.js API routes) + Python (optional for complex parsing)
+Vector DB | Pinecone (serverless)
+Auth | Firebase Auth (anonymous login for demos)
+State Management | Zustand or React Context API
+Animations | Framer Motion for collapsible transitions
 
 #### **Mobile App (Post-Web Launch)**
 
@@ -62,10 +65,32 @@ For apps handling user-uploaded data, consider:
    - Use case cards (Onboarding Assistant, Sales Assistant, etc.) with icons and 1-line descriptions.
    - "Try Now" CTA button.
 
-2. **Use Case Selection**:
+2. **Dynamic Use Case Page (/use-case/:id)**:
 
    - Grid of use cases with example prompts (e.g., "Upload sales docs → Get a sales strategy").
    - Tooltips explaining what each use case does.
+
+   **Layout:**
+
+   - Collapsible Upload Zone (expanded by default):
+   - Drag-and-drop area with CDN/device upload options.
+   - Auto-collapses after successful upload (user can manually toggle).
+
+   **Chat Interface:**
+
+   - Appears once files are processed.
+   - Left sidebar with pre-built prompts (e.g., “Summarize my document”).
+
+   **Navigation:**
+   **Fixed Header:**
+
+   - Back button (returns to landing page).
+   - Use case selector dropdown.
+   - Upload toggle button (▲/▼).
+
+   **Progressive CTAs:**
+
+   - Contact form link appears after 3 chat interactions.
 
 3. **File Upload Interface**:
 
@@ -73,12 +98,16 @@ For apps handling user-uploaded data, consider:
      - Local files (PC/mobile).
      - CDN URLs (e.g., Google Drive, Dropbox links).
    - File previews with thumbnails and delete options.
+   - Integrated into the dynamic use case page (no standalone /upload route).
+   - Added upload progress indicators and auto-collapse logic.
 
 4. **Chat Interface**:
    - Left sidebar: Toggle between use cases.
    - Chat window: Message bubbles with markdown support (for formatted responses).
    - Pre-built prompts (e.g., "Summarize my document" or "Create a sales plan").
    - "CTA" button in the header linking to a contact form.
+   - Only visible after files are uploaded (smooth fade-in animation).
+   - Header: Persistent access to use case switching and upload toggling.
 
 #### **Mobile-First Approach**
 
@@ -119,6 +148,7 @@ For apps handling user-uploaded data, consider:
    - Add a chat API route for querying the RAG system.
 
 2. **Chat UI**:
+
    - Build the chat window with message history.
    - Add pre-built prompts based on the selected use case.
 
@@ -130,7 +160,37 @@ For apps handling user-uploaded data, consider:
    - Map use cases to example files (e.g., Sales Assistant → upload product PDFs).
    - Add a sidebar to switch between use cases.
 
-2. **Testing**:
+2. **Merge Upload & Chat Interfaces:**
+
+   - Remove /upload route.
+   - Build /use-case/[id] page with collapsible zones.
+
+     ```tsx
+     // Example: Dynamic use case page structure
+     <div className="h-screen flex flex-col">
+       <Header onUploadToggle={toggleUpload} />
+       <CollapsibleUploadZone isOpen={isUploadOpen} />
+       {filesUploaded && <ChatInterface />}
+     </div>
+     ```
+
+3. **Add Fixed Header:**
+
+   - Back button, use case dropdown, upload toggle.
+
+4. **State Management:**
+
+   - Use Zustand to track:
+
+   ```ts
+   interface AppState {
+     currentUseCase: string;
+     uploadedFiles: File[];
+     isUploadOpen: boolean;
+   }
+   ```
+
+5. **Testing**:
    - Test file upload → processing → chat flow.
    - Ensure responses are context-aware and accurate.
 
@@ -147,7 +207,13 @@ For apps handling user-uploaded data, consider:
    - Set up a custom domain (e.g., `ragdemo.yourname.com`).
 
 3. **Demo Content**:
+
    - Pre-load example files for each use case (e.g., a sample employee handbook for Onboarding Assistant).
+
+4. **Additions**:
+
+   - Test collapsible components on mobile.
+   - Add ARIA labels for accessibility compliance.
 
 ---
 
@@ -164,12 +230,16 @@ For apps handling user-uploaded data, consider:
    - Include a contact form for client inquiries.
 
 3. **Compliance Deep Dive** (Post-MVP):
+
    - Audit data handling with tools like GDPRchecker.
    - Add user consent checkboxes during file upload.
 
+4. **Accessibility**:
+   - Verify screen reader support for collapsible components.
+
 ---
 
-Below is an updated **development blueprint**, including solutions for user accounts, file-type handling, data guidance, and a sophisticated monetization strategy.
+Below is the **development blueprint**, including solutions for user accounts, file-type handling, data guidance, and a sophisticated monetization strategy.
 
 ---
 
@@ -318,11 +388,74 @@ Below is an updated **development blueprint**, including solutions for user acco
 ### **8. Compliance Checklist**
 
 - **GDPR/CCPA**:
-  - Encrypt user data.
+
+  - Encrypt user data, files at rest/transit.
   - Let users delete accounts/files permanently.
   - Add cookie consent (use `react-cookie-consent`).
+  - Auto-delete files after 24 hours (demo) or 30 days (free tier).
+  - Privacy policy with clear data usage terms.
+
 - **Data Minimization**: Only store necessary user data (email, hashed password, files).
+
 - **Transparency**: Explain data usage in the privacy policy (e.g., “Files are processed to generate AI responses and deleted after 30 days”).
+
+- **Accessibility**:
+
+  - ARIA labels for collapsible buttons and upload zones.
+  - Screen reader support for chat messages.
+
+### **9. Post-Launch**
+
+- **Mobile App**
+
+  - Reuse React logic in React Native.
+  - Prioritize core features: file upload, chat, collapsible UI.
+
+- **Monetization**
+  - “Custom Solutions” CTA linked to a Calendly contact form.
+
+### **10. Risk Mitigation**
+
+- Risk: Cluttered UI
+- Solution: Collapsible components + progressive disclosure.
+
+- Risk: Data Mixing (User/Sample)
+- Solution: Isolate user uploads from preloaded datasets.
+
+- Risk: Navigation Confusion
+- Solution: Fixed header with persistent back button.
+
+### **11. Full Code Snippets**
+
+**Dynamic Use Case Page** (/app/use-case/[id]/page.tsx)
+
+```tsx
+import { Collapsible } from "@/components/ui/collapsible";
+import { useAppStore } from "@/store";
+
+export default function UseCasePage() {
+  const { isUploadOpen, uploadedFiles } = useAppStore();
+
+  return (
+    <div className="h-screen flex flex-col">
+      {/* Fixed Header */}
+      <Header />
+
+      {/* Collapsible Upload Zone */}
+      <Collapsible open={isUploadOpen}>
+        <FileUploader />
+      </Collapsible>
+
+      {/* Chat Interface (Post-Upload) */}
+      {uploadedFiles.length > 0 && (
+        <motion.div animate={{ opacity: 1 }}>
+          <ChatInterface />
+        </motion.div>
+      )}
+    </div>
+  );
+}
+```
 
 ---
 

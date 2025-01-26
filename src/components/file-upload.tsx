@@ -5,6 +5,7 @@ import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import { useFileStore } from "@/lib/store";
+import { motion } from "framer-motion";
 
 interface FileWithId extends File {
   id: string;
@@ -111,22 +112,33 @@ export function FileUpload({ useCase }: FileUploadProps) {
 
   return (
     <div className="space-y-4">
-      <div
-        {...getRootProps()}
-        className={`border-2 border-dashed rounded-lg p-6 text-center ${
-          isDragActive ? "border-primary" : "border-muted"
-        }`}
-      >
-        <input {...getInputProps()} />
-        <Icons.upload className="mx-auto h-8 w-8 text-muted-foreground" />
-        <p className="mt-2 text-sm text-muted-foreground">
-          {isDragActive
-            ? "Drop the files here..."
-            : "Drag & drop files here, or click to select files"}
-        </p>
-        <p className="text-xs text-muted-foreground mt-2">
-          Supported formats: PDF, CSV, TXT, DOCX (Max 10MB)
-        </p>
+      <div {...getRootProps()}>
+        <motion.div
+          className={`border-2 border-dashed rounded-lg p-6 text-center ${
+            isDragActive ? "border-primary" : "border-muted"
+          }`}
+          whileHover={{
+            scale: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+              ? 1
+              : 1.02,
+            boxShadow: window.matchMedia("(prefers-reduced-motion: reduce)")
+              .matches
+              ? "none"
+              : "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+          }}
+          transition={{ type: "tween", duration: 0.2 }}
+        >
+          <input {...getInputProps()} />
+          <Icons.upload className="mx-auto h-8 w-8 text-muted-foreground" />
+          <p className="mt-2 text-sm text-muted-foreground">
+            {isDragActive
+              ? "Drop the files here..."
+              : "Drag & drop files here, or click to select files"}
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            Supported formats: PDF, CSV, TXT, DOCX (Max 10MB)
+          </p>
+        </motion.div>
       </div>
 
       {currentFiles.length > 0 && (

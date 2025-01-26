@@ -28,13 +28,24 @@ export function ChatStream({ messages, isTyping }: ChatStreamProps) {
   return (
     <div className="space-y-4">
       <AnimatePresence>
-        {messages.map((message) => (
+        {messages.map((message, index) => (
           <motion.div
             key={message.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              type: window.matchMedia("(prefers-reduced-motion: reduce)")
+                .matches
+                ? "tween"
+                : "spring",
+              stiffness: 300,
+              damping: 20,
+              delay: window.matchMedia("(prefers-reduced-motion: reduce)")
+                .matches
+                ? 0
+                : 0.1 * index,
+            }}
           >
             {message.role === "user" ? (
               <UserMessage text={message.content} messageId={message.id} />
