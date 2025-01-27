@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "rag",
   "version": "0.1.0",
   "private": true,
@@ -10,6 +11,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.1.2",
+    "@langchain/openai": "^0.4.2",
     "@pinecone-database/pinecone": "^4.1.0",
     "@radix-ui/react-slot": "^1.1.1",
     "@types/papaparse": "^5.3.15",
@@ -18,9 +20,12 @@
     "@vercel/blob": "^0.27.1",
     "ai": "^4.1.1",
     "bullmq": "^5.36.0",
+    "busboy": "^1.6.0",
+    "clamscan": "^2.4.0",
     "class-variance-authority": "^0.7.1",
     "dotenv": "^16.4.7",
     "framer-motion": "^12.0.5",
+    "langchain": "^0.3.13",
     "lucide-react": "^0.474.0",
     "mammoth": "^1.9.0",
     "next": "15.1.6",
@@ -36,6 +41,8 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/busboy": "^1.5.4",
+    "@types/clamscan": "^2.4.0",
     "@types/node": "^20",
     "@types/pdf-parse": "^1.1.4",
     "@types/react": "^19",
@@ -44,6 +51,7 @@
     "eslint-config-next": "15.1.6",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
   }
 }

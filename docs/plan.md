@@ -49,13 +49,13 @@ Animations | Framer Motion for collapsible transitions
 
 - **Framework**: React Native (reuse React logic/components).
 - **File Upload**: `react-native-document-picker` + Firebase Storage.
-- **UI**: Mirror the web app’s design for consistency.
+- **UI**: Mirror the web app's design for consistency.
 
 ---
 
 ### **4. UI/UX Specifications**
 
-**Design Inspiration**: [Apple’s Store](https://www.apple.com/store) → Minimalist, bold typography, smooth animations.
+**Design Inspiration**: [Apple's Store](https://www.apple.com/store) → Minimalist, bold typography, smooth animations.
 
 #### **Key Screens**
 
@@ -79,7 +79,7 @@ Animations | Framer Motion for collapsible transitions
    **Chat Interface:**
 
    - Appears once files are processed.
-   - Left sidebar with pre-built prompts (e.g., “Summarize my document”).
+   - Left sidebar with pre-built prompts (e.g., "Summarize my document").
 
    **Navigation:**
    **Fixed Header:**
@@ -94,7 +94,7 @@ Animations | Framer Motion for collapsible transitions
 
 3. **File Upload Interface**:
 
-   - Drag-and-drop zone (like Apple’s clean UI) with support for:
+   - Drag-and-drop zone (like Apple's clean UI) with support for:
      - Local files (PC/mobile).
      - CDN URLs (e.g., Google Drive, Dropbox links).
    - File previews with thumbnails and delete options.
@@ -140,10 +140,10 @@ Animations | Framer Motion for collapsible transitions
 
 1. **Backend**:
 
-   - Use the Vercel AI SDK’s RAG guide as a base.
+   - Use the Vercel AI SDK's RAG guide as a base.
    - Create API routes for:
      - File processing (extract text, chunk data).
-     - Vector embeddings (OpenAI’s `text-embedding-3-small`).
+     - Vector embeddings (OpenAI's `text-embedding-3-small`).
      - Pinecone/Supabase vector DB integration.
    - Add a chat API route for querying the RAG system.
 
@@ -277,9 +277,9 @@ Below is the **development blueprint**, including solutions for user accounts, f
 
 **UI Guidance**:
 
-- **Upload Hints**: Add placeholder text in the upload zone (e.g., “Upload product docs for Sales Assistant”).
+- **Upload Hints**: Add placeholder text in the upload zone (e.g., "Upload product docs for Sales Assistant").
 - **File Type Warnings**: Show alerts for unsupported formats (e.g., images).
-- **Example Filenames**: Display suggested filenames for each use case (e.g., “sales_data.csv” for Sales Assistant).
+- **Example Filenames**: Display suggested filenames for each use case (e.g., "sales_data.csv" for Sales Assistant).
 
 ---
 
@@ -288,13 +288,13 @@ Below is the **development blueprint**, including solutions for user accounts, f
 **Conflict Resolution**:
 
 - **Sample Datasets** (Optional): Preload system-wide datasets (e.g., a generic employee handbook for Onboarding Assistant). These are **not** tied to user accounts.
-- **User Uploads**: Only the user’s uploaded files are used for their RAG context. Sample data remains separate.
-- **Clear Separation**: Add a toggle for users to “Use Sample Data” (demo mode) or “Use My Data” (custom mode).
+- **User Uploads**: Only the user's uploaded files are used for their RAG context. Sample data remains separate.
+- **Clear Separation**: Add a toggle for users to "Use Sample Data" (demo mode) or "Use My Data" (custom mode).
 
 **Example Workflow**:
 
-1. User selects “Sales Assistant” use case.
-2. UI suggests: _“Upload product sheets, competitor analysis, or sales reports. Need inspiration? Try sample data.”_
+1. User selects "Sales Assistant" use case.
+2. UI suggests: _"Upload product sheets, competitor analysis, or sales reports. Need inspiration? Try sample data."_
 3. If user uploads files, only their data is used. Sample data is never mixed.
 
 ---
@@ -304,10 +304,10 @@ Below is the **development blueprint**, including solutions for user accounts, f
 **Avoiding Clichés**:
 
 - **Contextual CTAs**:
-  - In the chat sidebar: _“Need a custom AI chatbot for your business? Let’s discuss →”_
-  - After 3 interactions: Floating button with _“Custom solutions for your unique needs”_ (subtle animation).
-- **Footer Section**: _“Enterprise-ready AI chatbots built for your workflows. [Explore tailored solutions]”_ (links to a contact form).
-- **Post-Chat Feedback**: After a successful output (e.g., generated sales plan), show: _“Like this? We can build one trained exclusively on your data.”_
+  - In the chat sidebar: _"Need a custom AI chatbot for your business? Let's discuss →"_
+  - After 3 interactions: Floating button with _"Custom solutions for your unique needs"_ (subtle animation).
+- **Footer Section**: _"Enterprise-ready AI chatbots built for your workflows. [Explore tailored solutions]"_ (links to a contact form).
+- **Post-Chat Feedback**: After a successful output (e.g., generated sales plan), show: _"Like this? We can build one trained exclusively on your data."_
 
 **Contact Form**:
 
@@ -322,19 +322,19 @@ Below is the **development blueprint**, including solutions for user accounts, f
 
 - **Use Case Landing Pages**:
   - Example: For **Sales Assistant**:
-    - Header: _“How it works: Upload product info, competitor data, or past sales reports.”_
-    - Bullet points: _“I can help you: Generate sales scripts, identify key features, create client-specific plans.”_
-  - Add a “?” button that opens a tooltip with example file types.
+    - Header: _"How it works: Upload product info, competitor data, or past sales reports."_
+    - Bullet points: _"I can help you: Generate sales scripts, identify key features, create client-specific plans."_
+  - Add a "?" button that opens a tooltip with example file types.
 - **Empty State**:
-  - If no files are uploaded: Show _“Start by uploading a product sheet or CSV file to get personalized advice.”_
+  - If no files are uploaded: Show _"Start by uploading a product sheet or CSV file to get personalized advice."_
 
 #### **Apple-Inspired Design Tweaks**
 
-- **Animations**: Smooth transitions when switching use cases (like Apple’s product page scroll effects).
-- **Typography**: Use SF Pro (Apple’s font) via `@fontsource/sf-pro`.
+- **Animations**: Smooth transitions when switching use cases (like Apple's product page scroll effects).
+- **Typography**: Use SF Pro (Apple's font) via `@fontsource/sf-pro`.
 - **Chat Interface**:
   - Message bubbles with subtle gradients.
-  - “Thinking” animation (e.g., three pulsating dots) while the chatbot processes queries.
+  - "Thinking" animation (e.g., three pulsating dots) while the chatbot processes queries.
 
 ---
 
@@ -375,7 +375,7 @@ Below is the **development blueprint**, including solutions for user accounts, f
 
 - Add use case-specific upload hints and tooltips.
 - Implement storage quotas and expiration logic.
-- Design contextual CTAs (avoid “Hire Me” buttons).
+- Design contextual CTAs (avoid "Hire Me" buttons).
 
 #### **Day 7: Testing & Deployment**
 
@@ -397,7 +397,7 @@ Below is the **development blueprint**, including solutions for user accounts, f
 
 - **Data Minimization**: Only store necessary user data (email, hashed password, files).
 
-- **Transparency**: Explain data usage in the privacy policy (e.g., “Files are processed to generate AI responses and deleted after 30 days”).
+- **Transparency**: Explain data usage in the privacy policy (e.g., "Files are processed to generate AI responses and deleted after 30 days").
 
 - **Accessibility**:
 
@@ -412,7 +412,7 @@ Below is the **development blueprint**, including solutions for user accounts, f
   - Prioritize core features: file upload, chat, collapsible UI.
 
 - **Monetization**
-  - “Custom Solutions” CTA linked to a Calendly contact form.
+  - "Custom Solutions" CTA linked to a Calendly contact form.
 
 ### **10. Risk Mitigation**
 
@@ -466,5 +466,218 @@ export default function UseCasePage() {
    - Reuse 80% of the React code with React Native.
    - Prioritize file upload and chat features.
 3. **Monetization**:
-   - Offer “Custom Chatbot Development” as a service on your website.
+   - Offer "Custom Chatbot Development" as a service on your website.
    - Use the demo app as a portfolio piece to attract clients.
+
+### **12. Testing Implementation**
+
+#### **Unit & Integration Tests**
+
+```typescript
+// __tests__/unit/fileProcessing.test.ts
+import { processFile } from "@/lib/file-processor";
+
+describe("File Processing", () => {
+  test("handles PDF files correctly", async () => {
+    const mockPDF = new File(["test content"], "test.pdf", {
+      type: "application/pdf",
+    });
+    const result = await processFile(mockPDF);
+    expect(result.text).toBeDefined();
+    expect(result.metadata.mimeType).toBe("application/pdf");
+  });
+});
+
+// __tests__/integration/upload.test.ts
+describe("Upload Flow", () => {
+  test("complete upload → process → vectorize flow", async () => {
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+    expect(response.status).toBe(200);
+
+    const job = await fileQueue.getJob(response.data.jobId);
+    expect(job).toBeDefined();
+
+    await job.waitUntilFinished();
+
+    const vectors = await pinecone.fetch([job.data.vectorId]);
+    expect(vectors).toBeDefined();
+  });
+});
+```
+
+#### **Performance Testing**
+
+```typescript
+// __tests__/performance/chat.test.ts
+import { test, expect } from "@playwright/test";
+
+test("chat response times under load", async () => {
+  const start = performance.now();
+  await page.locator(".chat-input").fill("Analyze the sales data");
+  await page.click('button[type="submit"]');
+  await page.waitForSelector(".chat-response");
+  const duration = performance.now() - start;
+  expect(duration).toBeLessThan(3000); // 3s max response time
+});
+```
+
+### **13. Error Recovery System**
+
+#### **Queue Configuration**
+
+```typescript
+// src/lib/queue.ts
+export const fileQueue = new Queue("file-processing", {
+  connection: redis,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: {
+      type: "exponential",
+      delay: 1000,
+    },
+    removeOnComplete: false,
+    removeOnFail: false,
+  },
+});
+
+// src/lib/error-handling.ts
+export class RetryableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RetryableError";
+  }
+}
+```
+
+#### **Upload Error Handling**
+
+```typescript
+// src/app/api/upload/route.ts
+export async function POST(req: Request) {
+  const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
+
+  try {
+    const { success, reset } = await ratelimit.limit(ip);
+    if (!success) {
+      return new Response("Too Many Requests", {
+        status: 429,
+        headers: { "Retry-After": String(reset) },
+      });
+    }
+
+    const file = await req.blob();
+    const validation = await validateFile(file);
+    if (!validation.isValid) {
+      return new Response(validation.error, { status: 400 });
+    }
+
+    const job = await fileQueue.add("process", { file });
+
+    return new Response(
+      JSON.stringify({
+        jobId: job.id,
+        status: "queued",
+        statusUrl: `/api/status/${job.id}`,
+      })
+    );
+  } catch (error) {
+    console.error("Upload error:", error);
+    const isRetryable = error instanceof RetryableError;
+
+    return new Response(
+      JSON.stringify({
+        error: isRetryable ? "Please try again" : "Internal server error",
+        retryable: isRetryable,
+        details:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
+      }),
+      { status: isRetryable ? 503 : 500 }
+    );
+  }
+}
+```
+
+### **14. Monitoring & Analytics**
+
+#### **System Setup**
+
+```typescript
+// src/lib/monitoring.ts
+import { Sentry } from "@sentry/nextjs";
+import { Analytics } from "@segment/analytics-node";
+import { Datadog } from "@datadog/browser-rum";
+
+// Error tracking
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 0.1,
+  integrations: [new Sentry.Integrations.Http({ tracing: true })],
+});
+
+// Usage analytics
+const analytics = new Analytics({ writeKey: process.env.SEGMENT_WRITE_KEY });
+
+// Performance monitoring
+Datadog.init({
+  applicationId: process.env.DATADOG_APP_ID,
+  clientToken: process.env.DATADOG_CLIENT_TOKEN,
+  site: "datadoghq.com",
+  service: "rag-demo",
+  env: process.env.NODE_ENV,
+  trackInteractions: true,
+  defaultPrivacyLevel: "mask-user-input",
+});
+```
+
+#### **Custom Metrics**
+
+```typescript
+export const metrics = {
+  async trackUpload(fileSize: number, fileType: string) {
+    analytics.track("file_uploaded", { fileSize, fileType });
+    Datadog.addTiming("file_upload_size", fileSize);
+  },
+
+  async trackProcessingTime(duration: number) {
+    Datadog.addTiming("file_processing_duration", duration);
+  },
+
+  async trackChatResponse(duration: number, tokens: number) {
+    Datadog.addTiming("chat_response_time", duration);
+    analytics.track("chat_completion", {
+      duration,
+      tokens,
+      avgTokensPerSecond: tokens / (duration / 1000),
+    });
+  },
+};
+```
+
+#### **Monitoring Dashboard**
+
+```typescript
+export function MonitoringDashboard() {
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      <MetricsCard
+        title="Upload Success Rate"
+        metric={successRate}
+        trend={weekOverWeekChange}
+      />
+      <MetricsCard
+        title="Avg Processing Time"
+        metric={avgProcessingTime}
+        threshold={5000}
+      />
+      <MetricsCard
+        title="Error Rate"
+        metric={errorRate}
+        status={errorRate > 0.01 ? "error" : "success"}
+      />
+    </div>
+  );
+}
+```

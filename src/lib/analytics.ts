@@ -1,4 +1,3 @@
-import { ChatState } from "@/lib/stores/chat";
 
 interface AnalyticsEvent {
   type: string;

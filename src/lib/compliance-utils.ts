@@ -14,10 +14,31 @@ export const scrubPII = (text: string): string => {
   );
 };
 
-export const scheduleFileDeletion = (
+import { addJob } from "./queue";
+import { deleteFile } from "./file-processor";
+import { logger } from "./utils";
+
+export const scheduleFileDeletion = async (
   fileId: string,
   expiresAt: string
-): void => {
-  // Implementation placeholder for scheduled deletion
-  console.log(`Scheduling deletion of ${fileId} at ${expiresAt}`);
+): Promise<void> => {
+  try {
+    const deletionTime = new Date(expiresAt).getTime() - Date.now();
+
+    if (deletionTime <= 0) {
+      await deleteFile(fileId);
+      return;
+    }
+
+    await addJob({
+      type: "delete-file",
+      payload: { fileId },
+      delay: deletionTime,
+    });
+
+    logger.info(`Scheduled deletion of ${fileId} at ${expiresAt}`);
+  } catch (error) {
+    logger.error(`Failed to schedule deletion for ${fileId}: ${error}`);
+    throw error;
+  }
 };

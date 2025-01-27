@@ -1,5 +1,5 @@
 import { Pinecone } from "@pinecone-database/pinecone";
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 
 dotenv.config();
 

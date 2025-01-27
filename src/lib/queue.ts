@@ -4,6 +4,30 @@ import { processFile } from "./file-processor";
 import { Pinecone } from "@pinecone-database/pinecone";
 import { put } from "@vercel/blob";
 
+type JobData =
+  | {
+      type: "file-processing";
+      payload: {
+        file: File;
+        useCase: string;
+      };
+      delay?: number;
+    }
+  | {
+      type: "file-deletion";
+      payload: {
+        fileId: string;
+      };
+      delay?: number;
+    }
+  | {
+      type: "delete-file";
+      payload: {
+        fileId: string;
+      };
+      delay?: number;
+    };
+
 const redis = new Redis(process.env.UPSTASH_REDIS_REST_URL!, {
   password: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
@@ -22,6 +46,12 @@ export const fileQueue = new Queue("file-processing", {
     },
   },
 });
+
+export const addJob = async (jobData: JobData) => {
+  return fileQueue.add(jobData.type, jobData.payload, {
+    delay: jobData.delay,
+  });
+};
 
 new Worker(
   "file-processing",
@@ -42,7 +72,7 @@ new Worker(
 
       // 3. Vectorize and store
       const index = pinecone.index("rag-demo");
-      const embeddings = await fetch("https://api.openai.com/v1/embeddings", {
+      const embeddings = await fetch("https:// api.openai.com/v1/embeddings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
