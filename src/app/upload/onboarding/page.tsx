@@ -1,11 +1,11 @@
 "use client";
 
-import { FileUpload } from "@/components/file-upload";
+import { FileUpload } from "@/src/components/file-upload";
 
 export default function OnboardingUploadPage() {
   return (
-    <div className="container mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-8">Onboarding Assistant</h1>
+    <div className="container mx-auto py-8">
+      <h1 className="text-2xl font-bold mb-4">Onboarding Upload</h1>
       <FileUpload useCase="onboarding" />
     </div>
   );

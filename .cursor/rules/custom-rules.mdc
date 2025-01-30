@@ -1,0 +1,62 @@
+---
+description: error tracking, commits, project understanding, project planning and implementation
+globs: 
+---
+# Configuration Overview
+
+## Commands
+
+### `doc!`
+- **Actions:**
+  - Append session changes to `/docs/system/projectStatus.md`
+  - Prepare commit message
+  - Log errors to `/docs/system/ANTI_PATTERNS.md`
+
+---
+
+## Project Scope
+
+### Reference Files
+
+#### General Documentation
+- **General Plan:** `/docs/plan.md`
+- **Architecture:** `/docs/architecture.md`
+- **UI:** `/docs/design/consolidated_ui.md`
+
+#### Design
+- **Chat Streams:** `/docs/design/chatStream.md`
+- **Animations:** `/docs/design/animationPlan.md`
+- **Motion Principles:** `/docs/design/motionDesignPrinciples.md`
+- **UI Plan:** `/docs/design/consolidated_ui.md.md`
+
+#### Technical
+- **File Upload Strategy:** `/docs/tech/fileUploadComponent.md`
+- **Feedback Strategy:** `/docs/tech/feedbackStrategy.md`
+- **Guide Docs:**
+  - **Pinecone SDK:** `/docs/tech/guides/pineconeSDK.md`
+
+#### System
+- **Errors Database:** `/docs/system/errors_db.json`
+- **Error Tracking:** `/docs/system/ANTI_PATTERNS.md`
+- **Status Logs:** `/docs/system/projectStatus.md`
+
+---
+
+### File Priority
+
+1. `system/errors_db`
+2. `system/ANTI_PATTERNS.md`
+3. `system/projectStatus.md`
+4. `architecture.md`
+5. `plan.md`
+6. `design/consolidated_ui.md`
+7. `design/motionDesignPrinciples.md`
+8. `technical/fileUploadComponent.md`
+9. `tech/feedbackStrategy.md`
+10. `tech/fileUploadComponent.md`
+11. `design/*`
+12. `/tech/guides/*`
+
+
+
+

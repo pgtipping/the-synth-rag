@@ -1,13 +1,7 @@
 "use client";
 
-import { Icons } from "@/components/icons";
+import { Icons } from "@/src/components/icons";
 import { motion } from "framer-motion";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 import Link from "next/link";
 
 interface CaseCardProps {
@@ -21,28 +15,29 @@ export function CaseCard({ title, description, icon, href }: CaseCardProps) {
   const Icon = Icons[icon];
 
   return (
-    <Link href={href}>
+    <Link href={href} className="block">
       <motion.div
         whileHover={{
-          scale: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-            ? 1
-            : 1.02,
-          boxShadow: window.matchMedia("(prefers-reduced-motion: reduce)")
-            .matches
-            ? "none"
-            : "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+          y: -2,
+          transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
         }}
-        transition={{ type: "tween", duration: 0.2 }}
+        className="h-full"
       >
-        <Card className="cursor-pointer">
-          <CardHeader className="space-y-4">
-            <div className="flex items-center gap-4">
-              <Icon className="h-6 w-6 text-primary" />
-              <CardTitle className="text-lg">{title}</CardTitle>
+        <div className="h-full bg-light-background dark:bg-dark-secondary shadow-card-light dark:shadow-card-dark rounded-card">
+          <div className="p-[30px]">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-10 h-10 rounded-full bg-light-accent/10 dark:bg-dark-accent/10 flex items-center justify-center">
+                <Icon className="h-5 w-5 text-light-accent dark:text-dark-accent" />
+              </div>
+              <h3 className="text-body-large font-semibold text-light-text-primary dark:text-dark-text-primary">
+                {title}
+              </h3>
             </div>
-            <CardDescription>{description}</CardDescription>
-          </CardHeader>
-        </Card>
+            <p className="text-[17px] text-light-text-secondary dark:text-dark-text-secondary">
+              {description}
+            </p>
+          </div>
+        </div>
       </motion.div>
     </Link>
   );

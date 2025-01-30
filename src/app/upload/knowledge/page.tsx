@@ -1,6 +1,6 @@
 "use client";
 
-import { FileUpload } from "@/components/file-upload";
+import { FileUpload } from "@/src/components/file-upload";
 
 export default function KnowledgeUploadPage() {
   return (
