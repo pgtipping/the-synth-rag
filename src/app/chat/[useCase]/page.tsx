@@ -3,7 +3,11 @@ import ChatClient from "./ChatClient";
 
 export const dynamic = "force-dynamic";
 
-export default function ChatPage({ params }: { params: { useCase: string } }) {
-  // This just renders the chat interface
-  return <ChatClient useCase={params.useCase} />;
+interface ChatPageProps {
+  params: Promise<{ useCase: string }> | { useCase: string };
+}
+
+export default async function ChatPage({ params }: ChatPageProps) {
+  const resolvedParams = await params;
+  return <ChatClient useCase={resolvedParams.useCase} />;
 }

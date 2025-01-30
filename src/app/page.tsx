@@ -8,6 +8,17 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function Home() {
+  const handleScrollToUseCases = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const useCasesSection = document.getElementById("use-cases");
+    if (useCasesSection) {
+      useCasesSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-light-background dark:bg-dark-background">
       {/* Header */}
@@ -65,7 +76,11 @@ export default function Home() {
                   asChild
                   className="h-header px-6 rounded-button bg-light-accent hover:opacity-90 active:scale-[0.98] transition-all duration-200"
                 >
-                  <Link href="/chat/sales-assistant" className="gap-2">
+                  <Link
+                    href="#use-cases"
+                    onClick={handleScrollToUseCases}
+                    className="gap-2"
+                  >
                     <Icons.play className="h-5 w-5" />
                     Try Now
                   </Link>
@@ -76,26 +91,29 @@ export default function Home() {
         </section>
 
         {/* Use Cases Section */}
-        <section className="py-24 bg-light-secondary dark:bg-dark-secondary">
+        <section
+          id="use-cases"
+          className="py-24 bg-light-secondary dark:bg-dark-secondary"
+        >
           <div className="max-w-[980px] mx-auto px-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               <CaseCard
                 title="Onboarding Assistant"
                 description="Streamline employee onboarding with AI-powered guidance"
                 icon="users"
-                href="/upload/onboarding"
+                href="/chat/onboarding"
               />
               <CaseCard
                 title="Sales Assistant"
                 description="Generate sales strategies from your product docs"
                 icon="trendingUp"
-                href="/upload/sales"
+                href="/chat/sales"
               />
               <CaseCard
                 title="Knowledge Hub"
                 description="Create a searchable knowledge base from your documents"
                 icon="book"
-                href="/upload/knowledge"
+                href="/chat/knowledge"
               />
             </div>
           </div>
