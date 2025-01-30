@@ -4,6 +4,7 @@ import * as Papa from "papaparse";
 import { createScanner } from "clamscan";
 import type { ClamScan } from "clamscan";
 
+// Interface for file processors
 interface FileProcessor {
   supports(mimeType: string): boolean;
   extractText(buffer: Buffer): Promise<string>;
@@ -36,6 +37,7 @@ class VirusScanner {
   }
 }
 
+// File processor for PDF files
 class PDFProcessor implements FileProcessor {
   supports(mimeType: string) {
     return mimeType === "application/pdf";
@@ -47,6 +49,7 @@ class PDFProcessor implements FileProcessor {
   }
 }
 
+// File processor for DOCX files
 class DocxProcessor implements FileProcessor {
   supports(mimeType: string) {
     return (
@@ -61,6 +64,7 @@ class DocxProcessor implements FileProcessor {
   }
 }
 
+// File processor for CSV files. This class uses the PapaParse library to parse CSV data.
 class CSVProcessor implements FileProcessor {
   supports(mimeType: string) {
     return mimeType === "text/csv";

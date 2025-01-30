@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { FileWithId } from "@/types/file";
+import { FileWithId } from "../../types/file";
 
 interface AppState {
   currentUseCase: string;

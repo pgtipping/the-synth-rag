@@ -53,6 +53,9 @@ export const addJob = async (jobData: JobData) => {
   });
 };
 
+// Export the Queue object itself
+export { Queue };
+
 new Worker(
   "file-processing",
   async (job) => {
@@ -72,7 +75,7 @@ new Worker(
 
       // 3. Vectorize and store
       const index = pinecone.index("rag-demo");
-      const embeddings = await fetch("https:// api.openai.com/v1/embeddings", {
+      const embeddings = await fetch("https://api.openai.com/v1/embeddings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

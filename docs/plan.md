@@ -4,9 +4,9 @@ Build a single RAG chatbot demo showcasing multiple use cases (Onboarding Assist
 
 ## **Revisions (Latest: [1/25])**
 
-1. **Integrated Navigation**: Merged file upload and chat interfaces into a single page per use case.
-2. **Collapsible Components**: Added dynamic upload zones and fixed header navigation.
-3. **State Management**: Added Zustand/React Context for tracking use cases and files.
+1. **Integrated Navigation**: Merge file upload and chat interfaces into a single page per use case.
+2. **Collapsible Components**: Add dynamic upload zones and fixed header navigation.
+3. **State Management**: Add Zustand/React Context for tracking use cases and files.
 
 ### **1. Core Requirements Clarified**
 
@@ -99,7 +99,7 @@ Animations | Framer Motion for collapsible transitions
      - CDN URLs (e.g., Google Drive, Dropbox links).
    - File previews with thumbnails and delete options.
    - Integrated into the dynamic use case page (no standalone /upload route).
-   - Added upload progress indicators and auto-collapse logic.
+   - upload progress indicators and auto-collapse logic.
 
 4. **Chat Interface**:
    - Left sidebar: Toggle between use cases.

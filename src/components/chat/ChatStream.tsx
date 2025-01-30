@@ -7,26 +7,34 @@ import { BotMessage } from "./BotMessage";
 import { TypingIndicator } from "./TypingIndicator";
 import { LoadingState } from "./LoadingState";
 
+// Define the type for chat messages
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
 }
 
+// Define the type for props passed to the ChatStream component
 interface ChatStreamProps {
   messages: Message[];
   isTyping: boolean;
+  isLoading: boolean; // Add isLoading prop
 }
 
-export function ChatStream({ messages, isTyping }: ChatStreamProps) {
+// ChatStream component
+export function ChatStream({ messages, isTyping, isLoading }: ChatStreamProps) {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // Effect to scroll to the bottom of the chat after every message update
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
     <div className="space-y-4">
+      {/* Conditionally render LoadingState if isLoading is true */}
+      {isLoading && <LoadingState />}
+      {/* AnimatePresence for smooth transitions */}
       <AnimatePresence>
         {messages.map((message, index) => (
           <motion.div
@@ -47,6 +55,7 @@ export function ChatStream({ messages, isTyping }: ChatStreamProps) {
                 : 0.1 * index,
             }}
           >
+            {/* Conditionally render UserMessage or BotMessage based on message role */}
             {message.role === "user" ? (
               <UserMessage text={message.content} messageId={message.id} />
             ) : (
@@ -55,14 +64,9 @@ export function ChatStream({ messages, isTyping }: ChatStreamProps) {
           </motion.div>
         ))}
       </AnimatePresence>
-
-      {isTyping && (
-        <>
-          <TypingIndicator />
-          <LoadingState />
-        </>
-      )}
-      <div ref={chatEndRef} />
+      {/* Conditionally render TypingIndicator if isTyping is true */}
+      {isTyping && <TypingIndicator />}
+      <div ref={chatEndRef} /> {/* Ref for auto-scrolling */}
     </div>
   );
 }

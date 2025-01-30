@@ -1,5 +1,5 @@
-import { useChatStore } from "@/lib/stores/chat";
-import { analytics } from "@/lib/analytics";
+import { useChatStore } from "../../lib/stores/chat";
+import { analytics } from "../../lib/analytics";
 
 export async function sendChatMessage(message: string) {
   const store = useChatStore.getState();

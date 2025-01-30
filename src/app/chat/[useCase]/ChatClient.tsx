@@ -1,17 +1,17 @@
 "use client";
 
-import { useChatStore } from "@/lib/stores/chat";
-import { useAppStore } from "@/lib/stores/app";
-import { ChatStream } from "@/components/chat/ChatStream";
-import { ChatInput } from "@/components/chat/ChatInput";
-import { FileUpload } from "@/components/file-upload";
-import { Button } from "@/components/ui/button";
+import { useChatStore } from "@/src/lib/stores/chat";
+import { useAppStore } from "@/src/lib/stores/app";
+import { ChatStream } from "@/src/components/chat/ChatStream";
+import { ChatInput } from "@/src/components/chat/ChatInput";
+import { FileUpload } from "@/src/components/file-upload";
+import { Button } from "@/src/components/ui/button";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import { sendChatMessage } from "@/lib/api/chat";
+import { sendChatMessage } from "@/src/lib/api/chat";
 import { useEffect } from "react";
 
 export default function ChatClient({ useCase }: { useCase: string }) {
-  const { messages, isTyping } = useChatStore();
+  const { messages, isTyping, isLoading } = useChatStore(); // Access isLoading from store
   const { isUploadOpen, toggleUpload, uploadedFiles, setCurrentUseCase } =
     useAppStore();
 
@@ -64,7 +64,12 @@ export default function ChatClient({ useCase }: { useCase: string }) {
           {uploadedFiles.length > 0 && (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold">Chat</h2>
-              <ChatStream messages={messages} isTyping={isTyping} />
+              <ChatStream
+                messages={messages}
+                isTyping={isTyping}
+                isLoading={isLoading}
+              />{" "}
+              {/* Pass isLoading prop */}
             </div>
           )}
         </div>

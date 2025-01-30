@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { trackChatEvents } from "@/lib/analytics";
 
 interface ReactionCounts {
   [reaction: string]: number;
@@ -13,9 +12,11 @@ interface Message {
   reactions: ReactionCounts;
 }
 
+// Updated ChatState interface to include isLoading
 export interface ChatState {
   messages: Message[];
   isTyping: boolean;
+  isLoading: boolean; // Add isLoading property
   addMessage: (message: Message) => void;
   updateMessage: (
     id: string,
@@ -23,12 +24,14 @@ export interface ChatState {
   ) => void;
   addReaction: (messageId: string, reaction: string) => void;
   setIsTyping: (isTyping: boolean) => void;
+  setIsLoading: (isLoading: boolean) => void; // Add setIsLoading function
   clearMessages: () => void;
 }
 
 export const useChatStore = create<ChatState>((set) => ({
   messages: [],
   isTyping: false,
+  isLoading: false, // Initialize isLoading to false
   addMessage: (message) =>
     set((state) => ({
       messages: [...state.messages, { ...message, reactions: {} }],
@@ -62,5 +65,6 @@ export const useChatStore = create<ChatState>((set) => ({
       ),
     })),
   setIsTyping: (isTyping) => set({ isTyping }),
+  setIsLoading: (isLoading) => set({ isLoading }), // Add setIsLoading function
   clearMessages: () => set({ messages: [] }),
 }));
