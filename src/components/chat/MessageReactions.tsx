@@ -1,47 +1,28 @@
 "use client";
 
-import React from "react";
-import { useChatStore } from "@/src/lib/stores/chat";
+import * as React from "react";
 import { Icons } from "../icons";
 
-// Create React elements for each icon
-const reactions: React.ReactElement<React.SVGProps<SVGSVGElement>>[] = [
-  React.createElement(Icons.thumbsUp, { key: "thumbsUp" }),
-  React.createElement(Icons.thumbsDown, { key: "thumbsDown" }),
-  React.createElement(Icons.heart, { key: "heart" }),
-];
-
 interface MessageReactionsProps {
-  messageId: string;
-  initialReactions: Record<string, number>;
+  onReact: (reaction: string) => void;
 }
 
-export function MessageReactions({
-  messageId,
-  initialReactions,
-}: MessageReactionsProps) {
-  const { addReaction } = useChatStore();
-
-  const handleReaction = (reaction: React.ReactElement) => {
-    // Use the key as the reaction type
-    const reactionType = reaction.key;
-    addReaction(messageId, reactionType as string);
-  };
+export function MessageReactions({ onReact }: MessageReactionsProps) {
+  const reactionIcons = [
+    { key: "thumbsUp", icon: Icons.thumbsUp, label: "Thumbs Up" },
+    { key: "thumbsDown", icon: Icons.thumbsDown, label: "Thumbs Down" },
+  ];
 
   return (
-    <div className="flex gap-2 mt-2">
-      {reactions.map((reaction, index) => (
+    <div className="flex gap-2 items-center">
+      {reactionIcons.map(({ key, icon: Icon, label }) => (
         <button
-          key={index}
-          onClick={() => handleReaction(reaction)}
-          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          key={key}
+          onClick={() => onReact(key)}
+          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+          aria-label={label}
         >
-          {reaction}
-          {initialReactions[reaction.key as string] > 0 && (
-            <span className="text-xs ml-1">
-              {initialReactions[reaction.key as string]}
-            </span>
-          )}
+          <Icon className="h-4 w-4 text-gray-500" />
         </button>
       ))}
     </div>

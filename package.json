@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.1.2",
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-regular-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@langchain/openai": "^0.4.2",
     "@pinecone-database/pinecone": "^4.1.0",
     "@radix-ui/react-slot": "^1.1.1",
@@ -43,6 +46,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.5",
+    "react-icons": "^4.12.0",
     "sf-pro": "^1.0.3",
     "tailwind-merge": "^2.6.0",
     "zod": "^3.24.1",

@@ -2,39 +2,28 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useEffect } from "react";
-import { UserMessage } from "./UserMessage";
-import { BotMessage } from "./BotMessage";
 import { TypingIndicator } from "./TypingIndicator";
 import { LoadingState } from "./LoadingState";
+import { Message } from "@/src/types/chat";
+import { MessageReactions } from "./MessageReactions";
+import { cn } from "@/src/lib/utils";
 
-// Define the type for chat messages
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-}
-
-// Define the type for props passed to the ChatStream component
 interface ChatStreamProps {
   messages: Message[];
   isTyping: boolean;
-  isLoading: boolean; // Add isLoading prop
+  isLoading: boolean;
 }
 
-// ChatStream component
 export function ChatStream({ messages, isTyping, isLoading }: ChatStreamProps) {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Effect to scroll to the bottom of the chat after every message update
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
     <div className="space-y-4">
-      {/* Conditionally render LoadingState if isLoading is true */}
       {isLoading && <LoadingState />}
-      {/* AnimatePresence for smooth transitions */}
       <AnimatePresence>
         {messages.map((message, index) => (
           <motion.div
@@ -55,18 +44,35 @@ export function ChatStream({ messages, isTyping, isLoading }: ChatStreamProps) {
                 : 0.1 * index,
             }}
           >
-            {/* Conditionally render UserMessage or BotMessage based on message role */}
-            {message.role === "user" ? (
-              <UserMessage text={message.content} messageId={message.id} />
-            ) : (
-              <BotMessage text={message.content} messageId={message.id} />
-            )}
+            <div
+              className={cn(
+                "flex",
+                message.role === "user" ? "justify-end" : "justify-start"
+              )}
+            >
+              <div
+                className={cn(
+                  "rounded-lg px-4 py-2 max-w-[80%]",
+                  message.role === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted"
+                )}
+              >
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                {message.role === "assistant" && (
+                  <div className="mt-2">
+                    <MessageReactions
+                      onReact={(reaction) => console.log(reaction)}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
           </motion.div>
         ))}
       </AnimatePresence>
-      {/* Conditionally render TypingIndicator if isTyping is true */}
       {isTyping && <TypingIndicator />}
-      <div ref={chatEndRef} /> {/* Ref for auto-scrolling */}
+      <div ref={chatEndRef} />
     </div>
   );
 }
