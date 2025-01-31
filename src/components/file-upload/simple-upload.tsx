@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { Input } from "../ui/input";
 import { isValidUrl } from "@/src/lib/utils";
 import { FileWithId } from "@/src/types/file";
+import { FileIcon } from "../file-icon";
 
 interface FileValidationResult {
   isValid: boolean;
@@ -53,39 +54,94 @@ const validateFile = (file: File): FileValidationResult => {
   return { isValid: true };
 };
 
-export default function FileUpload({ useCase }: FileUploadProps) {
-  const { files, addFile, removeFile } = useFileStore();
+export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
+  const { files, addFile, removeFile, updateFileStatus } = useFileStore();
   const currentFiles = (files[useCase] || []) as FileWithId[];
 
-  const generateUniqueId = () => {
-    return crypto.randomUUID();
-  };
-
   const handleFiles = useCallback(
-    (files: File[]) => {
-      files.forEach((file) => {
+    async (files: File[]) => {
+      for (const file of files) {
         const validation = validateFile(file);
         if (!validation.isValid) {
           alert(validation.error);
-          return;
+          continue;
         }
 
+        const fileId = crypto.randomUUID();
         const fileWithId: FileWithId = {
           ...file,
-          id: generateUniqueId(),
+          id: fileId,
+          name: file.name,
           preview: URL.createObjectURL(file) || "",
           source: "local",
-          status: "pending",
+          status: "uploading",
           progress: 0,
+          processingStage: {
+            stage: "uploading",
+            progress: 0,
+            message: "Starting upload...",
+          },
           thumbnail: file.type.startsWith("image/")
             ? URL.createObjectURL(file)
             : undefined,
           error: undefined,
         };
+
         addFile(useCase, fileWithId);
-      });
+
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("useCase", useCase);
+          formData.append("fileId", fileId);
+          formData.append("fileName", file.name);
+
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(
+              result.error || `Upload failed: ${response.statusText}`
+            );
+          }
+
+          updateFileStatus(useCase, fileId, "indexing", undefined, {
+            stage: "indexing",
+            progress: 0,
+            message: "Processing document...",
+          });
+
+          let progress = 0;
+          const interval = setInterval(() => {
+            progress += 10;
+            if (progress <= 100) {
+              updateFileStatus(useCase, fileId, "indexing", undefined, {
+                stage: "indexing",
+                progress,
+                message:
+                  progress < 100 ? "Processing document..." : "Finalizing...",
+              });
+            }
+            if (progress >= 100) {
+              clearInterval(interval);
+              updateFileStatus(useCase, fileId, "completed");
+            }
+          }, 500);
+        } catch (error) {
+          console.error("Upload error:", error);
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Upload failed - please try again";
+          updateFileStatus(useCase, fileId, "error", errorMessage);
+        }
+      }
     },
-    [addFile, useCase]
+    [addFile, useCase, updateFileStatus]
   );
 
   const [cdnUrl, setCdnUrl] = useState("");
@@ -98,7 +154,7 @@ export default function FileUpload({ useCase }: FileUploadProps) {
     }
 
     const fileWithId: FileWithId = {
-      id: generateUniqueId(),
+      id: crypto.randomUUID(),
       name: cdnUrl.split("/").pop() || "cdn-file",
       preview: cdnUrl || "",
       source: "cdn",
@@ -112,7 +168,7 @@ export default function FileUpload({ useCase }: FileUploadProps) {
       slice: () => new Blob(),
       stream: () => new ReadableStream(),
       text: () => Promise.resolve(""),
-      status: "pending",
+      status: "uploading",
       progress: 0,
       thumbnail: undefined,
       error: undefined,
@@ -157,16 +213,32 @@ export default function FileUpload({ useCase }: FileUploadProps) {
               setCdnUrl(e.target.value)
             }
             placeholder="Enter CDN URL"
-            variant="url"
+            className="flex-1"
           />
           <Button onClick={handleCdnUpload}>Upload from URL</Button>
         </div>
         {cdnError && <p className="text-sm text-destructive">{cdnError}</p>}
       </div>
+
+      {uploadHints && (
+        <div className="text-sm text-muted-foreground">
+          <p className="mb-2">{uploadHints.description}</p>
+          <div className="flex gap-2">
+            <span>Recommended files:</span>
+            {uploadHints.exampleFiles.map((file, index) => (
+              <span key={file} className="text-primary">
+                {file}
+                {index < uploadHints.exampleFiles.length - 1 && ", "}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div {...getRootProps()}>
         <motion.div
           className={`border-2 border-dashed rounded-lg p-6 text-center ${
-            isDragActive ? "border-primary" : "border-muted"
+            isDragActive ? "border-primary bg-primary/5" : "border-muted"
           }`}
           whileHover={{
             scale:
@@ -212,7 +284,7 @@ export default function FileUpload({ useCase }: FileUploadProps) {
           {currentFiles.map((file: FileWithId, index) => (
             <motion.div
               key={file.id}
-              className="flex items-center justify-between p-2 border rounded"
+              className="flex items-center justify-between p-2 border rounded-lg bg-card"
               variants={{
                 hidden: { opacity: 0, y: 20 },
                 visible: {
@@ -236,26 +308,53 @@ export default function FileUpload({ useCase }: FileUploadProps) {
                   ? "none"
                   : "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
               }}
-              exit={{
-                opacity: 0,
-                x: -20,
-                transition: {
-                  duration: window.matchMedia(
-                    "(prefers-reduced-motion: reduce)"
-                  ).matches
-                    ? 0.1
-                    : 0.2,
-                },
-              }}
             >
-              <div className="flex items-center space-x-2">
-                <Icons.file className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">{file.name}</span>
+              <div className="flex items-center space-x-2 flex-1">
+                <FileIcon
+                  fileName={file.name}
+                  className="h-4 w-4 text-muted-foreground"
+                />
+                <span className="text-sm truncate">{file.name}</span>
+                {file.processingStage &&
+                  (file.status === "uploading" ||
+                    file.status === "indexing") && (
+                    <div className="flex items-center space-x-2 flex-1">
+                      <Icons.spinner className="h-4 w-4 animate-spin" />
+                      <div className="flex-1">
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>{file.processingStage.message}</span>
+                          <span>
+                            {Math.round(file.processingStage.progress)}%
+                          </span>
+                        </div>
+                        <div className="h-1 bg-muted rounded-full overflow-hidden">
+                          <motion.div
+                            className="h-full bg-primary"
+                            initial={{ width: 0 }}
+                            animate={{
+                              width: `${file.processingStage.progress}%`,
+                            }}
+                            transition={{ duration: 0.3 }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                {file.status === "completed" && (
+                  <Icons.check className="h-4 w-4 text-success" />
+                )}
+                {file.status === "error" && (
+                  <div className="flex items-center space-x-2 text-destructive">
+                    <Icons.alertTriangle className="h-4 w-4" />
+                    <span className="text-xs">{file.error}</span>
+                  </div>
+                )}
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => handleRemoveFile(file)}
+                className="hover:text-destructive ml-2"
               >
                 <Icons.trash className="h-4 w-4" />
               </Button>
