@@ -64,7 +64,7 @@ class DocxProcessor implements FileProcessor {
   }
 }
 
-// File processor for CSV files. This class uses the PapaParse library to parse CSV data.
+// File processor for CSV files
 class CSVProcessor implements FileProcessor {
   supports(mimeType: string) {
     return mimeType === "text/csv";
@@ -81,6 +81,17 @@ class CSVProcessor implements FileProcessor {
         },
       });
     });
+  }
+}
+
+// File processor for plain text files
+class TextProcessor implements FileProcessor {
+  supports(mimeType: string) {
+    return mimeType === "text/plain";
+  }
+
+  async extractText(buffer: Buffer): Promise<string> {
+    return buffer.toString();
   }
 }
 
@@ -102,6 +113,7 @@ export const processFile = async (file: File, buffer: Buffer) => {
     new PDFProcessor(),
     new DocxProcessor(),
     new CSVProcessor(),
+    new TextProcessor(),
   ];
 
   const processor = processors.find((p) => p.supports(file.type));

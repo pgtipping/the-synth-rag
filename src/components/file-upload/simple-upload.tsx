@@ -10,6 +10,7 @@ import { Input } from "../ui/input";
 import { isValidUrl } from "@/src/lib/utils";
 import { FileWithId } from "@/src/types/file";
 import { FileIcon } from "../file-icon";
+import { useToast } from "@/src/hooks/use-toast";
 
 interface FileValidationResult {
   isValid: boolean;
@@ -56,6 +57,7 @@ const validateFile = (file: File): FileValidationResult => {
 
 export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
   const { files, addFile, removeFile, updateFileStatus } = useFileStore();
+  const { toast } = useToast();
   const currentFiles = (files[useCase] || []) as FileWithId[];
 
   const handleFiles = useCallback(
@@ -63,7 +65,11 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
       for (const file of files) {
         const validation = validateFile(file);
         if (!validation.isValid) {
-          alert(validation.error);
+          toast({
+            title: "Error",
+            description: validation.error,
+            variant: "destructive",
+          });
           continue;
         }
 
@@ -141,7 +147,7 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
         }
       }
     },
-    [addFile, useCase, updateFileStatus]
+    [addFile, useCase, updateFileStatus, toast]
   );
 
   const [cdnUrl, setCdnUrl] = useState("");
@@ -149,6 +155,11 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
 
   const handleCdnUpload = useCallback(() => {
     if (!isValidUrl(cdnUrl)) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid URL",
+        variant: "destructive",
+      });
       setCdnError("Please enter a valid URL");
       return;
     }
@@ -176,7 +187,7 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
     addFile(useCase, fileWithId);
     setCdnUrl("");
     setCdnError("");
-  }, [cdnUrl, useCase, addFile]);
+  }, [cdnUrl, useCase, addFile, toast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: handleFiles,
@@ -186,9 +197,6 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
       "text/plain": [".txt"],
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
         [".docx"],
-    },
-    onDropRejected: (rejectedFiles) => {
-      alert(`Invalid file type: ${rejectedFiles[0].file.name}`);
     },
     maxSize: 10 * 1024 * 1024, // 10MB
   });
@@ -250,16 +258,14 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
               typeof window !== "undefined" &&
               window.matchMedia("(prefers-reduced-motion: reduce)").matches
                 ? "none"
-                : "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+                : "0 4px 12px rgba(0, 0, 0, 0.1)",
           }}
-          transition={{ type: "tween", duration: 0.2 }}
+          transition={{ duration: 0.2 }}
         >
           <input {...getInputProps()} />
           <Icons.upload className="mx-auto h-8 w-8 text-muted-foreground" />
           <p className="mt-2 text-sm text-muted-foreground">
-            {isDragActive
-              ? "Drop the files here..."
-              : "Drag & drop files here, or click to select files"}
+            Drag & drop files here, or click to select files
           </p>
           <p className="text-xs text-muted-foreground mt-2">
             Supported formats: PDF, CSV, TXT, DOCX (Max 10MB)
@@ -355,6 +361,7 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
                 size="sm"
                 onClick={() => handleRemoveFile(file)}
                 className="hover:text-destructive ml-2"
+                aria-label="Remove file"
               >
                 <Icons.trash className="h-4 w-4" />
               </Button>

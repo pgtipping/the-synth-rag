@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { FileWithId } from "../../types/file";
 
 interface AppState {
@@ -15,18 +16,30 @@ interface AppState {
   setIsChatReady: (ready: boolean) => void;
 }
 
-export const useAppStore = create<AppState>((set) => ({
-  currentUseCase: "",
-  uploadedFiles: [],
-  isUploadOpen: true,
-  isChatReady: false,
-  toggleUpload: () => set((state) => ({ isUploadOpen: !state.isUploadOpen })),
-  setCurrentUseCase: (useCase) => set({ currentUseCase: useCase }),
-  addUploadedFile: (file) =>
-    set((state) => ({ uploadedFiles: [...state.uploadedFiles, file] })),
-  removeUploadedFile: (fileId) =>
-    set((state) => ({
-      uploadedFiles: state.uploadedFiles.filter((f) => f.id !== fileId),
-    })),
-  setIsChatReady: (ready) => set({ isChatReady: ready }),
-}));
+export const useAppStore = create<AppState>()(
+  persist(
+    (set) => ({
+      currentUseCase: "",
+      uploadedFiles: [],
+      isUploadOpen: true,
+      isChatReady: false,
+      toggleUpload: () =>
+        set((state) => ({ isUploadOpen: !state.isUploadOpen })),
+      setCurrentUseCase: (useCase) => set({ currentUseCase: useCase }),
+      addUploadedFile: (file) =>
+        set((state) => ({ uploadedFiles: [...state.uploadedFiles, file] })),
+      removeUploadedFile: (fileId) =>
+        set((state) => ({
+          uploadedFiles: state.uploadedFiles.filter((f) => f.id !== fileId),
+        })),
+      setIsChatReady: (ready) => set({ isChatReady: ready }),
+    }),
+    {
+      name: "app-storage",
+      partialize: (state) => ({
+        currentUseCase: state.currentUseCase,
+        uploadedFiles: state.uploadedFiles,
+      }),
+    }
+  )
+);
