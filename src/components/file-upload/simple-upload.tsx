@@ -11,6 +11,7 @@ import { isValidUrl } from "@/src/lib/utils";
 import { FileWithId } from "@/src/types/file";
 import { FileIcon } from "../file-icon";
 import { useToast } from "@/src/hooks/use-toast";
+import { FileMetadata } from "@/src/lib/utils/file-utils";
 
 interface FileValidationResult {
   isValid: boolean;
@@ -58,7 +59,35 @@ const validateFile = (file: File): FileValidationResult => {
 export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
   const { files, addFile, removeFile, updateFileStatus } = useFileStore();
   const { toast } = useToast();
-  const currentFiles = (files[useCase] || []) as FileWithId[];
+
+  // Convert FileMetadata to FileWithId while preserving required properties
+  const currentFiles = (files[useCase] || []).map((file) => {
+    const fileWithId: FileWithId = {
+      id: file.id,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      preview: file.preview || "",
+      lastModified: new Date(file.uploadedAt).getTime(),
+      webkitRelativePath: "",
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+      bytes: () => Promise.resolve(new Uint8Array()),
+      slice: () => new Blob(),
+      stream: () => new ReadableStream(),
+      text: () => Promise.resolve(""),
+      status: file.status,
+      error: file.error,
+      processingStage:
+        file.processingStage && file.processingStage !== "completed"
+          ? {
+              stage: file.processingStage,
+              progress: 0,
+              message: `Processing stage: ${file.processingStage}`,
+            }
+          : undefined,
+    };
+    return fileWithId;
+  });
 
   const handleFiles = useCallback(
     async (files: File[]) => {
@@ -74,26 +103,18 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
         }
 
         const fileId = crypto.randomUUID();
-        const fileWithId: FileWithId = {
-          ...file,
+        const fileMetadata: FileMetadata = {
           id: fileId,
           name: file.name,
-          preview: URL.createObjectURL(file) || "",
-          source: "local",
+          size: file.size,
+          type: file.type,
+          preview: URL.createObjectURL(file),
           status: "uploading",
-          progress: 0,
-          processingStage: {
-            stage: "uploading",
-            progress: 0,
-            message: "Starting upload...",
-          },
-          thumbnail: file.type.startsWith("image/")
-            ? URL.createObjectURL(file)
-            : undefined,
-          error: undefined,
+          uploadedAt: new Date(),
+          processingStage: "uploading",
         };
 
-        addFile(useCase, fileWithId);
+        addFile(useCase, fileMetadata);
 
         try {
           const formData = new FormData();
@@ -102,39 +123,85 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
           formData.append("fileId", fileId);
           formData.append("fileName", file.name);
 
-          const response = await fetch("/api/upload", {
+          // Get the base URL, defaulting to relative path if not available
+          const baseUrl =
+            typeof window !== "undefined"
+              ? window.location.origin
+              : process.env.NEXT_PUBLIC_APP_URL || "";
+
+          const uploadUrl = `${baseUrl}/api/upload`;
+          console.log("Attempting upload to:", uploadUrl, {
+            fileName: file.name,
+            fileType: file.type,
+            fileSize: file.size,
+          });
+
+          const response = await fetch(uploadUrl, {
             method: "POST",
+            headers: {
+              Accept: "application/json",
+            },
             body: formData,
           });
 
-          const result = await response.json();
+          console.log("Upload response status:", response.status);
+          console.log(
+            "Response headers:",
+            Object.fromEntries(response.headers.entries())
+          );
 
-          if (!response.ok) {
-            throw new Error(
-              result.error || `Upload failed: ${response.statusText}`
-            );
+          const result = await response.text();
+          console.log("Raw response:", result);
+
+          let jsonResult;
+          try {
+            jsonResult = JSON.parse(result);
+          } catch {
+            console.error("Failed to parse response:", result);
+            // If we can't parse the response, check if it's an HTML error page
+            if (result.includes("<!DOCTYPE html>")) {
+              console.error("Received HTML instead of JSON - server error");
+              throw new Error("Server error - please try again");
+            }
+            throw new Error("Invalid response format from server");
           }
 
-          updateFileStatus(useCase, fileId, "indexing", undefined, {
-            stage: "indexing",
-            progress: 0,
-            message: "Processing document...",
-          });
+          if (!response.ok) {
+            const errorMessage =
+              jsonResult.error || jsonResult.details || response.statusText;
+            console.error("Upload failed:", errorMessage);
+            throw new Error(`Upload failed: ${errorMessage}`);
+          }
+
+          updateFileStatus(
+            useCase,
+            fileId,
+            "indexing",
+            undefined,
+            "processing"
+          );
 
           let progress = 0;
           const interval = setInterval(() => {
             progress += 10;
             if (progress <= 100) {
-              updateFileStatus(useCase, fileId, "indexing", undefined, {
-                stage: "indexing",
-                progress,
-                message:
-                  progress < 100 ? "Processing document..." : "Finalizing...",
-              });
+              updateFileStatus(
+                useCase,
+                fileId,
+                "indexing",
+                undefined,
+                "indexing"
+              );
             }
             if (progress >= 100) {
               clearInterval(interval);
-              updateFileStatus(useCase, fileId, "completed");
+              updateFileStatus(
+                useCase,
+                fileId,
+                "completed",
+                undefined,
+                "completed"
+              );
             }
           }, 500);
         } catch (error) {
@@ -144,6 +211,11 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
               ? error.message
               : "Upload failed - please try again";
           updateFileStatus(useCase, fileId, "error", errorMessage);
+          toast({
+            title: "Upload Failed",
+            description: errorMessage,
+            variant: "destructive",
+          });
         }
       }
     },
@@ -164,27 +236,18 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
       return;
     }
 
-    const fileWithId: FileWithId = {
+    const fileMetadata: FileMetadata = {
       id: crypto.randomUUID(),
       name: cdnUrl.split("/").pop() || "cdn-file",
-      preview: cdnUrl || "",
-      source: "cdn",
-      cdnUrl,
-      lastModified: Date.now(),
       size: 0,
       type: "application/octet-stream",
-      webkitRelativePath: "",
-      bytes: () => Promise.resolve(new Uint8Array()),
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-      slice: () => new Blob(),
-      stream: () => new ReadableStream(),
-      text: () => Promise.resolve(""),
+      preview: cdnUrl,
       status: "uploading",
-      progress: 0,
-      thumbnail: undefined,
-      error: undefined,
+      uploadedAt: new Date(),
+      processingStage: "uploading",
     };
-    addFile(useCase, fileWithId);
+
+    addFile(useCase, fileMetadata);
     setCdnUrl("");
     setCdnError("");
   }, [cdnUrl, useCase, addFile, toast]);

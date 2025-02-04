@@ -62,6 +62,8 @@ export function ChatStream({ messages, isTyping, isLoading }: ChatStreamProps) {
                 {message.role === "assistant" && (
                   <div className="mt-2">
                     <MessageReactions
+                      messageId={message.id}
+                      initialReactions={message.reactions}
                       onReact={(reaction) => console.log(reaction)}
                     />
                   </div>

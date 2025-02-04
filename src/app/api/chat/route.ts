@@ -1,12 +1,19 @@
-import { openai } from "@ai-sdk/openai";
-import { streamText } from "ai";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { OpenAIStream } from "../../../lib/openai-stream";
+import OpenAI from "openai";
 import { Pinecone } from "@pinecone-database/pinecone";
 import { OpenAIEmbeddings } from "@langchain/openai";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+export const runtime = "edge";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
+
+// Initialize OpenAI configuration
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // Initialize rate limiter if Redis URL is configured
 let ratelimit: Ratelimit | null = null;
@@ -34,11 +41,10 @@ const embeddings = new OpenAIEmbeddings({
 
 export async function POST(req: Request) {
   try {
-    // Only check rate limit if configured
+    // Rate limiting check
     if (ratelimit) {
       const ip = req.headers.get("x-forwarded-for") ?? "127.0.0.1";
       const { success } = await ratelimit.limit(ip);
-
       if (!success) {
         return new Response("Too many requests", { status: 429 });
       }
@@ -46,28 +52,16 @@ export async function POST(req: Request) {
 
     const { messages } = await req.json();
 
-    if (!messages || !Array.isArray(messages)) {
-      return new Response("Invalid request body: messages must be an array", {
-        status: 400,
-      });
-    }
-
-    if (messages.length === 0) {
-      return new Response("Invalid request body: messages array is empty", {
-        status: 400,
-      });
+    if (!messages?.length) {
+      return new Response("Messages array is required", { status: 400 });
     }
 
     const lastMessage = messages[messages.length - 1];
-    if (!lastMessage || typeof lastMessage.content !== "string") {
-      return new Response(
-        "Invalid request body: last message must have content",
-        {
-          status: 400,
-        }
-      );
+    if (!lastMessage?.content) {
+      return new Response("Invalid message format", { status: 400 });
     }
 
+    // Environment checks
     if (!process.env.OPENAI_API_KEY) {
       return new Response("OpenAI API key not configured", { status: 500 });
     }
@@ -76,77 +70,126 @@ export async function POST(req: Request) {
       return new Response("Pinecone configuration missing", { status: 500 });
     }
 
-    // Get the latest user message
-    const userMessage = lastMessage.content;
-
     try {
       // Generate embedding for the query
-      const queryEmbedding = await embeddings.embedQuery(userMessage);
+      const queryEmbedding = await embeddings.embedQuery(lastMessage.content);
+      console.log("Generated query embedding");
 
       // Query Pinecone for relevant context
       const index = pinecone.index(process.env.PINECONE_INDEX);
+      console.log("Querying Pinecone with:", {
+        query: lastMessage.content,
+        indexName: process.env.PINECONE_INDEX,
+      });
+
       const queryResponse = await index.query({
         vector: queryEmbedding,
-        topK: 3,
+        topK: 5,
         includeMetadata: true,
       });
-
-      // Extract relevant context from Pinecone results
-      const context = queryResponse.matches
-        .map((match) => match.metadata?.text)
-        .join("\n\n");
-
-      if (!context) {
-        return new Response(
-          "No relevant context found for the query. Please ensure documents are properly uploaded and indexed.",
-          { status: 400 }
-        );
-      }
-
-      // Add context to the messages
-      const systemMessage = {
-        role: "system",
-        content: `Context:\n${context}\n\nAnswer the question based on the above context.`,
-      };
-
-      const result = streamText({
-        model: openai("gpt-4"),
-        messages: [systemMessage, ...messages],
+      console.log("Pinecone query response:", {
+        matchCount: queryResponse.matches.length,
+        matches: queryResponse.matches.map((m) => ({
+          score: m.score,
+          metadata: m.metadata,
+        })),
       });
 
-      return result.toDataStreamResponse();
+      // Extract and process context from matches
+      const contexts = queryResponse.matches
+        .filter(
+          (match) => match.metadata && typeof match.metadata.text === "string"
+        )
+        .map((match) => ({
+          text: match.metadata!.text as string,
+          score: match.score || 0,
+          source: (match.metadata!.originalName as string) || "unknown",
+        }))
+        .filter((context) => context.score > 0.2); // Lowered threshold to match text-embedding-3-small model
+
+      console.log("Processed contexts:", {
+        beforeFiltering: queryResponse.matches.length,
+        afterMetadataFilter: queryResponse.matches.filter(
+          (m) => m.metadata && typeof m.metadata.text === "string"
+        ).length,
+        afterScoreFilter: contexts.length,
+        scores: contexts.map((c) => c.score),
+      });
+
+      if (!contexts.length) {
+        // Create an error message stream
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+          start(controller) {
+            const message =
+              "I apologize, but I couldn't find any relevant information in the uploaded documents to answer your question. This could be because:\n\n1. The document might still be processing\n2. The relevant information might not be in the uploaded documents\n3. The question might need to be rephrased\n\nPlease try:\n- Waiting a moment if you just uploaded the document\n- Rephrasing your question\n- Checking if the correct documents are uploaded";
+
+            // Send the message in the SSE format
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  content: message,
+                  role: "assistant",
+                })}\n\n`
+              )
+            );
+            controller.close();
+          },
+        });
+
+        return new Response(stream, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive",
+          },
+        });
+      }
+
+      // Prepare context for the prompt
+      const contextText = contexts
+        .map((ctx) => `[Source: ${ctx.source}]\n${ctx.text}`)
+        .join("\n\n");
+
+      // System message with context and instructions
+      const systemMessage = {
+        role: "system",
+        content: `You are a helpful AI assistant. Use the following context to answer the user's questions. If you cannot find the answer in the context, say so - do not make up information.
+
+Context:
+${contextText}
+
+Instructions:
+1. Only use information from the provided context
+2. If you're unsure, ask for clarification
+3. Cite sources when possible using [Source: filename]`,
+      };
+
+      // Create the chat completion with streaming
+      const stream = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [systemMessage, ...messages],
+        stream: true,
+        temperature: 0.7,
+        max_tokens: 2000,
+      });
+
+      // Return the streaming response
+      return new Response(OpenAIStream(stream), {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
     } catch (error) {
       console.error("AI processing error:", error);
-      let errorMessage = "AI processing failed";
-      const statusCode = 500;
-
-      if (error instanceof Error) {
-        if (error.message.includes("OpenAI")) {
-          errorMessage = "OpenAI API error: " + error.message;
-        } else if (error.message.includes("Pinecone")) {
-          errorMessage = "Vector database error: " + error.message;
-        } else if (error.message.includes("embedQuery")) {
-          errorMessage = "Embedding generation error: " + error.message;
-        }
-      }
-
-      return new Response(errorMessage, { status: statusCode });
+      return new Response("Failed to process your request. Please try again.", {
+        status: 500,
+      });
     }
   } catch (error) {
-    console.error("Chat API error:", error);
-    let errorMessage = "Internal server error";
-    let statusCode = 500;
-
-    if (error instanceof Error) {
-      if (error.message.includes("JSON")) {
-        errorMessage = "Invalid request format: " + error.message;
-        statusCode = 400;
-      } else if (error.message.includes("Redis")) {
-        errorMessage = "Rate limiting error: " + error.message;
-        statusCode = 429;
-      }
-    }
-
-    return new Response(errorMessage, { status: statusCode });
+    console.error("Request processing error:", error);
+    return new Response("Invalid request format", { status: 400 });
   }
 }

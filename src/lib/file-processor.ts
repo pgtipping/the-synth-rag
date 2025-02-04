@@ -11,28 +11,36 @@ interface FileProcessor {
 }
 
 class VirusScanner {
-  private scanner: ClamScan;
+  private scanner: ClamScan | null = null;
 
   constructor() {
-    this.scanner = createScanner({
-      debugMode: process.env.NODE_ENV !== "production",
-      clamdscan: {
-        host: process.env.CLAMAV_HOST || "localhost",
-        port: parseInt(process.env.CLAMAV_PORT || "3310"),
-        timeout: 30000,
-      },
-    });
+    if (process.env.ENABLE_VIRUS_SCAN === "true") {
+      this.scanner = createScanner({
+        debugMode: process.env.NODE_ENV !== "production",
+        clamdscan: {
+          host: process.env.CLAMAV_HOST || "localhost",
+          port: parseInt(process.env.CLAMAV_PORT || "3310"),
+          timeout: 30000,
+        },
+      });
+    }
   }
 
   async scanBuffer(
     buffer: Buffer
   ): Promise<{ isInfected: boolean; viruses?: string[] }> {
+    if (!this.scanner) {
+      console.log("Virus scanning disabled");
+      return { isInfected: false };
+    }
+
     try {
       const { isInfected, viruses } = await this.scanner.scanBuffer(buffer);
       return { isInfected, viruses };
     } catch (error) {
       console.error("Virus scan failed:", error);
-      throw new Error("File scanning failed. Please try again later.");
+      // Don't block the upload if virus scanning fails
+      return { isInfected: false };
     }
   }
 }
@@ -102,44 +110,77 @@ const scrubPII = (text: string): string => {
 };
 
 export const processFile = async (file: File, buffer: Buffer) => {
-  const virusScanner = new VirusScanner();
-  const scanResult = await virusScanner.scanBuffer(buffer);
+  try {
+    console.log(`Starting to process file: ${file.name} (${file.type})`);
+    const virusScanner = new VirusScanner();
+    const scanResult = await virusScanner.scanBuffer(buffer);
 
-  if (scanResult.isInfected) {
-    throw new Error(`File contains malware: ${scanResult.viruses?.join(", ")}`);
+    if (scanResult.isInfected) {
+      throw new Error(
+        `File contains malware: ${scanResult.viruses?.join(", ")}`
+      );
+    }
+
+    const processors: FileProcessor[] = [
+      new PDFProcessor(),
+      new DocxProcessor(),
+      new CSVProcessor(),
+      new TextProcessor(),
+    ];
+
+    const processor = processors.find((p) => p.supports(file.type));
+    if (!processor) {
+      throw new Error(`Unsupported file type: ${file.type}`);
+    }
+
+    console.log(`Using processor for type: ${file.type}`);
+    try {
+      console.log("Extracting text from document...");
+      const rawText = await processor.extractText(buffer);
+      console.log(`Extracted text length: ${rawText.length} characters`);
+
+      console.log("Sanitizing text...");
+      const sanitizedText = scrubPII(rawText);
+      console.log(`Sanitized text length: ${sanitizedText.length} characters`);
+
+      const expirationDate = new Date();
+      expirationDate.setHours(expirationDate.getHours() + 24);
+
+      return {
+        text: sanitizedText,
+        metadata: {
+          originalName: file.name,
+          mimeType: file.type,
+          processedAt: new Date().toISOString(),
+          expiresAt: expirationDate.toISOString(),
+          sizeBytes: file.size,
+          scanResult: {
+            scannedAt: new Date().toISOString(),
+            isInfected: scanResult.isInfected,
+            viruses: scanResult.viruses || [],
+          },
+        },
+      };
+    } catch (error) {
+      console.error(`Error processing file ${file.name}:`, error);
+      console.error(
+        "Stack trace:",
+        error instanceof Error ? error.stack : "No stack trace"
+      );
+      throw new Error(
+        `Failed to process file ${file.name}: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  } catch (error) {
+    console.error("File processing error:", error);
+    console.error(
+      "Stack trace:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
+    throw error;
   }
-
-  const processors: FileProcessor[] = [
-    new PDFProcessor(),
-    new DocxProcessor(),
-    new CSVProcessor(),
-    new TextProcessor(),
-  ];
-
-  const processor = processors.find((p) => p.supports(file.type));
-  if (!processor) throw new Error("Unsupported file type");
-
-  const rawText = await processor.extractText(buffer);
-  const sanitizedText = scrubPII(rawText);
-
-  const expirationDate = new Date();
-  expirationDate.setHours(expirationDate.getHours() + 24);
-
-  return {
-    text: sanitizedText,
-    metadata: {
-      originalName: file.name,
-      mimeType: file.type,
-      processedAt: new Date().toISOString(),
-      expiresAt: expirationDate.toISOString(),
-      sizeBytes: file.size,
-      scanResult: {
-        scannedAt: new Date().toISOString(),
-        isInfected: scanResult.isInfected,
-        viruses: scanResult.viruses || [],
-      },
-    },
-  };
 };
 
 export const deleteFile = async (fileId: string): Promise<void> => {

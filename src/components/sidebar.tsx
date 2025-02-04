@@ -156,10 +156,12 @@ export function Sidebar({ useCase }: SidebarProps) {
                       <div className="text-xs text-muted-foreground flex items-center gap-1 mt-2">
                         <Icons.spinner className="h-3 w-3 animate-spin" />
                         <span className="truncate">
-                          {file.processingStage.message}
+                          Processing: {file.processingStage}
                         </span>
                         <span className="shrink-0">
-                          {Math.round(file.processingStage.progress)}%
+                          {file.status === "uploading"
+                            ? "Uploading..."
+                            : "Indexing..."}
                         </span>
                       </div>
                     )}

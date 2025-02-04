@@ -1,18 +1,24 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { FileWithId } from "@/src/types/file";
+import {
+  type FileMetadata,
+  type FileStatus,
+  type ProcessingStage,
+  validateFileUrl,
+  cleanupExpiredFiles,
+} from "./utils/file-utils";
 
 interface FileState {
-  files: Record<string, FileWithId[]>;
-  addFile: (useCase: string, file: FileWithId) => void;
+  files: Record<string, FileMetadata[]>;
+  addFile: (useCase: string, file: FileMetadata) => void;
   removeFile: (useCase: string, fileId: string) => void;
   clearFiles: (useCase: string) => void;
   updateFileStatus: (
     useCase: string,
     fileId: string,
-    status: FileWithId["status"],
+    status: FileStatus,
     error?: string,
-    processingStage?: FileWithId["processingStage"]
+    processingStage?: ProcessingStage
   ) => void;
 }
 
@@ -24,16 +30,7 @@ export const useFileStore = create<FileState>()(
         set((state) => ({
           files: {
             ...state.files,
-            [useCase]: [
-              ...(state.files[useCase] || []),
-              {
-                ...file,
-                name:
-                  file.name ||
-                  file.preview?.split("/").pop() ||
-                  `file-${file.id.slice(0, 6)}`,
-              },
-            ],
+            [useCase]: [...(state.files[useCase] || []), file],
           },
         })),
       removeFile: (useCase, fileId) =>
@@ -63,10 +60,6 @@ export const useFileStore = create<FileState>()(
                     status,
                     error,
                     processingStage,
-                    name:
-                      file.name ||
-                      file.preview?.split("/").pop() ||
-                      `file-${file.id.slice(0, 6)}`,
                   }
                 : file
             ),
@@ -76,25 +69,25 @@ export const useFileStore = create<FileState>()(
     {
       name: "file-storage",
       partialize: (state) => ({ files: state.files }),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => async (state) => {
         if (state) {
-          // Revalidate file URLs and cleanup any expired files
-          Object.entries(state.files).forEach(([useCase, files]) => {
-            files.forEach((file) => {
-              if (file.preview) {
-                // Check if the file still exists in Vercel Blob
-                fetch(file.preview, { method: "HEAD" })
-                  .then((response) => {
-                    if (!response.ok) {
-                      state.removeFile(useCase, file.id);
-                    }
-                  })
-                  .catch(() => {
-                    state.removeFile(useCase, file.id);
-                  });
+          // Validate and cleanup files on rehydration
+          for (const [useCase, files] of Object.entries(state.files)) {
+            for (const file of files) {
+              if (file.url) {
+                const validation = await validateFileUrl(file.url);
+                if (!validation.exists || validation.isExpired) {
+                  state.removeFile(useCase, file.id);
+                }
               }
-            });
-          });
+            }
+          }
+
+          // Cleanup expired files
+          for (const [useCase, files] of Object.entries(state.files)) {
+            const deletedFiles = await cleanupExpiredFiles(files);
+            deletedFiles.forEach((fileId) => state.removeFile(useCase, fileId));
+          }
         }
       },
     }

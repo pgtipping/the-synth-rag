@@ -1,13 +1,39 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { processFile } from "@/src/lib/file-processor";
 import { POST as chatHandler } from "@/src/app/api/chat/route";
-import { Pinecone } from "@pinecone-database/pinecone";
-import { OpenAIEmbeddings } from "@langchain/openai";
+import {
+  Pinecone,
+  type Index,
+  type RecordMetadata,
+} from "@pinecone-database/pinecone";
+
+type MockPineconeIndex = Partial<Index<RecordMetadata>> & {
+  query: ReturnType<typeof vi.fn>;
+};
 
 describe("Upload to Chat Integration Flow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
+
+  const createMockIndex = (): MockPineconeIndex => {
+    const mockQuery = vi.fn().mockResolvedValue({
+      matches: [{ metadata: { text: "test content" } }],
+    });
+
+    return {
+      upsert: vi.fn().mockResolvedValue({ upsertedCount: 1 }),
+      query: mockQuery,
+      _deleteMany: vi.fn(),
+      _deleteOne: vi.fn(),
+      _describeIndexStats: vi.fn(),
+      _listPaginated: vi.fn(),
+      delete: vi.fn(),
+      update: vi.fn(),
+      fetch: vi.fn(),
+      describe: vi.fn(),
+    };
+  };
 
   it("should process file and use its content in chat", async () => {
     // Step 1: Process a test file
@@ -24,16 +50,13 @@ describe("Upload to Chat Integration Flow", () => {
 
     // Step 2: Verify the processed content is indexed in Pinecone
     const mockPinecone = vi.mocked(Pinecone);
-    const mockUpsert = vi.fn().mockResolvedValue({ upsertedCount: 1 });
-    const mockQuery = vi.fn().mockResolvedValue({
+    const mockIndex = createMockIndex();
+    mockIndex.query.mockResolvedValue({
       matches: [{ metadata: { text: testContent } }],
     });
 
     mockPinecone.mockImplementation(() => ({
-      index: () => ({
-        upsert: mockUpsert,
-        query: mockQuery,
-      }),
+      index: () => mockIndex as Index<RecordMetadata>,
     }));
 
     // Step 3: Make a chat request related to the uploaded content
@@ -48,7 +71,7 @@ describe("Upload to Chat Integration Flow", () => {
     expect(chatResponse.status).toBe(200);
 
     // Verify that Pinecone was queried for relevant context
-    expect(mockQuery).toHaveBeenCalled();
+    expect(mockIndex.query).toHaveBeenCalled();
   });
 
   it("should handle multiple file uploads and use combined context", async () => {
@@ -82,16 +105,15 @@ describe("Upload to Chat Integration Flow", () => {
 
     // Setup Pinecone mock to return combined context
     const mockPinecone = vi.mocked(Pinecone);
-    const mockQuery = vi.fn().mockResolvedValue({
+    const mockIndex = createMockIndex();
+    mockIndex.query.mockResolvedValue({
       matches: files.map((file) => ({
         metadata: { text: file.content },
       })),
     });
 
     mockPinecone.mockImplementation(() => ({
-      index: () => ({
-        query: mockQuery,
-      }),
+      index: () => mockIndex as Index<RecordMetadata>,
     }));
 
     // Make a chat request that should use context from both files
@@ -111,8 +133,8 @@ describe("Upload to Chat Integration Flow", () => {
     expect(chatResponse.status).toBe(200);
 
     // Verify that Pinecone was queried
-    expect(mockQuery).toHaveBeenCalled();
-    const queryCall = mockQuery.mock.calls[0][0];
+    expect(mockIndex.query).toHaveBeenCalled();
+    const queryCall = mockIndex.query.mock.calls[0][0];
     expect(queryCall).toHaveProperty("topK", 3); // Verify we're getting multiple contexts
   });
 
