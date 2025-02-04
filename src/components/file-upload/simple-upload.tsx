@@ -9,9 +9,9 @@ import { motion } from "framer-motion";
 import { Input } from "../ui/input";
 import { isValidUrl } from "@/src/lib/utils";
 import { FileWithId } from "@/src/types/file";
-import { FileIcon } from "../file-icon";
 import { useToast } from "@/src/hooks/use-toast";
 import { FileMetadata } from "@/src/lib/utils/file-utils";
+import { FilePreview } from "./FilePreview";
 
 interface FileValidationResult {
   isValid: boolean;
@@ -59,35 +59,8 @@ const validateFile = (file: File): FileValidationResult => {
 export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
   const { files, addFile, removeFile, updateFileStatus } = useFileStore();
   const { toast } = useToast();
-
-  // Convert FileMetadata to FileWithId while preserving required properties
-  const currentFiles = (files[useCase] || []).map((file) => {
-    const fileWithId: FileWithId = {
-      id: file.id,
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      preview: file.preview || "",
-      lastModified: new Date(file.uploadedAt).getTime(),
-      webkitRelativePath: "",
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-      bytes: () => Promise.resolve(new Uint8Array()),
-      slice: () => new Blob(),
-      stream: () => new ReadableStream(),
-      text: () => Promise.resolve(""),
-      status: file.status,
-      error: file.error,
-      processingStage:
-        file.processingStage && file.processingStage !== "completed"
-          ? {
-              stage: file.processingStage,
-              progress: 0,
-              message: `Processing stage: ${file.processingStage}`,
-            }
-          : undefined,
-    };
-    return fileWithId;
-  });
+  const [cdnUrl, setCdnUrl] = useState("");
+  const [cdnError, setCdnError] = useState("");
 
   const handleFiles = useCallback(
     async (files: File[]) => {
@@ -222,9 +195,6 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
     [addFile, useCase, updateFileStatus, toast]
   );
 
-  const [cdnUrl, setCdnUrl] = useState("");
-  const [cdnError, setCdnError] = useState("");
-
   const handleCdnUpload = useCallback(() => {
     if (!isValidUrl(cdnUrl)) {
       toast({
@@ -261,7 +231,6 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
         [".docx"],
     },
-    maxSize: 10 * 1024 * 1024, // 10MB
   });
 
   const handleRemoveFile = useCallback(
@@ -274,8 +243,104 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
     [removeFile, useCase]
   );
 
+  // Convert FileMetadata to FileWithId while preserving required properties
+  const currentFiles = (files[useCase] || []).map((file) => {
+    const fileWithId: FileWithId = {
+      id: file.id,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      preview: file.preview || "",
+      lastModified: new Date(file.uploadedAt).getTime(),
+      webkitRelativePath: "",
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+      bytes: () => Promise.resolve(new Uint8Array()),
+      slice: () => new Blob(),
+      stream: () => new ReadableStream(),
+      text: () => Promise.resolve(""),
+      status: file.status,
+      error: file.error,
+      processingStage:
+        file.processingStage && file.processingStage !== "completed"
+          ? {
+              stage: file.processingStage,
+              progress: 0,
+              message: `Processing stage: ${file.processingStage}`,
+            }
+          : undefined,
+    };
+    return fileWithId;
+  });
+
   return (
-    <div className="space-y-4">
+    <div className="w-full space-y-4">
+      <div {...getRootProps()}>
+        <motion.div
+          className={`
+            relative border-2 border-dashed rounded-[18px] p-8 text-center
+            transition-colors duration-300
+            ${
+              isDragActive
+                ? "border-light-accent dark:border-dark-accent bg-light-accent/5 dark:bg-dark-accent/10"
+                : "border-light-text-secondary/20 dark:border-dark-text-secondary/20 bg-light-secondary dark:bg-dark-secondary"
+            }
+            hover:border-light-accent hover:dark:border-dark-accent
+            hover:bg-light-accent/5 hover:dark:bg-dark-accent/10
+          `}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          animate={isDragActive ? { scale: 1.02 } : { scale: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        >
+          <input {...getInputProps()} />
+          <div className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="flex flex-col items-center gap-2"
+            >
+              <Icons.upload
+                className={`w-10 h-10 ${
+                  isDragActive
+                    ? "text-light-accent dark:text-dark-accent"
+                    : "text-light-text-secondary dark:text-dark-text-secondary"
+                }`}
+              />
+              <p className="text-light-text-primary dark:text-dark-text-primary font-medium">
+                {isDragActive ? "Drop files here" : "Drag & drop files here"}
+              </p>
+              <p className="text-light-text-secondary dark:text-dark-text-secondary text-sm">
+                or click to browse
+              </p>
+            </motion.div>
+
+            {uploadHints && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-sm text-light-text-secondary dark:text-dark-text-secondary"
+              >
+                <p className="font-medium">{uploadHints.title}</p>
+                <p>{uploadHints.description}</p>
+                <p className="mt-2">
+                  Example files:{" "}
+                  {uploadHints.exampleFiles.map((file, i) => (
+                    <span key={file}>
+                      {i > 0 && ", "}
+                      <code className="text-light-accent dark:text-dark-accent">
+                        {file}
+                      </code>
+                    </span>
+                  ))}
+                </p>
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
+      </div>
+
       <div className="flex flex-col gap-4">
         <div className="flex gap-2">
           <Input
@@ -289,51 +354,6 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
           <Button onClick={handleCdnUpload}>Upload from URL</Button>
         </div>
         {cdnError && <p className="text-sm text-destructive">{cdnError}</p>}
-      </div>
-
-      {uploadHints && (
-        <div className="text-sm text-muted-foreground">
-          <p className="mb-2">{uploadHints.description}</p>
-          <div className="flex gap-2">
-            <span>Recommended files:</span>
-            {uploadHints.exampleFiles.map((file, index) => (
-              <span key={file} className="text-primary">
-                {file}
-                {index < uploadHints.exampleFiles.length - 1 && ", "}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div {...getRootProps()}>
-        <motion.div
-          className={`border-2 border-dashed rounded-lg p-6 text-center ${
-            isDragActive ? "border-primary bg-primary/5" : "border-muted"
-          }`}
-          whileHover={{
-            scale:
-              typeof window !== "undefined" &&
-              window.matchMedia("(prefers-reduced-motion: reduce)").matches
-                ? 1
-                : 1.02,
-            boxShadow:
-              typeof window !== "undefined" &&
-              window.matchMedia("(prefers-reduced-motion: reduce)").matches
-                ? "none"
-                : "0 4px 12px rgba(0, 0, 0, 0.1)",
-          }}
-          transition={{ duration: 0.2 }}
-        >
-          <input {...getInputProps()} />
-          <Icons.upload className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-2 text-sm text-muted-foreground">
-            Drag & drop files here, or click to select files
-          </p>
-          <p className="text-xs text-muted-foreground mt-2">
-            Supported formats: PDF, CSV, TXT, DOCX (Max 10MB)
-          </p>
-        </motion.div>
       </div>
 
       {currentFiles.length > 0 && (
@@ -350,85 +370,12 @@ export default function FileUpload({ useCase, uploadHints }: FileUploadProps) {
             },
           }}
         >
-          {currentFiles.map((file: FileWithId, index) => (
-            <motion.div
+          {currentFiles.map((file: FileWithId) => (
+            <FilePreview
               key={file.id}
-              className="flex items-center justify-between p-2 border rounded-lg bg-card"
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: {
-                  opacity: 1,
-                  y: 0,
-                  transition: {
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 20,
-                    delay: index * 0.1,
-                  },
-                },
-              }}
-              whileHover={{
-                scale: window.matchMedia("(prefers-reduced-motion: reduce)")
-                  .matches
-                  ? 1
-                  : 1.02,
-                boxShadow: window.matchMedia("(prefers-reduced-motion: reduce)")
-                  .matches
-                  ? "none"
-                  : "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
-              }}
-            >
-              <div className="flex items-center space-x-2 flex-1">
-                <FileIcon
-                  fileName={file.name}
-                  className="h-4 w-4 text-muted-foreground"
-                />
-                <span className="text-sm truncate">{file.name}</span>
-                {file.processingStage &&
-                  (file.status === "uploading" ||
-                    file.status === "indexing") && (
-                    <div className="flex items-center space-x-2 flex-1">
-                      <Icons.spinner className="h-4 w-4 animate-spin" />
-                      <div className="flex-1">
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>{file.processingStage.message}</span>
-                          <span>
-                            {Math.round(file.processingStage.progress)}%
-                          </span>
-                        </div>
-                        <div className="h-1 bg-muted rounded-full overflow-hidden">
-                          <motion.div
-                            className="h-full bg-primary"
-                            initial={{ width: 0 }}
-                            animate={{
-                              width: `${file.processingStage.progress}%`,
-                            }}
-                            transition={{ duration: 0.3 }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                {file.status === "completed" && (
-                  <Icons.check className="h-4 w-4 text-success" />
-                )}
-                {file.status === "error" && (
-                  <div className="flex items-center space-x-2 text-destructive">
-                    <Icons.alertTriangle className="h-4 w-4" />
-                    <span className="text-xs">{file.error}</span>
-                  </div>
-                )}
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleRemoveFile(file)}
-                className="hover:text-destructive ml-2"
-                aria-label="Remove file"
-              >
-                <Icons.trash className="h-4 w-4" />
-              </Button>
-            </motion.div>
+              file={file}
+              onRemove={handleRemoveFile}
+            />
           ))}
         </motion.div>
       )}

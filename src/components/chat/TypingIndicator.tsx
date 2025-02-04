@@ -5,26 +5,24 @@ export function TypingIndicator() {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      className="max-w-[80%] bg-gray-100 rounded-lg p-3 mb-2"
+      exit={{ opacity: 0, y: 10 }}
+      className="flex gap-1 p-2 max-w-[70px] bg-light-secondary dark:bg-dark-secondary rounded-[18px] rounded-bl-[4px] shadow-sm"
     >
-      <div className="flex space-x-1 px-2 py-1">
-        {[...Array(3)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="w-2 h-2 bg-gray-500 rounded-full"
-            animate={{
-              y: ["0%", "-50%", "0%"],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              repeat: Infinity,
-              duration: 0.6,
-              delay: i * 0.1,
-            }}
-          />
-        ))}
-      </div>
+      {[0, 1, 2].map((i) => (
+        <motion.div
+          key={i}
+          className="w-2 h-2 rounded-full bg-light-text-secondary dark:bg-dark-text-secondary"
+          animate={{
+            y: ["0%", "-50%", "0%"],
+          }}
+          transition={{
+            duration: 0.8,
+            repeat: Infinity,
+            delay: i * 0.15,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
     </motion.div>
   );
 }
