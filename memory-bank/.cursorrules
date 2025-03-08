@@ -1,0 +1,122 @@
+# Cursor Rules - Created on March 8, 2023
+
+## Project Patterns - March 8, 2023
+
+### File Structure
+- Next.js app router structure is used
+- Components are organized by feature in the `src/components` directory
+- Utility functions are in the `src/lib` directory
+- Hooks are in the `src/hooks` directory
+- Types are in the `src/types` directory
+- API routes are in the `src/app/api` directory
+
+### Coding Patterns
+- TypeScript is used throughout the project
+- React Server Components are used where possible
+- Client components are marked with "use client" directive
+- Tailwind CSS is used for styling
+- Shadcn/ui components are used for UI elements
+- Zustand is used for global state management
+- React Context is used for component-level state sharing
+
+### Naming Conventions
+- Components use PascalCase (e.g., `FileUpload.tsx`)
+- Hooks use camelCase with `use` prefix (e.g., `useChat.ts`)
+- Utility functions use camelCase (e.g., `parseDocument.ts`)
+- Types use PascalCase with descriptive names (e.g., `FileUploadProps`)
+- API routes use kebab-case (e.g., `/api/process-document`)
+
+## User Preferences - March 8, 2023
+
+### Code Style
+- Prefer functional components over class components
+- Use TypeScript interfaces for component props
+- Use arrow functions for event handlers
+- Use async/await for asynchronous operations
+- Use destructuring for props and state
+- Use optional chaining and nullish coalescing
+
+### Documentation
+- Add JSDoc comments for functions and components
+- Include type definitions for all functions
+- Document complex logic with inline comments
+- Keep Memory Bank documentation up to date
+
+### Testing
+- Write unit tests for utility functions
+- Write integration tests for critical user flows
+- Use mock data for testing API responses
+
+## Known Challenges - March 8, 2023
+
+### Technical Challenges
+- Handling large file uploads efficiently
+- Processing different document formats consistently
+- Managing vector database performance
+- Implementing streaming responses with proper error handling
+- Balancing context window size with relevance in RAG
+
+### UX Challenges
+- Providing clear guidance for file uploads
+- Displaying citations and sources in chat responses
+- Creating a responsive design that works well on all devices
+- Balancing simplicity with feature richness
+
+## Project Evolution - March 8, 2023
+
+### Initial Approach
+- Started with a simple chat interface
+- Added file upload functionality
+- Integrated with OpenAI API
+- Set up Pinecone for vector storage
+
+### Current Direction
+- Focusing on multiple use case templates
+- Improving document processing pipeline
+- Enhancing chat experience with streaming and citations
+- Adding user authentication and file management
+
+### Future Plans
+- Add analytics for tracking user engagement
+- Implement A/B testing for UI variations
+- Develop mobile app version
+- Add more sophisticated document processing features
+
+## Tool Usage Patterns - March 8, 2023
+
+### Development Tools
+- VS Code for code editing
+- Git for version control
+- npm for package management
+- Vercel for deployment
+- ESLint and Prettier for code quality
+
+### Libraries and Frameworks
+- Next.js for frontend and API routes
+- React for UI components
+- Tailwind CSS for styling
+- Shadcn/ui for UI components
+- Zustand for state management
+- Langchain for RAG implementation
+- OpenAI API for chat and embeddings
+- Pinecone for vector storage
+- React Dropzone for file uploads
+
+## Security Considerations - March 8, 2023
+
+### API Keys
+- All API keys must be stored as environment variables
+- Never expose API keys in client-side code
+- Use server-side API routes to proxy requests to external services
+
+### File Uploads
+- Validate file types and sizes before processing
+- Sanitize file names and content
+- Store files securely with proper access controls
+- Implement automatic file expiration
+
+### User Data
+- Encrypt sensitive data at rest and in transit
+- Implement proper authentication and authorization
+- Allow users to delete their data
+- Comply with GDPR and CCPA requirements 
