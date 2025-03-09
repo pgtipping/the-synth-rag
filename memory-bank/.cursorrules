@@ -1,8 +1,89 @@
-# Cursor Rules - Created on March 8, 2023
+# Cursor Rules - Updated on March 9, 2023
+
+## Project Structure
+
+### Routing Structure - March 9, 2023
+
+The application uses Next.js App Router with the following structure:
+
+- `/` - Home page with links to specific use cases
+- `/chat` - Redirects to `/chat/onboarding` for better user experience
+- `/chat/[useCase]` - Dynamic route for specific use cases (onboarding, sales, knowledge)
+- `/documents` - Document management page
+- `/api/*` - API routes for chat, documents, and file uploads
+
+### Component Organization - March 8, 2023
+
+- `src/components/ui` - Reusable UI components (buttons, inputs, etc.)
+- `src/components/layout` - Layout components (header, footer, etc.)
+- `src/components/chat` - Chat-specific components
+- `src/components/file-upload` - File upload components
+- `src/lib` - Utility functions and services
+
+## API Implementation
+
+### OpenAI Integration - March 9, 2023
+
+- Using OpenAI API for chat completions
+- Implemented robust error handling for API calls
+- Using `gpt-4o-mini` model for chat completions
+- Using `text-embedding-3-small` for embeddings
+
+### Pinecone Integration - March 9, 2023
+
+- Using Pinecone for vector storage and retrieval
+- Implemented robust error handling for Pinecone initialization
+- Using vector similarity search with a threshold of 0.3
+- Retrieving top 5 most relevant document chunks
+
+## Error Handling
+
+### Build Errors - March 9, 2023
+
+- Fixed issues with Tailwind Config type import
+- Removed unused code in use-toast.ts
+- Addressed permission issues with .next directory
+
+### Runtime Errors - March 8, 2023
+
+- Implemented robust error handling for OpenAI and Pinecone initialization
+- Used type guards to handle different stream types in OpenAI stream utility
+- Simplified the chat API route to reduce complexity
+
+## User Preferences
+
+### Code Style - March 8, 2023
+
+- Using TypeScript for type safety
+- Following Next.js best practices
+- Using client components only when necessary
+- Separating server and client components for better performance
+
+### UI Design - March 8, 2023
+
+- Using a clean, modern design
+- Implementing responsive layouts
+- Using Tailwind CSS for styling
+- Following accessibility best practices
+
+## Deployment
+
+### Vercel Configuration - March 8, 2023
+
+- Created vercel.json for deployment configuration
+- Set up environment variables for Vercel
+- Configured build settings for production
+
+### Database Configuration - March 8, 2023
+
+- Updated database configuration for both development and production
+- Created migration script for initializing the database schema
+- Added SSL support for production database connections
 
 ## Project Patterns - March 8, 2023
 
 ### File Structure
+
 - Next.js app router structure is used
 - Components are organized by feature in the `src/components` directory
 - Utility functions are in the `src/lib` directory
@@ -11,6 +92,7 @@
 - API routes are in the `src/app/api` directory
 
 ### Coding Patterns
+
 - TypeScript is used throughout the project
 - React Server Components are used where possible
 - Client components are marked with "use client" directive
@@ -20,6 +102,7 @@
 - React Context is used for component-level state sharing
 
 ### Naming Conventions
+
 - Components use PascalCase (e.g., `FileUpload.tsx`)
 - Hooks use camelCase with `use` prefix (e.g., `useChat.ts`)
 - Utility functions use camelCase (e.g., `parseDocument.ts`)
@@ -28,21 +111,15 @@
 
 ## User Preferences - March 8, 2023
 
-### Code Style
-- Prefer functional components over class components
-- Use TypeScript interfaces for component props
-- Use arrow functions for event handlers
-- Use async/await for asynchronous operations
-- Use destructuring for props and state
-- Use optional chaining and nullish coalescing
-
 ### Documentation
+
 - Add JSDoc comments for functions and components
 - Include type definitions for all functions
 - Document complex logic with inline comments
 - Keep Memory Bank documentation up to date
 
 ### Testing
+
 - Write unit tests for utility functions
 - Write integration tests for critical user flows
 - Use mock data for testing API responses
@@ -50,6 +127,7 @@
 ## Known Challenges - March 8, 2023
 
 ### Technical Challenges
+
 - Handling large file uploads efficiently
 - Processing different document formats consistently
 - Managing vector database performance
@@ -57,6 +135,7 @@
 - Balancing context window size with relevance in RAG
 
 ### UX Challenges
+
 - Providing clear guidance for file uploads
 - Displaying citations and sources in chat responses
 - Creating a responsive design that works well on all devices
@@ -65,18 +144,21 @@
 ## Project Evolution - March 8, 2023
 
 ### Initial Approach
+
 - Started with a simple chat interface
 - Added file upload functionality
 - Integrated with OpenAI API
 - Set up Pinecone for vector storage
 
 ### Current Direction
+
 - Focusing on multiple use case templates
 - Improving document processing pipeline
 - Enhancing chat experience with streaming and citations
 - Adding user authentication and file management
 
 ### Future Plans
+
 - Add analytics for tracking user engagement
 - Implement A/B testing for UI variations
 - Develop mobile app version
@@ -85,6 +167,7 @@
 ## Tool Usage Patterns - March 8, 2023
 
 ### Development Tools
+
 - VS Code for code editing
 - Git for version control
 - npm for package management
@@ -92,6 +175,7 @@
 - ESLint and Prettier for code quality
 
 ### Libraries and Frameworks
+
 - Next.js for frontend and API routes
 - React for UI components
 - Tailwind CSS for styling
@@ -105,18 +189,21 @@
 ## Security Considerations - March 8, 2023
 
 ### API Keys
+
 - All API keys must be stored as environment variables
 - Never expose API keys in client-side code
 - Use server-side API routes to proxy requests to external services
 
 ### File Uploads
+
 - Validate file types and sizes before processing
 - Sanitize file names and content
 - Store files securely with proper access controls
 - Implement automatic file expiration
 
 ### User Data
+
 - Encrypt sensitive data at rest and in transit
 - Implement proper authentication and authorization
 - Allow users to delete their data
-- Comply with GDPR and CCPA requirements 
+- Comply with GDPR and CCPA requirements

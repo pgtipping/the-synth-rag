@@ -1,4 +1,4 @@
-# Active Context - Created on March 8, 2023
+# Active Context - Updated on March 9, 2023
 
 ## Current Work Focus
 
@@ -10,10 +10,19 @@ The current focus is on preparing the RAG (Retrieval-Augmented Generation) chatb
 4. **Environment Configuration**: Setting up proper environment variables for different environments
 5. **Documentation**: Updating documentation for deployment and usage
 6. **Error Handling**: Fixing runtime errors and improving error handling
+7. **Routing Fixes**: Ensuring all routes work correctly, especially the chat functionality
 
 ## Recent Changes
 
-### March 8, 2023 (Latest)
+### March 9, 2023 (Latest)
+
+- Fixed 404 error for the `/chat` route by creating a redirect page that sends users to `/chat/onboarding`
+- Restored the Pinecone RAG implementation with robust error handling
+- Fixed build errors by removing unused code in use-toast.ts
+- Updated Tailwind Config type import to fix build errors
+- Ensured the application can be built successfully for production
+
+### March 8, 2023
 
 - Fixed metadata error: separated layout into server and client components to prevent "createMetadataComponents is not a function" error
 - Fixed document list errors: handling undefined size and invalid date values
@@ -82,9 +91,21 @@ The current focus is on preparing the RAG (Retrieval-Augmented Generation) chatb
    - Ensured environment variables are properly secured
 
 4. **Error Handling Approach**:
+
    - Implemented robust error handling for OpenAI and Pinecone initialization
    - Used type guards to handle different stream types in OpenAI stream utility
    - Simplified the chat API route to reduce complexity and potential error sources
+
+5. **Routing Structure**:
+
+   - Using dynamic routes with `/chat/[useCase]` for specific use cases
+   - Added redirect from `/chat` to `/chat/onboarding` for better user experience
+   - Maintained the existing structure where the home page links to specific use cases
+
+6. **Vector Database Implementation**:
+   - Decided to keep Pinecone as the vector database for production
+   - Restored the full RAG implementation with Pinecone for better search results
+   - Implemented robust error handling for Pinecone queries
 
 ### UX Considerations
 
