@@ -17,6 +17,11 @@ The current focus is on preparing the RAG (Retrieval-Augmented Generation) chatb
 
 ### March 9, 2024 (Latest)
 
+- Fixed 404 error for app-pages-internals.js:
+  - Updated Next.js configuration with proper static file handling
+  - Added reactStrictMode and swcMinify options
+  - Explicitly enabled appDir in experimental options
+  - Rebuilt the application to ensure proper static file generation
 - Fixed font manifest error:
   - Simplified font configuration by using system font stack
   - Removed Google Fonts dependency to prevent ENOENT errors

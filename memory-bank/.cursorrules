@@ -225,3 +225,7 @@ The application uses Next.js App Router with the following structure:
 - Added dev:no-trace script to package.json as an alternative approach
 - Configured webpack to exclude server-only modules on the client
 - Set up serverExternalPackages for proper handling of external dependencies
+- Added reactStrictMode and swcMinify options for better performance and error detection
+- Explicitly enabled appDir in experimental options
+- Disabled poweredByHeader for security reasons
+- Updated configuration to ensure proper static file handling

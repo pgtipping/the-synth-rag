@@ -29,7 +29,16 @@ const nextConfig = {
     "mammoth",
     "pdf-parse",
   ],
-  experimental: {},
+  // Ensure proper static file handling
+  poweredByHeader: false,
+  reactStrictMode: true,
+  swcMinify: true,
+  experimental: {
+    // Disable tracing to prevent EPERM errors
+    outputFileTracingIgnores: [".next/trace"],
+    // Enable app directory features
+    appDir: true,
+  },
 };
 
 export default nextConfig;

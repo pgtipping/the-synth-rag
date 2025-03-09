@@ -123,6 +123,12 @@ The project is currently in the **Pre-Deployment Phase**. The core functionality
    - **Priority**: High
    - **Solution**: Simplified font configuration by using system font stack instead of Google Fonts
 
+8. **Static File 404 Error**: 404 error for app-pages-internals.js
+
+   - **Status**: Resolved
+   - **Priority**: High
+   - **Solution**: Updated Next.js configuration with proper static file handling and rebuilt the application
+
 ### UX Issues
 
 1. **Error Feedback**: Need to improve error feedback for users
@@ -141,6 +147,7 @@ The project is currently in the **Pre-Deployment Phase**. The core functionality
 
 ### March 9, 2024
 
+- Fixed 404 error for app-pages-internals.js by updating Next.js configuration
 - Fixed font manifest error by simplifying font configuration to use system fonts
 - Fixed document management page loading issue with improved data handling and error management
 - Improved document management page UI with better table structure, enhanced status badges, and fixed dropdown styling
