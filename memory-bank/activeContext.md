@@ -17,6 +17,10 @@ The current focus is on preparing the RAG (Retrieval-Augmented Generation) chatb
 
 ### March 9, 2024 (Latest)
 
+- Fixed font manifest error:
+  - Simplified font configuration by using system font stack
+  - Removed Google Fonts dependency to prevent ENOENT errors
+  - Updated layout component to use Tailwind's font-sans class
 - Fixed document management page loading issue:
   - Improved data normalization to handle missing or inconsistent data
   - Added better error handling for API requests

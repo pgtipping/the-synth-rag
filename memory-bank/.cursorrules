@@ -44,6 +44,7 @@ The application uses Next.js App Router with the following structure:
 - Fixed issues with Tailwind Config type import
 - Removed unused code in use-toast.ts
 - Addressed permission issues with .next directory
+- Fixed font manifest error by simplifying font configuration
 
 ### Runtime Errors - March 9, 2024
 
@@ -69,6 +70,7 @@ The application uses Next.js App Router with the following structure:
 - Using a clean, modern design
 - Implementing responsive layouts
 - Using Tailwind CSS for styling
+- Using system font stack for better performance and reliability
 - Following accessibility best practices
 - Using subtle hover effects for interactive elements
 - Implementing consistent spacing and alignment

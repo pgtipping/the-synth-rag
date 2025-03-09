@@ -117,6 +117,12 @@ The project is currently in the **Pre-Deployment Phase**. The core functionality
    - **Priority**: High
    - **Solution**: Fixed data normalization and error handling in document list component
 
+7. **Font Manifest Error**: ENOENT error when accessing font manifest file
+
+   - **Status**: Resolved
+   - **Priority**: High
+   - **Solution**: Simplified font configuration by using system font stack instead of Google Fonts
+
 ### UX Issues
 
 1. **Error Feedback**: Need to improve error feedback for users
@@ -135,6 +141,7 @@ The project is currently in the **Pre-Deployment Phase**. The core functionality
 
 ### March 9, 2024
 
+- Fixed font manifest error by simplifying font configuration to use system fonts
 - Fixed document management page loading issue with improved data handling and error management
 - Improved document management page UI with better table structure, enhanced status badges, and fixed dropdown styling
 - Fixed EPERM error related to the `.next/trace` file that was occurring during development
