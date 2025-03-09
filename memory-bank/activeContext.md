@@ -17,6 +17,12 @@ The current focus is on preparing the RAG (Retrieval-Augmented Generation) chatb
 
 ### March 9, 2024 (Latest)
 
+- Fixed Next.js configuration warnings:
+  - Removed unsupported experimental options (outputFileTracingIgnores, appDir)
+  - Removed deprecated swcMinify option
+  - Removed redundant serverComponentsExternalPackages option
+  - Added proper comments to clarify configuration options
+  - Ensured compatibility with Next.js 15.2.1
 - Fixed database SSL connection error:
   - Updated database configuration to explicitly disable SSL for local development
   - Modified environment variables to include PG_SSL flag

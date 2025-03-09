@@ -22,6 +22,7 @@ const nextConfig = {
 
     return config;
   },
+  // External packages that should be transpiled
   serverExternalPackages: [
     "pg",
     "@vercel/blob",
@@ -29,16 +30,10 @@ const nextConfig = {
     "mammoth",
     "pdf-parse",
   ],
-  // Ensure proper static file handling
+  // Disable the X-Powered-By header
   poweredByHeader: false,
+  // Enable React strict mode
   reactStrictMode: true,
-  swcMinify: true,
-  experimental: {
-    // Disable tracing to prevent EPERM errors
-    outputFileTracingIgnores: [".next/trace"],
-    // Enable app directory features
-    appDir: true,
-  },
 };
 
 export default nextConfig;
