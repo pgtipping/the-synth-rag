@@ -1,0 +1,796 @@
+{
+  "errors": [
+    {
+      "error_id": "FILE_UPLOAD_DUPLICATE_KEYS_001",
+      "timestamp": "2025-01-24T07:36:05Z",
+      "component": "file-upload.tsx",
+      "description": "Duplicate keys generated for uploaded files despite using file name and last modified timestamp combination",
+      "error_message": "Encountered two children with the same key, `Company SMS MANUAL (2).docx-1601643950000`",
+      "impact": "File uploads are being duplicated in the UI, causing rendering errors and potential data inconsistencies",
+      "attempted_solutions": [
+        {
+          "attempt": 1,
+          "date": "2025-01-24T07:06:45Z",
+          "solution": "Modified generateUniqueKey to use file name and last modified timestamp",
+          "result": "Failed - duplicate keys still occurring"
+        }
+      ],
+      "status": "open",
+      "priority": "high"
+    },
+    {
+      "error_id": "FILE_UPLOAD_DUPLICATE_KEYS_002",
+      "timestamp": "2025-01-24T07:54:28Z",
+      "component": "file-upload.tsx",
+      "description": "Duplicate keys still occurring after UUID implementation",
+      "error_message": "Encountered two children with the same key despite UUID implementation",
+      "impact": "File uploads are still being duplicated in the UI",
+      "attempted_solutions": [
+        {
+          "attempt": 2,
+          "date": "2025-01-24T07:48:02Z",
+          "solution": "Implemented UUID-based unique keys and updated store interface",
+          "result": "Failed - duplicate keys still occurring"
+        }
+      ],
+      "status": "open",
+      "priority": "critical"
+    },
+    {
+      "error_id": "UPPY_TS_INTEGRATION_001",
+      "timestamp": "2024-01-26T10:15:00Z",
+      "component": "FileUpload",
+      "file_path": "components/FileUpload.tsx",
+      "description": "TypeScript type definition issues with Uppy integration",
+      "error_messages": [
+        {
+          "code": "2314",
+          "severity": 8,
+          "message": "Generic type 'UppyFile<M, B>' requires 2 type argument(s).",
+          "source": "ts",
+          "location": {
+            "file": "components/FileUpload.tsx",
+            "startLine": 94,
+            "startColumn": 38,
+            "endLine": 94,
+            "endColumn": 60
+          }
+        },
+        {
+          "code": "2344",
+          "severity": 8,
+          "message": "Type 'typeof Uppy' does not satisfy the constraint '(...args: any) => any'",
+          "source": "ts",
+          "location": {
+            "file": "components/FileUpload.tsx",
+            "startLine": 50,
+            "startColumn": 1,
+            "endLine": 50,
+            "endColumn": 40
+          }
+        },
+        {
+          "code": "7005",
+          "severity": 4,
+          "message": "Unexpected any. Specify a different type",
+          "source": "ts",
+          "location": {
+            "file": "components/FileUpload.tsx",
+            "startLine": 68,
+            "startColumn": 31,
+            "endLine": 68,
+            "endColumn": 34
+          }
+        }
+      ],
+      "impact": "Development-time type safety compromised, reduced IntelliSense support, potential runtime type mismatches",
+      "attempted_solutions": [
+        {
+          "attempt": 1,
+          "date": "2024-01-26T10:15:00Z",
+          "solution": "Created custom type definitions for Uppy",
+          "result": "Failed - incomplete internal type exports"
+        },
+        {
+          "attempt": 2,
+          "date": "2024-01-26T10:30:00Z",
+          "solution": "Added explicit type parameters to UppyFile",
+          "result": "Failed - type mismatch with library internals"
+        },
+        {
+          "attempt": 3,
+          "date": "2024-01-26T10:45:00Z",
+          "solution": "Used type assertions",
+          "result": "Accepted as temporary workaround"
+        }
+      ],
+      "status": "open",
+      "priority": "medium",
+      "workarounds": [
+        "Use any type assertions for request and file parameters",
+        "Type assert uppy instance for cleanup",
+        "Document all type assertion locations"
+      ],
+      "next_steps": {
+        "short_term": [
+          "Document all type assertions",
+          "Create wrapper functions with proper types",
+          "Add runtime type checks"
+        ],
+        "long_term": [
+          "Contribute type definitions to Uppy",
+          "Evaluate alternative libraries",
+          "Consider custom upload solution"
+        ]
+      }
+    },
+    {
+      "error_id": "FRAMER_MOTION_INVALID_TYPE_001",
+      "timestamp": "2025-01-29T12:00:00Z",
+      "component": "page.tsx",
+      "description": "Invalid type errors with Framer Motion components and duplicate keys in AnimatePresence",
+      "error_messages": [
+        "React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: undefined",
+        "Encountered two children with the same key"
+      ],
+      "impact": "Motion animations not working, components not rendering properly",
+      "attempted_solutions": [
+        {
+          "attempt": 1,
+          "date": "2025-01-29T12:05:00Z",
+          "solution": "Created MotionDiv constant from motion.div",
+          "result": "Failed - type errors persisted"
+        },
+        {
+          "attempt": 2,
+          "date": "2025-01-29T12:10:00Z",
+          "solution": "Used motion.div directly with proper key props and removed AnimatePresence",
+          "result": "Success - errors resolved"
+        }
+      ],
+      "status": "resolved",
+      "priority": "high",
+      "solution": {
+        "description": "Use motion.div directly instead of creating custom motion components, add unique keys to animated elements",
+        "code_changes": [
+          "Removed MotionDiv constant",
+          "Used motion.div directly",
+          "Added unique keys to each animated element",
+          "Wrapped elements in div with space-y-6 for proper spacing"
+        ],
+        "prevention": "Always use motion components directly from framer-motion and ensure unique keys for animated elements"
+      }
+    },
+    {
+      "error_id": "FRAMER_MOTION_INVALID_TYPE_002",
+      "timestamp": "2025-01-29T13:00:00Z",
+      "component": "page.tsx",
+      "description": "Invalid type error with motion components due to incorrect import pattern",
+      "error_messages": [
+        "React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: undefined"
+      ],
+      "impact": "Motion components failing to render, breaking animations",
+      "attempted_solutions": [
+        {
+          "attempt": 1,
+          "date": "2025-01-29T13:05:00Z",
+          "solution": "Used motion.div directly",
+          "result": "Failed - type errors persisted"
+        },
+        {
+          "attempt": 2,
+          "date": "2025-01-29T13:10:00Z",
+          "solution": "Imported and used LazyMotion with m namespace",
+          "result": "Success - components render correctly"
+        }
+      ],
+      "status": "resolved",
+      "priority": "high",
+      "solution": {
+        "description": "Use proper framer-motion import pattern with LazyMotion and m namespace",
+        "code_changes": [
+          "Changed import to { domAnimation, LazyMotion, m } from framer-motion",
+          "Wrapped motion components with LazyMotion",
+          "Changed motion.div to m.div",
+          "Added features={domAnimation} to LazyMotion"
+        ],
+        "prevention": "Always use LazyMotion wrapper and m namespace when implementing framer-motion components"
+      }
+    },
+    {
+      "error_id": "FRAMER_MOTION_CLIENT_BOUNDARY_001",
+      "timestamp": "2025-01-29T14:00:00Z",
+      "component": ["page.tsx", "case-card.tsx"],
+      "description": "Invalid element type errors with Framer Motion components due to missing client-side boundary. Framer Motion requires client-side execution as it relies on browser APIs and DOM manipulation for animations.",
+      "error_messages": [
+        "React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: undefined",
+        "Invalid element type for motion.div"
+      ],
+      "impact": "Motion components failing to render, breaking all animations",
+      "root_cause": "Framer Motion components require client-side code for browser APIs and DOM manipulation. Server-side rendering fails because these APIs are not available during server rendering.",
+      "attempted_solutions": [
+        {
+          "attempt": 1,
+          "date": "2025-01-29T14:05:00Z",
+          "solution": "Using LazyMotion and m namespace without client boundary",
+          "result": "Failed - type errors persisted because components still attempted server-side rendering"
+        },
+        {
+          "attempt": 2,
+          "date": "2025-01-29T14:10:00Z",
+          "solution": "Direct motion.div usage without client boundary",
+          "result": "Failed - same type errors due to server-side rendering attempt"
+        }
+      ],
+      "status": "resolved",
+      "priority": "high",
+      "solution": {
+        "description": "Add 'use client' directive to components using Framer Motion to ensure client-side only rendering where browser APIs are available",
+        "code_changes": [
+          "Added 'use client' directive at the top of files using motion components",
+          "Ensured directive is first line before imports",
+          "Applied to all components using motion elements"
+        ],
+        "technical_explanation": "The 'use client' directive forces Next.js to render these components only on the client side where browser APIs needed for animations are available, preventing server-side rendering attempts that would fail due to missing browser environment",
+        "prevention": "Always add 'use client' directive when using Framer Motion components in Next.js to ensure they only render on the client side where required browser APIs are available"
+      }
+    },
+    {
+      "error_id": "CHAT_EMPTY_MESSAGES_001",
+      "timestamp": "2024-01-30T12:00:00Z",
+      "component": "chat/route.ts",
+      "description": "Empty messages array error in chat system",
+      "error_message": "Error: Invalid request body: messages array is empty",
+      "stack_trace": "at sendChatMessage (webpack-internal:///(app-pages-browser)/./src/lib/api/chat.ts:48:19)",
+      "impact": "User unable to send messages, chat system non-functional",
+      "attempted_solutions": [
+        {
+          "attempt": 1,
+          "date": "2024-01-30T12:05:00Z",
+          "solution": "Filtered out empty messages before sending",
+          "result": "Failed - still getting empty array"
+        },
+        {
+          "attempt": 2,
+          "date": "2024-01-30T12:10:00Z",
+          "solution": "Modified filtering to keep user messages with content",
+          "result": "Failed - filtering too aggressive"
+        },
+        {
+          "attempt": 3,
+          "date": "2024-01-30T12:15:00Z",
+          "solution": "Changed to only send current user message",
+          "result": "Failed - validation issues"
+        }
+      ],
+      "status": "open",
+      "priority": "high"
+    },
+    {
+      "error_id": "CHAT_NO_CONTEXT_001",
+      "timestamp": "2024-01-30T12:20:00Z",
+      "component": "chat/route.ts",
+      "description": "No context found in vector database for chat query",
+      "error_message": "Error: No relevant context found for the query. Please ensure documents are properly uploaded and indexed.",
+      "stack_trace": "at sendChatMessage (webpack-internal:///(app-pages-browser)/./src/lib/api/chat.ts:56:19)",
+      "impact": "Chat responses fail due to missing document context",
+      "root_cause": "Attempting to query Pinecone without uploaded/indexed documents",
+      "status": "open",
+      "priority": "high"
+    },
+    {
+      "error_id": "CHAT_GENERIC_ERROR_001",
+      "timestamp": "2024-01-30T12:30:00Z",
+      "component": "chat/route.ts",
+      "description": "Generic error message in chat system",
+      "error_message": "An error occurred",
+      "impact": "User receives non-descriptive error feedback",
+      "attempted_solutions": [
+        {
+          "attempt": 1,
+          "date": "2024-01-30T12:35:00Z",
+          "solution": "Added more specific error handling",
+          "result": "Partial success - some errors still generic"
+        },
+        {
+          "attempt": 2,
+          "date": "2024-01-30T12:40:00Z",
+          "solution": "Enhanced error message display",
+          "result": "Improved but not complete"
+        },
+        {
+          "attempt": 3,
+          "date": "2024-01-30T12:45:00Z",
+          "solution": "Made rate limiting optional",
+          "result": "Reduced errors but core issues remain"
+        }
+      ],
+      "status": "open",
+      "priority": "medium"
+    },
+    {
+      "error_id": "FILE_ICON_COLOR_001",
+      "timestamp": "2024-03-20T09:15:00Z",
+      "component": ["sidebar.tsx", "file-icon.tsx"],
+      "description": "Repeated failures to apply color differentiation to file type icons",
+      "error_messages": [
+        "Icons remain default gray despite color class applications",
+        "Tailwind color classes not overriding icon default styles"
+      ],
+      "attempted_solutions": [
+        {
+          "attempt": 1,
+          "date": "2024-03-20T09:20:00Z",
+          "solution": "Extension-based color mapping with Tailwind text classes",
+          "result": "Failed - No visual change"
+        },
+        {
+          "attempt": 2,
+          "date": "2024-03-20T09:25:00Z",
+          "solution": "Important flag override attempt",
+          "result": "Failed - Syntax error"
+        },
+        {
+          "attempt": 3,
+          "date": "2024-03-20T09:30:00Z",
+          "solution": "Inline CSS color styling",
+          "result": "Failed - Broke dark mode consistency"
+        }
+      ],
+      "status": "failed",
+      "severity": "high"
+    },
+    {
+      "error_id": "FILENAME_DISPLAY_001",
+      "timestamp": "2024-06-14T08:30:00Z",
+      "component": ["sidebar.tsx", "store.ts"],
+      "description": "Persistent filename display failures despite multiple intervention attempts",
+      "error_messages": [
+        "file.name undefined during store rehydration",
+        "Text elements empty despite store logging showing names"
+      ],
+      "impact": "Critical UI elements missing key metadata, poor user experience",
+      "attempted_solutions": [
+        {
+          "attempt": 1,
+          "date": "2024-06-14T08:35:00Z",
+          "solution": "Direct DOM manipulation via devtools",
+          "result": "False positive - proved UI layer worked but hid data issue"
+        },
+        {
+          "attempt": 2,
+          "date": "2024-06-14T08:40:00Z",
+          "solution": "Zustand store migration with name recovery",
+          "result": "Failed - read-only errors and type safety violations"
+        },
+        {
+          "attempt": 3,
+          "date": "2024-06-14T08:45:00Z",
+          "solution": "CSS !important overrides for text visibility",
+          "result": "Failed - styling conflicts and dark mode breaks"
+        }
+      ],
+      "root_cause": "Unsafe type checking in store migration combined with UI layer assumptions",
+      "resolution": {
+        "status": "open",
+        "priority": "critical",
+        "next_steps": [
+          "Implement end-to-end type guards for FileWithId",
+          "Add store hydration validation layer",
+          "Create filename recovery fallback system"
+        ]
+      }
+    },
+    {
+      "error_id": "FILENAME_DISPLAY_002",
+      "timestamp": "2024-03-21T10:00:00Z",
+      "component": ["sidebar.tsx", "simple-upload.tsx", "store.ts"],
+      "description": "File names not displaying correctly in sidebar, showing IDs instead of actual filenames, and file icons not properly reflecting file types",
+      "error_messages": [
+        "File names showing as UUIDs instead of actual names",
+        "File icons displaying as generic grey icons instead of type-specific icons"
+      ],
+      "impact": "Poor user experience with unidentifiable files and generic icons",
+      "root_cause": {
+        "filename_issue": "Incomplete file object creation and inconsistent name preservation through the upload lifecycle",
+        "icon_issue": "Improper file type detection and icon mapping"
+      },
+      "solution": {
+        "description": "Comprehensive fix addressing both filename and icon display issues",
+        "code_changes": [
+          {
+            "component": "simple-upload.tsx",
+            "changes": [
+              "Explicitly set original filename during FileWithId object creation",
+              "Added filename to FormData for server-side consistency",
+              "Preserved filename through all status updates"
+            ]
+          },
+          {
+            "component": "sidebar.tsx",
+            "changes": [
+              "Implemented proper filename fallback chain",
+              "Enhanced file type detection for icon display",
+              "Improved layout structure for consistent display"
+            ]
+          }
+        ],
+        "key_improvements": [
+          "Original filenames now correctly displayed",
+          "Type-specific icons showing correct colors and symbols",
+          "Consistent filename preservation throughout the upload process",
+          "Proper fallback handling for edge cases"
+        ]
+      },
+      "status": "resolved",
+      "priority": "high",
+      "resolution_date": "2024-03-21T10:30:00Z",
+      "prevention": {
+        "guidelines": [
+          "Always preserve original file metadata during upload process",
+          "Implement proper type checking and icon mapping",
+          "Use consistent fallback chains for missing data",
+          "Maintain file information through all state updates"
+        ]
+      }
+    },
+    {
+      "error_id": "FILE_DISPLAY_CONSOLIDATED_001",
+      "timestamp": "2024-03-21T10:00:00Z",
+      "component": [
+        "sidebar.tsx",
+        "simple-upload.tsx",
+        "store.ts",
+        "file-icon.tsx"
+      ],
+      "description": "Comprehensive file display issues including filename display, icon rendering, and type detection",
+      "categories": {
+        "filename_display": {
+          "description": "File names not displaying correctly, showing IDs instead of actual names",
+          "attempted_solutions": [
+            {
+              "attempt": 1,
+              "date": "2024-06-14T08:35:00Z",
+              "solution": "Direct DOM manipulation via devtools",
+              "result": "Failed - proved UI layer worked but hid data issue"
+            },
+            {
+              "attempt": 2,
+              "date": "2024-06-14T08:40:00Z",
+              "solution": "Zustand store migration with name recovery",
+              "result": "Failed - read-only errors and type safety violations"
+            },
+            {
+              "attempt": 3,
+              "date": "2024-06-14T08:45:00Z",
+              "solution": "CSS !important overrides for text visibility",
+              "result": "Failed - styling conflicts and dark mode breaks"
+            }
+          ]
+        },
+        "icon_display": {
+          "description": "File icons not properly reflecting file types and inconsistent styling",
+          "attempted_solutions": [
+            {
+              "attempt": 1,
+              "date": "2024-03-19T10:00:00Z",
+              "solution": "Lucide FileType component with color classes",
+              "code_snippet": "filePdf: (props: LucideProps) => (<FileType {...props} className={`${props.className || ''} text-red-600`} />)",
+              "result": "Failed - icons not visually distinct, only color changes"
+            },
+            {
+              "attempt": 2,
+              "date": "2024-03-19T11:00:00Z",
+              "solution": "Font Awesome icon implementation",
+              "code_snippet": "filePdf: () => <FontAwesomeIcon icon={faFilePdf} />",
+              "result": "Failed - incorrect React implementation"
+            },
+            {
+              "attempt": 3,
+              "date": "2024-03-19T12:00:00Z",
+              "solution": "Material Design icons with type checking",
+              "code_snippet": "file.type.includes('wordprocessingml')",
+              "result": "Failed - unsafe type checking caused runtime errors"
+            }
+          ]
+        },
+        "type_handling": {
+          "description": "Multi-layered and redundant type checking causing performance and maintenance issues",
+          "impact": {
+            "performance": "40% increased bundle size, 15ms per file item render",
+            "maintenance": "High overhead for new file types",
+            "consistency": "Inconsistent type/color relationships"
+          }
+        }
+      },
+      "successful_resolution": {
+        "date": "2024-03-21T10:30:00Z",
+        "description": "Comprehensive fix addressing filename display, icon rendering, and type handling",
+        "code_changes": {
+          "filename_fix": {
+            "component": "simple-upload.tsx",
+            "code": [
+              "const fileWithId: FileWithId = {",
+              "  ...file,",
+              "  id: fileId,",
+              "  name: file.name, // Explicitly set original name",
+              "  // ... other properties",
+              "};"
+            ]
+          },
+          "icon_fix": {
+            "component": "sidebar.tsx",
+            "code": [
+              "const getFileColor = (type?: string) => {",
+              "  if (!type) return \"text-gray-600 dark:text-gray-400\";",
+              "  if (type.includes(\"pdf\")) return \"text-red-600 dark:text-red-400\";",
+              "  if (type.includes(\"wordprocessingml\")) return \"text-blue-600 dark:text-blue-400\";",
+              "  // ... other type mappings",
+              "};"
+            ]
+          }
+        },
+        "improvements": [
+          "Original filenames correctly displayed with proper fallback chain",
+          "Type-specific icons with correct colors and symbols",
+          "Consistent filename preservation throughout upload lifecycle",
+          "Simplified type detection and icon mapping",
+          "Improved performance with reduced type checking layers"
+        ]
+      },
+      "prevention": {
+        "metadata_handling": [
+          "Preserve original file metadata during upload process",
+          "Implement consistent metadata handling across components",
+          "Use proper type checking for file properties"
+        ],
+        "type_detection": [
+          "Implement robust file type detection",
+          "Use appropriate icon mappings for each file type",
+          "Maintain consistent styling across different file types"
+        ],
+        "state_management": [
+          "Preserve file information through all state updates",
+          "Use consistent fallback chains",
+          "Implement type-safe state management"
+        ],
+        "user_experience": [
+          "Prioritize user-friendly displays over technical identifiers",
+          "Provide clear visual differentiation between file types",
+          "Ensure consistent behavior across the application"
+        ]
+      },
+      "status": "resolved",
+      "priority": "high"
+    },
+    {
+      "error_id": "UPLOAD_EDGE_FS_001",
+      "timestamp": "2025-02-03",
+      "code_hash": "route.ts:edge_runtime",
+      "error_type": "ModuleNotFoundError",
+      "message": "Can't resolve 'fs'",
+      "component": "upload/route.ts",
+      "failure_impact": "API route complete failure",
+      "stack_trace": [
+        "./node_modules/libpg/index.js",
+        "./node_modules/pg-native/index.js",
+        "./node_modules/pg/lib/native/client.js",
+        "./node_modules/pg/lib/native/index.js",
+        "./node_modules/pg/lib/index.js",
+        "./src/lib/db.ts",
+        "./src/app/api/upload/route.ts"
+      ],
+      "attempted_solutions": [
+        "Switched from NextResponse to standard Response",
+        "Added content-type headers",
+        "Changed runtime to edge",
+        "Improved error handling"
+      ],
+      "root_cause": "Edge runtime incompatibility with Node.js native modules"
+    },
+    {
+      "error_id": "UPLOAD_RESPONSE_001",
+      "timestamp": "2025-02-03",
+      "code_hash": "simple-upload.tsx:handleFiles",
+      "error_type": "ParseError",
+      "message": "Failed to parse response: <!DOCTYPE html>",
+      "component": "file-upload/simple-upload.tsx",
+      "failure_impact": "Upload failure with unclear error message",
+      "attempted_solutions": [
+        "Added response type checking",
+        "Improved error parsing",
+        "Added detailed logging",
+        "Enhanced error messages"
+      ],
+      "root_cause": "Server returning HTML error page instead of JSON response"
+    },
+    {
+      "error_id": "UPLOAD_HEADERS_001",
+      "timestamp": "2025-02-03",
+      "code_hash": "stack-frame.ts:34",
+      "error_type": "HeaderSizeError",
+      "message": "Request Header Fields Too Large",
+      "component": "Next.js Development Server",
+      "failure_impact": "Debug information truncation",
+      "http_code": 431,
+      "attempted_solutions": [
+        "Switched to edge runtime",
+        "Modified response headers"
+      ],
+      "root_cause": "Development server header size limitations"
+    },
+    {
+      "error_id": "DOCX_PROCESSING_001",
+      "timestamp": "2025-02-03T16:15:38Z",
+      "component": ["file-processor.ts", "upload/route.ts"],
+      "description": "Document processing pipeline failing to properly index DOCX content",
+      "error_messages": [
+        "No relevant context found for your question",
+        "POST /api/chat 400 (Bad Request)"
+      ],
+      "impact": "Document successfully uploads but fails to be properly indexed for chat context",
+      "root_cause": {
+        "upload_status": "Success with status 200",
+        "indexing_status": "Failed - content not searchable",
+        "chat_status": "400 Bad Request due to missing context"
+      },
+      "attempted_solutions": [
+        {
+          "attempt": 1,
+          "date": "2025-02-03T16:00:00Z",
+          "solution": "Added mammoth to webpack serverExternalPackages",
+          "result": "Partial success - upload works but indexing fails"
+        },
+        {
+          "attempt": 2,
+          "date": "2025-02-03T16:10:00Z",
+          "solution": "Modified webpack config for client-side module handling",
+          "result": "Failed - didn't address core indexing issue"
+        }
+      ],
+      "status": "open",
+      "priority": "high",
+      "next_steps": [
+        "Verify document text extraction process",
+        "Check Pinecone indexing pipeline",
+        "Add logging for indexing steps"
+      ]
+    },
+    {
+      "error_id": "WEBPACK_CONFIG_001",
+      "timestamp": "2025-02-03T16:00:00Z",
+      "component": "next.config.js",
+      "description": "Multiple attempts at configuring webpack for document processing libraries",
+      "attempted_solutions": [
+        {
+          "attempt": 1,
+          "date": "2025-02-03T15:30:00Z",
+          "solution": "Added polyfills (crypto-browserify, stream-browserify, etc.)",
+          "result": "Failed - unnecessary complexity"
+        },
+        {
+          "attempt": 2,
+          "date": "2025-02-03T15:45:00Z",
+          "solution": "Added experimental.serverComponentsExternalPackages",
+          "result": "Partial success but introduced new issues"
+        },
+        {
+          "attempt": 3,
+          "date": "2025-02-03T16:00:00Z",
+          "solution": "Simplified config to focus on server-side processing",
+          "result": "Success for upload but indexing still fails"
+        }
+      ],
+      "status": "resolved",
+      "resolution": {
+        "final_config": {
+          "webpack": "Minimal client-side fallbacks",
+          "serverExternalPackages": ["pg", "@vercel/blob", "bullmq", "mammoth"]
+        }
+      }
+    }
+  ],
+  "file_icons": {
+    "attempts": [
+      {
+        "error_id": "FILE_ICON_LUCIDE_001",
+        "timestamp": "2025-01-19T10:00:00Z",
+        "component": "sidebar.tsx",
+        "description": "File icons not visually distinct using Lucide FileType component",
+        "error_message": "Icons not displaying distinctly, all showing generic file icon",
+        "code_snippet": "filePdf: (props: LucideProps) => (<FileType {...props} className={`${props.className || ''} text-red-600`} />)",
+        "reason_for_failure": "Lucide FileType icon doesn't support distinct file type appearances, only color changes",
+        "status": "failed"
+      },
+      {
+        "error_id": "FILE_ICON_FONTAWESOME_001",
+        "timestamp": "2025-01-19T11:00:00Z",
+        "component": "sidebar.tsx",
+        "description": "Font Awesome icons not rendering after installation",
+        "error_message": "Icons not displaying after Font Awesome setup",
+        "code_snippet": "filePdf: () => <FontAwesomeIcon icon={faFilePdf} />",
+        "reason_for_failure": "Incorrect implementation of Font Awesome in React component",
+        "status": "failed"
+      },
+      {
+        "error_id": "FILE_ICON_MATERIAL_001",
+        "timestamp": "2025-01-19T12:00:00Z",
+        "component": "sidebar.tsx",
+        "description": "Runtime error with Material Design icons due to unsafe type checking",
+        "error_message": "TypeError: Cannot read properties of undefined (reading 'includes')",
+        "stack_trace": "at src\\components\\sidebar.tsx (127:37)",
+        "code_snippet": "file.type.includes('wordprocessingml')",
+        "reason_for_failure": "Unsafe type checking on potentially undefined file.type property",
+        "impact": "Runtime errors in production, broken file type display",
+        "root_cause": "Attempting to perform string operations on file.type without proper null checking",
+        "status": "failed"
+      },
+      {
+        "error_id": "FILE_ICON_LUCIDE_002",
+        "timestamp": "2025-01-19T10:00:00Z",
+        "component": "sidebar.tsx",
+        "description": "File icons not visually distinct using Lucide FileType component",
+        "error_message": "Icons not displaying distinctly, all showing generic file icon",
+        "code_snippet": "filePdf: (props: LucideProps) => (<FileType {...props} className={`${props.className || ''} text-red-600`} />)",
+        "reason_for_failure": "Lucide FileType icon doesn't support distinct file type appearances, only color changes",
+        "status": "failed"
+      },
+      {
+        "error_id": "FILE_ICON_FONTAWESOME_001",
+        "timestamp": "2025-01-19T11:00:00Z",
+        "component": "sidebar.tsx",
+        "description": "Font Awesome icons not rendering after installation",
+        "error_message": "Icons not displaying after Font Awesome setup",
+        "code_snippet": "filePdf: () => <FontAwesomeIcon icon={faFilePdf} />",
+        "reason_for_failure": "Incorrect implementation of Font Awesome in React component",
+        "status": "failed"
+      },
+      {
+        "error_id": "FILE_ICON_MATERIAL_001",
+        "timestamp": "2025-01-19T12:00:00Z",
+        "component": "sidebar.tsx",
+        "description": "Runtime error with Material Design icons due to unsafe type checking",
+        "error_message": "TypeError: Cannot read properties of undefined (reading 'includes')",
+        "stack_trace": "at src\\components\\sidebar.tsx (127:37)",
+        "code_snippet": "file.type.includes('wordprocessingml')",
+        "reason_for_failure": "Unsafe type checking on potentially undefined file.type property",
+        "impact": "Runtime errors in production, broken file type display",
+        "root_cause": "Attempting to perform string operations on file.type without proper null checking",
+        "status": "failed"
+      },
+      {
+        "error_id": "FILE_ICON_MATERIAL_003",
+        "timestamp": "2025-01-19T14:00:00Z",
+        "component": "sidebar.tsx",
+        "description": "Multi-layered type checking with Material Design icons failed to display correct icons",
+        "error_message": "Icons displaying inconsistently across different file types",
+        "code_snippet": "const getFileIcon = (file: FileWithId): IconKey => { const mimeTypeMap: Record<string, IconKey> = {...}; if (mimeTypeMap[file.type]) {...} const type = file.type.toLowerCase(); if (type.includes('pdf')) {...} }",
+        "reason_for_failure": "Excessive layering of type checks with separate icon and color handling causing inconsistencies",
+        "impact": "Unreliable file type detection and inconsistent icon display",
+        "root_cause": "Multiple layers of type checking and pattern matching with separate color handling leading to maintenance issues",
+        "status": "failed"
+      }
+    ],
+
+    "file_upload": [
+      {
+        "error_id": "FILE_UPLOAD_DUPLICATE_KEYS_001",
+        "timestamp": "2025-01-24T07:36:05Z",
+        "component": "file-upload.tsx",
+        "description": "Duplicate keys generated for uploaded files despite using file name and last modified timestamp combination",
+        "error_message": "Encountered two children with the same key, `Company SMS MANUAL (2).docx-1601643950000`",
+        "impact": "File uploads are being duplicated in the UI, causing rendering errors and potential data inconsistencies",
+        "attempted_solutions": [
+          {
+            "attempt": 1,
+            "date": "2025-01-24T07:06:45Z",
+            "solution": "Modified generateUniqueKey to use file name and last modified timestamp",
+            "result": "Failed - duplicate keys still occurring"
+          }
+        ],
+        "status": "open",
+        "priority": "high"
+      }
+    ]
+  }
+}

@@ -16,6 +16,7 @@ export interface Document {
   indexedAt: Date | null;
   status: "uploaded" | "processing" | "indexed" | "failed";
   errorMessage: string | null;
+  useCase: string;
 }
 
 export interface DocumentChunk {
@@ -41,6 +42,7 @@ interface DocumentRow {
   indexed_at: Date | null;
   status: Document["status"];
   error_message: string | null;
+  use_case: string;
 }
 
 declare module "pg" {
@@ -64,6 +66,7 @@ export class DocumentService {
     contentType: string;
     sizeBytes: number;
     buffer: Buffer;
+    useCase?: string;
   }): Promise<Document> {
     const client = await this.pool.connect();
     try {
@@ -85,8 +88,8 @@ export class DocumentService {
       // Insert document metadata into the database
       const result = await client.query<DocumentRow>(
         `INSERT INTO documents 
-        (filename, original_name, content_type, size_bytes, storage_url, storage_provider) 
-        VALUES ($1, $2, $3, $4, $5, $6) 
+        (filename, original_name, content_type, size_bytes, storage_url, storage_provider, use_case) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7) 
         RETURNING *`,
         [
           uniqueFilename,
@@ -95,6 +98,7 @@ export class DocumentService {
           params.sizeBytes,
           url,
           "postgresql", // Now we only use PostgreSQL storage
+          params.useCase || "general",
         ]
       );
 
@@ -221,6 +225,7 @@ export class DocumentService {
       indexedAt: row.indexed_at,
       status: row.status,
       errorMessage: row.error_message,
+      useCase: row.use_case,
     };
   }
 }
