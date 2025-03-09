@@ -118,8 +118,8 @@ The project is currently in the **Pre-Deployment Phase**. The core functionality
 
 ### March 8, 2023
 
+- Fixed metadata error: separated layout into server and client components to prevent "createMetadataComponents is not a function" error
 - Fixed document list errors: handling undefined size and invalid date values
-- Fixed metadata error: separated metadata into layout file and marked page as client component
 - Fixed deploymentId error: completely rewrote OpenAI stream and chat API route with robust error handling
 - Fixed build errors related to import paths
 - Created proper .env.example file with placeholder values
