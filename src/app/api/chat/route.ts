@@ -13,9 +13,15 @@ export const runtime = "edge";
 export const maxDuration = 30;
 
 // Initialize OpenAI configuration
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI;
+try {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY || "",
+  });
+} catch (error) {
+  console.error("Failed to initialize OpenAI:", error);
+  openai = {} as OpenAI; // Fallback empty object to prevent crashes
+}
 
 // Initialize rate limiter if Redis URL is configured
 let ratelimit: Ratelimit | null = null;
@@ -31,15 +37,27 @@ try {
 }
 
 // Initialize Pinecone client
-const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY!,
-});
+let pinecone: Pinecone;
+try {
+  pinecone = new Pinecone({
+    apiKey: process.env.PINECONE_API_KEY || "",
+  });
+} catch (error) {
+  console.error("Failed to initialize Pinecone:", error);
+  pinecone = {} as Pinecone; // Fallback empty object to prevent crashes
+}
 
 // Initialize embeddings model
-const embeddings = new OpenAIEmbeddings({
-  openAIApiKey: process.env.OPENAI_API_KEY,
-  modelName: "text-embedding-3-small",
-});
+let embeddings: OpenAIEmbeddings;
+try {
+  embeddings = new OpenAIEmbeddings({
+    openAIApiKey: process.env.OPENAI_API_KEY || "",
+    modelName: "text-embedding-3-small",
+  });
+} catch (error) {
+  console.error("Failed to initialize OpenAI embeddings:", error);
+  embeddings = {} as OpenAIEmbeddings; // Fallback empty object to prevent crashes
+}
 
 // Handler function with CORS middleware
 export async function POST(req: NextRequest) {
@@ -177,22 +195,38 @@ Instructions:
           };
 
           // Create the chat completion with streaming
-          const stream = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            messages: [systemMessage, ...messages],
-            stream: true,
-            temperature: 0.7,
-            max_tokens: 2000,
-          });
+          try {
+            if (!openai.chat?.completions?.create) {
+              throw new Error("OpenAI API not properly initialized");
+            }
 
-          // Return the streaming response
-          return new Response(OpenAIStream(stream), {
-            headers: {
-              "Content-Type": "text/event-stream",
-              "Cache-Control": "no-cache",
-              Connection: "keep-alive",
-            },
-          });
+            const stream = await openai.chat.completions.create({
+              model: "gpt-4o-mini",
+              messages: [systemMessage, ...messages],
+              stream: true,
+              temperature: 0.7,
+              max_tokens: 2000,
+            });
+
+            // Return the streaming response
+            return new Response(OpenAIStream(stream), {
+              headers: {
+                "Content-Type": "text/event-stream",
+                "Cache-Control": "no-cache",
+                Connection: "keep-alive",
+              },
+            });
+          } catch (error) {
+            console.error("OpenAI API error:", error);
+            return new Response(
+              `OpenAI API error: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+              {
+                status: 500,
+              }
+            );
+          }
         } catch (error) {
           console.error("Vector database error:", error);
           return new Response(
