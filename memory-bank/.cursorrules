@@ -45,11 +45,15 @@ The application uses Next.js App Router with the following structure:
 - Removed unused code in use-toast.ts
 - Addressed permission issues with .next directory
 
-### Runtime Errors - March 8, 2024
+### Runtime Errors - March 9, 2024
 
 - Implemented robust error handling for OpenAI and Pinecone initialization
 - Used type guards to handle different stream types in OpenAI stream utility
 - Simplified the chat API route to reduce complexity
+- Added proper error handling for API requests with response status checking
+- Implemented fallback values for missing or inconsistent data
+- Added console logging for debugging data normalization issues
+- Set empty state for data when API requests fail to prevent infinite loading
 
 ## User Preferences
 

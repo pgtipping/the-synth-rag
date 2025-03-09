@@ -28,8 +28,8 @@ interface ApiDocument {
   originalName?: string;
   content_type?: string;
   contentType?: string;
-  size_bytes?: number;
-  sizeBytes?: number;
+  size_bytes?: number | string;
+  sizeBytes?: number | string;
   status: "uploaded" | "processing" | "indexed" | "failed";
   created_at?: string | Date;
   createdAt?: string | Date;
@@ -44,18 +44,13 @@ interface ApiDocument {
 
 interface Document {
   id: number;
-  original_name?: string;
-  originalName?: string;
-  content_type?: string;
-  contentType?: string;
-  size_bytes?: number;
-  sizeBytes?: number;
+  originalName: string;
+  contentType: string;
+  sizeBytes: number | string;
   status: "uploaded" | "processing" | "indexed" | "failed";
-  created_at?: string | Date;
-  createdAt?: string | Date;
-  useCase?: string;
-  error_message?: string | null;
-  errorMessage?: string | null;
+  createdAt: string | Date;
+  useCase: string;
+  errorMessage: string | null;
 }
 
 const USE_CASES = [
@@ -74,26 +69,33 @@ export function DocumentList() {
 
   const fetchDocuments = useCallback(async () => {
     try {
+      setLoading(true);
       const url =
         selectedUseCase === "all"
           ? "/api/documents"
           : `/api/documents?useCase=${selectedUseCase}`;
       const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
 
       // Normalize data to ensure consistent property names
       const normalizedData = data.map((doc: ApiDocument) => ({
         id: doc.id,
-        originalName: doc.originalName || doc.original_name,
-        contentType: doc.contentType || doc.content_type,
-        sizeBytes: doc.sizeBytes || doc.size_bytes,
-        status: doc.status,
-        createdAt: doc.createdAt || doc.created_at,
+        originalName: doc.originalName || doc.original_name || "Unknown",
+        contentType: doc.contentType || doc.content_type || "Unknown",
+        sizeBytes: doc.sizeBytes || doc.size_bytes || 0,
+        status: doc.status || "uploaded",
+        createdAt: doc.createdAt || doc.created_at || new Date(),
         useCase:
           doc.useCase || (doc.metadata && doc.metadata.useCase) || "general",
-        errorMessage: doc.errorMessage || doc.error_message,
+        errorMessage: doc.errorMessage || doc.error_message || null,
       }));
 
+      console.log("Normalized data:", normalizedData);
       setDocuments(normalizedData);
     } catch (error) {
       console.error("Error fetching documents:", error);
@@ -102,6 +104,8 @@ export function DocumentList() {
         description: "Failed to fetch documents",
         variant: "destructive",
       });
+      // Set documents to empty array to avoid showing loading spinner indefinitely
+      setDocuments([]);
     } finally {
       setLoading(false);
     }
@@ -137,8 +141,8 @@ export function DocumentList() {
     }
   };
 
-  const formatFileSize = (bytes: number | undefined | null) => {
-    if (bytes === undefined || bytes === null || isNaN(bytes)) {
+  const formatFileSize = (bytes: number | string | undefined | null) => {
+    if (bytes === undefined || bytes === null || isNaN(Number(bytes))) {
       return "0 B";
     }
 
@@ -264,7 +268,7 @@ export function DocumentList() {
               {documents.map((doc) => (
                 <TableRow key={doc.id} className="hover:bg-gray-50">
                   <TableCell className="font-medium">
-                    {doc.originalName || doc.original_name || "Unknown"}
+                    {doc.originalName}
                   </TableCell>
                   <TableCell>
                     {USE_CASES.find((uc) => uc.value === doc.useCase)?.label ||
@@ -272,12 +276,8 @@ export function DocumentList() {
                       "General"}
                   </TableCell>
                   <TableCell>{getStatusBadge(doc.status)}</TableCell>
-                  <TableCell>
-                    {formatFileSize(doc.sizeBytes || doc.size_bytes)}
-                  </TableCell>
-                  <TableCell>
-                    {formatDate(doc.createdAt || doc.created_at)}
-                  </TableCell>
+                  <TableCell>{formatFileSize(doc.sizeBytes)}</TableCell>
+                  <TableCell>{formatDate(doc.createdAt)}</TableCell>
                   <TableCell className="text-right">
                     <Button
                       variant="ghost"

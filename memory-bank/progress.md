@@ -111,6 +111,12 @@ The project is currently in the **Pre-Deployment Phase**. The core functionality
    - **Priority**: High
    - **Solution**: Created a redirect page from `/chat` to `/chat/onboarding`
 
+6. **Document Management Page**: Page stuck in loading state
+
+   - **Status**: Resolved
+   - **Priority**: High
+   - **Solution**: Fixed data normalization and error handling in document list component
+
 ### UX Issues
 
 1. **Error Feedback**: Need to improve error feedback for users
@@ -129,6 +135,7 @@ The project is currently in the **Pre-Deployment Phase**. The core functionality
 
 ### March 9, 2024
 
+- Fixed document management page loading issue with improved data handling and error management
 - Improved document management page UI with better table structure, enhanced status badges, and fixed dropdown styling
 - Fixed EPERM error related to the `.next/trace` file that was occurring during development
 - Fixed 404 error for the `/chat` route by creating a redirect page
