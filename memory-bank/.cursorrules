@@ -53,19 +53,23 @@ The application uses Next.js App Router with the following structure:
 
 ## User Preferences
 
-### Code Style - March 8, 2023
+### Code Style - March 8, 2024
 
 - Using TypeScript for type safety
 - Following Next.js best practices
 - Using client components only when necessary
 - Separating server and client components for better performance
 
-### UI Design - March 8, 2023
+### UI Design - March 9, 2024
 
 - Using a clean, modern design
 - Implementing responsive layouts
 - Using Tailwind CSS for styling
 - Following accessibility best practices
+- Using subtle hover effects for interactive elements
+- Implementing consistent spacing and alignment
+- Using semantic color schemes for status indicators
+- Ensuring proper contrast for text readability
 
 ## Deployment
 

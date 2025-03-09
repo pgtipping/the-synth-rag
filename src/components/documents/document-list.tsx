@@ -187,16 +187,32 @@ export function DocumentList() {
     }
   };
 
-  const getStatusColor = (status: Document["status"]) => {
+  const getStatusBadge = (status: Document["status"]) => {
     switch (status) {
       case "indexed":
-        return "bg-green-500";
+        return (
+          <Badge className="bg-green-100 text-green-800 border border-green-300 hover:bg-green-200">
+            Indexed
+          </Badge>
+        );
       case "processing":
-        return "bg-yellow-500";
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800 border border-yellow-300 hover:bg-yellow-200">
+            Processing
+          </Badge>
+        );
       case "failed":
-        return "bg-red-500";
+        return (
+          <Badge className="bg-red-100 text-red-800 border border-red-300 hover:bg-red-200">
+            Failed
+          </Badge>
+        );
       default:
-        return "bg-blue-500";
+        return (
+          <Badge className="bg-blue-100 text-blue-800 border border-blue-300 hover:bg-blue-200">
+            Uploaded
+          </Badge>
+        );
     }
   };
 
@@ -216,7 +232,7 @@ export function DocumentList() {
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Select use case" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white border shadow-md">
             <SelectItem value="all">All Use Cases</SelectItem>
             {USE_CASES.map((useCase) => (
               <SelectItem key={useCase.value} value={useCase.value}>
@@ -232,57 +248,48 @@ export function DocumentList() {
           No documents found
         </div>
       ) : (
-        <div className="border rounded-lg">
+        <div className="border rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Use Case</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Uploaded</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
+              <TableRow className="bg-gray-50">
+                <TableHead className="w-[30%]">Name</TableHead>
+                <TableHead className="w-[20%]">Use Case</TableHead>
+                <TableHead className="w-[15%]">Status</TableHead>
+                <TableHead className="w-[10%]">Size</TableHead>
+                <TableHead className="w-[15%]">Uploaded</TableHead>
+                <TableHead className="w-[10%] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {documents.map((doc) => (
-                <TableRow key={doc.id}>
-                  <TableCell>
+                <TableRow key={doc.id} className="hover:bg-gray-50">
+                  <TableCell className="font-medium">
                     {doc.originalName || doc.original_name || "Unknown"}
-                  </TableCell>
-                  <TableCell>
-                    {doc.contentType || doc.content_type || "Unknown"}
                   </TableCell>
                   <TableCell>
                     {USE_CASES.find((uc) => uc.value === doc.useCase)?.label ||
                       doc.useCase ||
                       "General"}
                   </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className={`${getStatusColor(doc.status)} text-white`}
-                    >
-                      {doc.status}
-                    </Badge>
-                  </TableCell>
+                  <TableCell>{getStatusBadge(doc.status)}</TableCell>
                   <TableCell>
                     {formatFileSize(doc.sizeBytes || doc.size_bytes)}
                   </TableCell>
                   <TableCell>
                     {formatDate(doc.createdAt || doc.created_at)}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-right">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => deleteDocument(doc.id)}
                       disabled={deleting === doc.id}
+                      className="h-8 w-8"
                     >
                       {deleting === doc.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700" />
                       )}
                     </Button>
                   </TableCell>

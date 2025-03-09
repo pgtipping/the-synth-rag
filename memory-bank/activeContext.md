@@ -11,11 +11,18 @@ The current focus is on preparing the RAG (Retrieval-Augmented Generation) chatb
 5. **Documentation**: Updating documentation for deployment and usage
 6. **Error Handling**: Fixing runtime errors and improving error handling
 7. **Routing Fixes**: Ensuring all routes work correctly, especially the chat functionality
+8. **UI Improvements**: Enhancing the user interface for better usability and aesthetics
 
 ## Recent Changes
 
 ### March 9, 2024 (Latest)
 
+- Improved document management page UI:
+  - Fixed table structure and column alignment
+  - Enhanced status badges with better visual design
+  - Fixed dropdown menu transparency issue
+  - Improved overall layout and spacing
+  - Added hover effects for better interactivity
 - Fixed EPERM error related to the `.next/trace` file that was occurring during development
 - Fixed 404 error for the `/chat` route by creating a redirect page that sends users to `/chat/onboarding`
 - Restored the Pinecone RAG implementation with robust error handling
