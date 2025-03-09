@@ -9,11 +9,15 @@ The current focus is on preparing the RAG (Retrieval-Augmented Generation) chatb
 3. **Security Enhancements**: Implementing CORS middleware and other security measures
 4. **Environment Configuration**: Setting up proper environment variables for different environments
 5. **Documentation**: Updating documentation for deployment and usage
+6. **Error Handling**: Fixing runtime errors and improving error handling
 
 ## Recent Changes
 
 ### March 8, 2023 (Latest)
 
+- Fixed document list errors: handling undefined size and invalid date values
+- Fixed metadata error: separated metadata into layout file and marked page as client component
+- Fixed deploymentId error: completely rewrote OpenAI stream and chat API route with robust error handling
 - Fixed build errors related to import paths
 - Created proper .env.example file with placeholder values
 - Fixed failing tests in the chat API route
@@ -72,9 +76,15 @@ The current focus is on preparing the RAG (Retrieval-Augmented Generation) chatb
    - Added SSL support for production database connections
 
 3. **Security Enhancements**:
+
    - Implemented CORS middleware for API routes
    - Added proper error handling for API routes
    - Ensured environment variables are properly secured
+
+4. **Error Handling Approach**:
+   - Implemented robust error handling for OpenAI and Pinecone initialization
+   - Used type guards to handle different stream types in OpenAI stream utility
+   - Simplified the chat API route to reduce complexity and potential error sources
 
 ### UX Considerations
 
