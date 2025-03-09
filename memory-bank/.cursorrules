@@ -1,8 +1,8 @@
-# Cursor Rules - Updated on March 9, 2024
+# Cursor Rules - Updated on March 9, 2025 14:52:25 EST
 
 ## Project Structure
 
-### Routing Structure - March 9, 2023
+### Routing Structure - March 9, 2025
 
 The application uses Next.js App Router with the following structure:
 
@@ -12,7 +12,7 @@ The application uses Next.js App Router with the following structure:
 - `/documents` - Document management page
 - `/api/*` - API routes for chat, documents, and file uploads
 
-### Component Organization - March 8, 2023
+### Component Organization - March 8, 2025
 
 - `src/components/ui` - Reusable UI components (buttons, inputs, etc.)
 - `src/components/layout` - Layout components (header, footer, etc.)
@@ -22,14 +22,14 @@ The application uses Next.js App Router with the following structure:
 
 ## API Implementation
 
-### OpenAI Integration - March 9, 2023
+### OpenAI Integration - March 9, 2025
 
 - Using OpenAI API for chat completions
 - Implemented robust error handling for API calls
 - Using `gpt-4o-mini` model for chat completions
 - Using `text-embedding-3-small` for embeddings
 
-### Pinecone Integration - March 9, 2023
+### Pinecone Integration - March 9, 2025
 
 - Using Pinecone for vector storage and retrieval
 - Implemented robust error handling for Pinecone initialization
@@ -38,7 +38,7 @@ The application uses Next.js App Router with the following structure:
 
 ## Error Handling
 
-### Build Errors - March 9, 2024
+### Build Errors - March 9, 2025
 
 - Fixed EPERM error related to the `.next/trace` file by modifying Next.js configuration
 - Fixed issues with Tailwind Config type import
@@ -46,7 +46,7 @@ The application uses Next.js App Router with the following structure:
 - Addressed permission issues with .next directory
 - Fixed font manifest error by simplifying font configuration
 
-### Runtime Errors - March 9, 2024
+### Runtime Errors - March 9, 2025
 
 - Implemented robust error handling for OpenAI and Pinecone initialization
 - Used type guards to handle different stream types in OpenAI stream utility
@@ -58,14 +58,14 @@ The application uses Next.js App Router with the following structure:
 
 ## User Preferences
 
-### Code Style - March 8, 2024
+### Code Style - March 8, 2025
 
 - Using TypeScript for type safety
 - Following Next.js best practices
 - Using client components only when necessary
 - Separating server and client components for better performance
 
-### UI Design - March 9, 2024
+### UI Design - March 9, 2025
 
 - Using a clean, modern design
 - Implementing responsive layouts
@@ -79,13 +79,13 @@ The application uses Next.js App Router with the following structure:
 
 ## Deployment
 
-### Vercel Configuration - March 8, 2023
+### Vercel Configuration - March 8, 2025
 
 - Created vercel.json for deployment configuration
 - Set up environment variables for Vercel
 - Configured build settings for production
 
-### Database Configuration - March 9, 2024
+### Database Configuration - March 9, 2025
 
 - Explicitly disable SSL for local development to prevent connection errors
 - Use environment variables for all database connection parameters
@@ -93,7 +93,7 @@ The application uses Next.js App Router with the following structure:
 - Simplify database connection pool configuration for better reliability
 - Ensure proper NODE_ENV setting in environment variables
 
-## Project Patterns - March 8, 2023
+## Project Patterns - March 8, 2025
 
 ### File Structure
 
@@ -122,7 +122,7 @@ The application uses Next.js App Router with the following structure:
 - Types use PascalCase with descriptive names (e.g., `FileUploadProps`)
 - API routes use kebab-case (e.g., `/api/process-document`)
 
-## User Preferences - March 8, 2023
+## User Preferences - March 8, 2025
 
 ### Documentation
 
@@ -137,7 +137,7 @@ The application uses Next.js App Router with the following structure:
 - Write integration tests for critical user flows
 - Use mock data for testing API responses
 
-## Known Challenges - March 8, 2023
+## Known Challenges - March 8, 2025
 
 ### Technical Challenges
 
@@ -154,7 +154,7 @@ The application uses Next.js App Router with the following structure:
 - Creating a responsive design that works well on all devices
 - Balancing simplicity with feature richness
 
-## Project Evolution - March 8, 2023
+## Project Evolution - March 8, 2025
 
 ### Initial Approach
 
@@ -177,7 +177,7 @@ The application uses Next.js App Router with the following structure:
 - Develop mobile app version
 - Add more sophisticated document processing features
 
-## Tool Usage Patterns - March 8, 2023
+## Tool Usage Patterns - March 8, 2025
 
 ### Development Tools
 
@@ -199,7 +199,7 @@ The application uses Next.js App Router with the following structure:
 - Pinecone for vector storage
 - React Dropzone for file uploads
 
-## Security Considerations - March 8, 2023
+## Security Considerations - March 8, 2025
 
 ### API Keys
 
@@ -221,7 +221,7 @@ The application uses Next.js App Router with the following structure:
 - Allow users to delete their data
 - Comply with GDPR and CCPA requirements
 
-## Next.js Configuration - March 9, 2024
+## Next.js Configuration - March 9, 2025
 
 - Modified next.config.js to handle permission issues with the .next/trace file
 - Added dev:no-trace script to package.json as an alternative approach
@@ -234,3 +234,118 @@ The application uses Next.js App Router with the following structure:
 - Ensured compatibility with Next.js 15.2.1
 - Disabled poweredByHeader for security reasons
 - Enabled reactStrictMode for better error detection
+
+# Next.js Client Components Pattern - Added March 9, 2025 15:30 EST
+
+## React Hooks in Next.js Components
+
+When using React hooks (useState, useEffect, etc.) in Next.js components, the component MUST be marked as a client component using the "use client" directive at the top of the file. This is because React hooks can only be used in client-side code.
+
+### Example Pattern:
+
+```typescript
+"use client";
+
+import { useState, useEffect } from "react";
+// ... rest of imports
+
+export function ComponentWithHooks() {
+  const [state, setState] = useState();
+  // ... component code
+}
+```
+
+### Common Hooks Requiring "use client":
+
+- useState
+- useEffect
+- useContext
+- useReducer
+- useCallback
+- useMemo
+- useRef
+
+### Implementation Rules:
+
+1. Add "use client" directive at the very top of the file
+2. Place it before any imports
+3. Required for any component using React hooks
+4. Also required for components using browser APIs
+5. Parent components using client components should also be marked with "use client"
+
+### Error Indicators:
+
+If you see errors like:
+"You're importing a component that needs 'useState'. This React hook only works in a client component."
+or
+"You're importing a component that needs 'useEffect'. This React hook only works in a client component."
+
+The solution is to add "use client" at the top of the component file.
+
+# Next.js Server Component Fetch Pattern - Added March 9, 2025 15:45 EST
+
+## Server Component API Requests
+
+When making fetch requests in Next.js server components, you must provide the full URL including the origin. This is because server components run on the server and don't have access to the client's origin.
+
+### Example Pattern:
+
+```typescript
+// In server components or server-side functions
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+const response = await fetch(`${baseUrl}/api/endpoint`);
+```
+
+### Implementation Rules:
+
+1. Always use full URLs in server components
+2. Use environment variables for the base URL
+3. Provide a development fallback (localhost)
+4. Document the required environment variables
+5. Update both .env and .env.example files
+
+### Error Indicators:
+
+If you see errors like:
+"Failed to parse URL from /api/endpoint"
+or
+"TypeError: Invalid URL"
+
+The solution is to use the full URL including origin.
+
+# Shadcn/ui Component Requirements - Added March 9, 2025 16:00 EST
+
+## Select Component Rules
+
+When using the Shadcn/ui Select component, there are specific requirements to follow:
+
+### SelectItem Value Requirements
+
+1. Every `<SelectItem />` must have a non-empty string value prop
+2. Empty string values are reserved for clearing selection
+3. For "All" or default options, use a specific value (e.g., "all") instead of an empty string
+
+### Example Pattern:
+
+```tsx
+<Select>
+  <SelectTrigger>
+    <SelectValue placeholder="Select option" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="all">All Items</SelectItem>
+    {items.map((item) => (
+      <SelectItem key={item.id} value={item.id.toString()}>
+        {item.name}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+```
+
+### Error Indicators:
+
+If you see the error:
+"A <SelectItem /> must have a value prop that is not an empty string"
+
+The solution is to provide a non-empty string value for each SelectItem, using "all" or similar for default options.

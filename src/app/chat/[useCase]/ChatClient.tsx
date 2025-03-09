@@ -8,9 +8,10 @@ import { FileUpload } from "@/src/components/file-upload";
 import { Button } from "@/src/components/ui/button";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { sendChatMessage } from "@/src/lib/api/chat";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Sidebar } from "@/src/components/sidebar";
 import { useFileStore } from "@/src/lib/store";
+import { PromptRotation } from "@/src/components/prompts/prompt-rotation";
 
 export default function ChatClient({ useCase }: { useCase: string }) {
   const { messages, isTyping, isLoading } = useChatStore();
@@ -26,6 +27,7 @@ export default function ChatClient({ useCase }: { useCase: string }) {
   const hasCompletedFiles = currentFiles.some(
     (file) => file.status === "completed"
   );
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     setCurrentUseCase(useCase);
@@ -42,6 +44,10 @@ export default function ChatClient({ useCase }: { useCase: string }) {
 
   const handleSend = async (message: string) => {
     await sendChatMessage(message);
+  };
+
+  const handleUsePrompt = (promptText: string) => {
+    setInputValue(promptText);
   };
 
   const handleDone = () => {
@@ -92,117 +98,75 @@ export default function ChatClient({ useCase }: { useCase: string }) {
   const currentConfig = useCaseConfig[useCase as keyof typeof useCaseConfig];
 
   return (
-    <div className="flex h-screen">
-      {/* Sidebar */}
-      <Sidebar useCase={useCase} />
+    <div className="flex h-screen flex-col">
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <div className="relative flex flex-1 flex-col overflow-hidden">
+              <div className="flex-1 overflow-auto p-4">
+                <ChatStream messages={messages} isTyping={isTyping} />
+              </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        {/* Fixed Header */}
-        <header className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50 border-b">
-          <div className="container flex items-center justify-between h-16 px-4">
-            <h1 className="text-xl font-semibold">{currentConfig.title}</h1>
-            <div className="flex items-center gap-4">
+              {/* Prompt Rotation Component */}
               {isChatReady && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={toggleUpload}
-                  className="gap-2"
-                >
-                  {isUploadOpen ? (
-                    <ChevronUp size={16} />
-                  ) : (
-                    <ChevronDown size={16} />
-                  )}
-                  {isUploadOpen ? "Hide Upload" : "Show Upload"}
-                </Button>
-              )}
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content Area */}
-        <main className="flex-1 container px-4 py-8 overflow-y-auto">
-          <div className="max-w-4xl mx-auto space-y-8">
-            {/* Collapsible Upload Zone */}
-            {(isUploadOpen || !isChatReady) && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <h2 className="text-xl font-semibold">
-                    {currentConfig.uploadHints.title}
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    {currentConfig.uploadHints.description}
-                  </p>
-                  <div className="flex gap-2 text-sm text-muted-foreground">
-                    <span>Example files:</span>
-                    {currentConfig.uploadHints.exampleFiles.map(
-                      (file, index) => (
-                        <span key={file} className="text-primary">
-                          {file}
-                          {index <
-                            currentConfig.uploadHints.exampleFiles.length - 1 &&
-                            ", "}
-                        </span>
-                      )
-                    )}
-                  </div>
+                <div className="px-4 py-2 border-t">
+                  <PromptRotation
+                    useCase={useCase}
+                    onUsePrompt={handleUsePrompt}
+                  />
                 </div>
-                <FileUpload
-                  useCase={useCase}
-                  uploadHints={currentConfig.uploadHints}
-                />
-                {hasCompletedFiles && !isChatReady && (
-                  <div className="flex flex-col items-center gap-4 mt-8 p-6 border-2 border-dashed rounded-lg">
-                    <p className="text-sm text-muted-foreground text-center">
-                      Click the &ldquo;Done&rdquo; button when you have finished
-                      uploading all the documents you want to use as context for
-                      the assistant.
-                    </p>
+              )}
+
+              <div className="border-t p-4">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1"
+                    onClick={toggleUpload}
+                  >
+                    {isUploadOpen ? (
+                      <>
+                        <ChevronDown className="h-4 w-4" />
+                        Hide Files
+                      </>
+                    ) : (
+                      <>
+                        <ChevronUp className="h-4 w-4" />
+                        Show Files
+                      </>
+                    )}
+                  </Button>
+                  {isUploadOpen && hasCompletedFiles && !isChatReady && (
                     <Button
+                      variant="default"
+                      size="sm"
                       onClick={handleDone}
-                      size="lg"
-                      className="min-w-[200px]"
+                      className="ml-auto"
                     >
                       Done
                     </Button>
+                  )}
+                </div>
+                {isUploadOpen && (
+                  <div className="mt-4">
+                    <FileUpload useCase={useCase} />
                   </div>
                 )}
+                <div className="mt-4">
+                  <ChatInput
+                    onSend={handleSend}
+                    isLoading={isLoading}
+                    disabled={!isChatReady}
+                    value={inputValue}
+                    onChange={setInputValue}
+                  />
+                </div>
               </div>
-            )}
-
-            {/* Chat Interface */}
-            {isChatReady && (
-              <div className="space-y-4">
-                <ChatStream
-                  messages={messages}
-                  isTyping={isTyping}
-                  isLoading={isLoading}
-                />
-              </div>
-            )}
-          </div>
-        </main>
-
-        {/* Chat Input */}
-        {isChatReady && (
-          <footer className="sticky bottom-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container max-w-4xl px-4 py-4">
-              <ChatInput onSend={handleSend} isSending={isTyping} />
             </div>
-          </footer>
-        )}
-
-        <Button
-          variant="outline"
-          onClick={() => {
-            const files = useFileStore.getState().files[useCase] || [];
-            console.log("[Debug] Current files:", files);
-          }}
-        >
-          Debug Files
-        </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
