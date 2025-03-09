@@ -1,7 +1,6 @@
 import * as React from "react";
 
 const TOAST_LIMIT = 1;
-const TOAST_REMOVE_DELAY = 1000000;
 
 type ToastProps = {
   title?: string;
@@ -37,23 +36,21 @@ type Action =
       toastId?: string;
     };
 
-const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
+// const addToRemoveQueue = (toastId: string) => {
+//   if (toastTimeouts.has(toastId)) {
+//     return;
+//   }
 
-const addToRemoveQueue = (toastId: string) => {
-  if (toastTimeouts.has(toastId)) {
-    return;
-  }
+//   const timeout = setTimeout(() => {
+//     toastTimeouts.delete(toastId);
+//     dispatch({
+//       type: "REMOVE_TOAST",
+//       toastId: toastId,
+//     });
+//   }, TOAST_REMOVE_DELAY);
 
-  const timeout = setTimeout(() => {
-    toastTimeouts.delete(toastId);
-    dispatch({
-      type: "REMOVE_TOAST",
-      toastId: toastId,
-    });
-  }, TOAST_REMOVE_DELAY);
-
-  toastTimeouts.set(toastId, timeout);
-};
+//   toastTimeouts.set(toastId, timeout);
+// };
 
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -87,13 +84,6 @@ function dispatch(action: Action) {
     listener(memoryState);
   });
 }
-
-type Toast = {
-  id: string;
-  title?: string;
-  description?: string;
-  variant?: "default" | "destructive";
-};
 
 export function toast({ ...props }: ToastProps) {
   const id = genId();
