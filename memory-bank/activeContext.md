@@ -1,4 +1,4 @@
-# Active Context - Updated on March 9, 2023
+# Active Context - Updated on March 9, 2024
 
 ## Current Work Focus
 
@@ -14,15 +14,16 @@ The current focus is on preparing the RAG (Retrieval-Augmented Generation) chatb
 
 ## Recent Changes
 
-### March 9, 2023 (Latest)
+### March 9, 2024 (Latest)
 
+- Fixed EPERM error related to the `.next/trace` file that was occurring during development
 - Fixed 404 error for the `/chat` route by creating a redirect page that sends users to `/chat/onboarding`
 - Restored the Pinecone RAG implementation with robust error handling
 - Fixed build errors by removing unused code in use-toast.ts
 - Updated Tailwind Config type import to fix build errors
 - Ensured the application can be built successfully for production
 
-### March 8, 2023
+### March 8, 2024
 
 - Fixed metadata error: separated layout into server and client components to prevent "createMetadataComponents is not a function" error
 - Fixed document list errors: handling undefined size and invalid date values

@@ -1,4 +1,4 @@
-# Cursor Rules - Updated on March 9, 2023
+# Cursor Rules - Updated on March 9, 2024
 
 ## Project Structure
 
@@ -38,13 +38,14 @@ The application uses Next.js App Router with the following structure:
 
 ## Error Handling
 
-### Build Errors - March 9, 2023
+### Build Errors - March 9, 2024
 
+- Fixed EPERM error related to the `.next/trace` file by modifying Next.js configuration
 - Fixed issues with Tailwind Config type import
 - Removed unused code in use-toast.ts
 - Addressed permission issues with .next directory
 
-### Runtime Errors - March 8, 2023
+### Runtime Errors - March 8, 2024
 
 - Implemented robust error handling for OpenAI and Pinecone initialization
 - Used type guards to handle different stream types in OpenAI stream utility
@@ -207,3 +208,10 @@ The application uses Next.js App Router with the following structure:
 - Implement proper authentication and authorization
 - Allow users to delete their data
 - Comply with GDPR and CCPA requirements
+
+## Next.js Configuration - March 9, 2024
+
+- Modified next.config.js to handle permission issues with the .next/trace file
+- Added dev:no-trace script to package.json as an alternative approach
+- Configured webpack to exclude server-only modules on the client
+- Set up serverExternalPackages for proper handling of external dependencies

@@ -22,9 +22,14 @@ const nextConfig = {
 
     return config;
   },
-  serverExternalPackages: ["pg", "@vercel/blob", "bullmq", "mammoth", "pdf-parse"],
-  experimental: {
-  },
+  serverExternalPackages: [
+    "pg",
+    "@vercel/blob",
+    "bullmq",
+    "mammoth",
+    "pdf-parse",
+  ],
+  experimental: {},
 };
 
 export default nextConfig;
