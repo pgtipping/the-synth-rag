@@ -22,14 +22,40 @@ import { formatDistanceToNow } from "date-fns";
 import { Loader2, Trash2 } from "lucide-react";
 import { useToast } from "../../components/ui/use-toast";
 
+interface ApiDocument {
+  id: number;
+  original_name?: string;
+  originalName?: string;
+  content_type?: string;
+  contentType?: string;
+  size_bytes?: number;
+  sizeBytes?: number;
+  status: "uploaded" | "processing" | "indexed" | "failed";
+  created_at?: string | Date;
+  createdAt?: string | Date;
+  useCase?: string;
+  error_message?: string | null;
+  errorMessage?: string | null;
+  metadata?: {
+    useCase?: string;
+    [key: string]: string | number | boolean | null | undefined;
+  };
+}
+
 interface Document {
   id: number;
-  originalName: string;
-  contentType: string;
-  sizeBytes: number;
+  original_name?: string;
+  originalName?: string;
+  content_type?: string;
+  contentType?: string;
+  size_bytes?: number;
+  sizeBytes?: number;
   status: "uploaded" | "processing" | "indexed" | "failed";
-  createdAt: string;
-  useCase: string;
+  created_at?: string | Date;
+  createdAt?: string | Date;
+  useCase?: string;
+  error_message?: string | null;
+  errorMessage?: string | null;
 }
 
 const USE_CASES = [
@@ -48,12 +74,27 @@ export function DocumentList() {
 
   const fetchDocuments = useCallback(async () => {
     try {
-      const url = selectedUseCase === "all" 
-        ? "/api/documents"
-        : `/api/documents?useCase=${selectedUseCase}`;
+      const url =
+        selectedUseCase === "all"
+          ? "/api/documents"
+          : `/api/documents?useCase=${selectedUseCase}`;
       const response = await fetch(url);
       const data = await response.json();
-      setDocuments(data);
+
+      // Normalize data to ensure consistent property names
+      const normalizedData = data.map((doc: ApiDocument) => ({
+        id: doc.id,
+        originalName: doc.originalName || doc.original_name,
+        contentType: doc.contentType || doc.content_type,
+        sizeBytes: doc.sizeBytes || doc.size_bytes,
+        status: doc.status,
+        createdAt: doc.createdAt || doc.created_at,
+        useCase:
+          doc.useCase || (doc.metadata && doc.metadata.useCase) || "general",
+        errorMessage: doc.errorMessage || doc.error_message,
+      }));
+
+      setDocuments(normalizedData);
     } catch (error) {
       console.error("Error fetching documents:", error);
       toast({
@@ -76,9 +117,9 @@ export function DocumentList() {
       const response = await fetch(`/api/documents?id=${id}`, {
         method: "DELETE",
       });
-      
+
       if (!response.ok) throw new Error("Failed to delete document");
-      
+
       setDocuments((prev) => prev.filter((doc) => doc.id !== id));
       toast({
         title: "Success",
@@ -96,17 +137,54 @@ export function DocumentList() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
+  const formatFileSize = (bytes: number | undefined | null) => {
+    if (bytes === undefined || bytes === null || isNaN(bytes)) {
+      return "0 B";
+    }
+
     const units = ["B", "KB", "MB", "GB"];
-    let size = bytes;
+    let size = Number(bytes);
     let unitIndex = 0;
-    
+
     while (size >= 1024 && unitIndex < units.length - 1) {
       size /= 1024;
       unitIndex++;
     }
-    
+
     return `${size.toFixed(1)} ${units[unitIndex]}`;
+  };
+
+  const formatDate = (dateString: string | Date | undefined | null) => {
+    if (!dateString) {
+      return "Unknown date";
+    }
+
+    try {
+      // If dateString is already a Date object
+      const date =
+        dateString instanceof Date ? dateString : new Date(dateString);
+
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        // Try parsing ISO string if it's in a different format
+        if (typeof dateString === "string") {
+          // Try to handle PostgreSQL timestamp format
+          if (dateString.includes("T") || dateString.includes(" ")) {
+            const parsed = Date.parse(dateString);
+            if (!isNaN(parsed)) {
+              return formatDistanceToNow(new Date(parsed), { addSuffix: true });
+            }
+          }
+        }
+        console.warn("Invalid date:", dateString);
+        return "Invalid date";
+      }
+
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      console.error("Error parsing date:", error, "Value:", dateString);
+      return "Invalid date";
+    }
   };
 
   const getStatusColor = (status: Document["status"]) => {
@@ -134,10 +212,7 @@ export function DocumentList() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold tracking-tight">Documents</h2>
-        <Select
-          value={selectedUseCase}
-          onValueChange={setSelectedUseCase}
-        >
+        <Select value={selectedUseCase} onValueChange={setSelectedUseCase}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Select use case" />
           </SelectTrigger>
@@ -172,11 +247,16 @@ export function DocumentList() {
             <TableBody>
               {documents.map((doc) => (
                 <TableRow key={doc.id}>
-                  <TableCell className="font-medium">
-                    {doc.originalName}
+                  <TableCell>
+                    {doc.originalName || doc.original_name || "Unknown"}
                   </TableCell>
                   <TableCell>
-                    {USE_CASES.find((uc) => uc.value === doc.useCase)?.label || doc.useCase}
+                    {doc.contentType || doc.content_type || "Unknown"}
+                  </TableCell>
+                  <TableCell>
+                    {USE_CASES.find((uc) => uc.value === doc.useCase)?.label ||
+                      doc.useCase ||
+                      "General"}
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -186,9 +266,11 @@ export function DocumentList() {
                       {doc.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>{formatFileSize(doc.sizeBytes)}</TableCell>
                   <TableCell>
-                    {formatDistanceToNow(new Date(doc.createdAt), { addSuffix: true })}
+                    {formatFileSize(doc.sizeBytes || doc.size_bytes)}
+                  </TableCell>
+                  <TableCell>
+                    {formatDate(doc.createdAt || doc.created_at)}
                   </TableCell>
                   <TableCell>
                     <Button
