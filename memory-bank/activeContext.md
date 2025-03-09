@@ -17,6 +17,11 @@ The current focus is on preparing the RAG (Retrieval-Augmented Generation) chatb
 
 ### March 9, 2024 (Latest)
 
+- Fixed database SSL connection error:
+  - Updated database configuration to explicitly disable SSL for local development
+  - Modified environment variables to include PG_SSL flag
+  - Simplified database connection pool configuration
+  - Added proper NODE_ENV setting in environment variables
 - Fixed 404 error for app-pages-internals.js:
   - Updated Next.js configuration with proper static file handling
   - Added reactStrictMode and swcMinify options

@@ -85,11 +85,13 @@ The application uses Next.js App Router with the following structure:
 - Set up environment variables for Vercel
 - Configured build settings for production
 
-### Database Configuration - March 8, 2023
+### Database Configuration - March 9, 2024
 
-- Updated database configuration for both development and production
-- Created migration script for initializing the database schema
-- Added SSL support for production database connections
+- Explicitly disable SSL for local development to prevent connection errors
+- Use environment variables for all database connection parameters
+- Set PG_SSL flag in environment variables to control SSL usage
+- Simplify database connection pool configuration for better reliability
+- Ensure proper NODE_ENV setting in environment variables
 
 ## Project Patterns - March 8, 2023
 

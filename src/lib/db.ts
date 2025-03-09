@@ -8,13 +8,8 @@ const pool = new Pool({
   database: process.env.PGDATABASE,
   password: process.env.PGPASSWORD,
   port: process.env.PGPORT ? parseInt(process.env.PGPORT, 10) : 5432,
-  // Use SSL in production but not in development
-  ssl:
-    process.env.NODE_ENV === "production"
-      ? { rejectUnauthorized: false }
-      : undefined,
+  // Disable SSL for local development
+  ssl: false
 });
-
-// Error handling is handled internally by the Pool
 
 export default pool;
