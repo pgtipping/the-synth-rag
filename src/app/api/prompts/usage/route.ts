@@ -11,6 +11,16 @@ const promptUsageSchema = z.object({
   metadata: z.record(z.unknown()).optional(),
 });
 
+// Define a type for database query results
+interface InsertResult {
+  id: number;
+}
+
+// Type guard function
+function isInsertResult(row: unknown): row is InsertResult {
+  return typeof row === "object" && row !== null && "id" in row;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -41,6 +51,15 @@ export async function POST(request: NextRequest) {
         data.metadata || {},
       ]
     );
+
+    // Check if we have a valid result
+    if (result.rows.length === 0 || !isInsertResult(result.rows[0])) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: "Failed to insert prompt usage record",
+      };
+      return NextResponse.json(response, { status: 500 });
+    }
 
     const response: ApiResponse<{ id: number }> = {
       success: true,

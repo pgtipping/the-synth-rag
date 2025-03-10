@@ -2,6 +2,34 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/src/lib/db";
 import { ApiResponse, ExamplePrompt } from "@/src/lib/types/prompts";
 
+// Define a type for database query results
+interface PromptRow {
+  id: number;
+  category_id: number;
+  use_case: string;
+  title: string;
+  content: string;
+  description: string | null;
+  is_active: boolean;
+  display_order: number;
+  created_at: Date;
+  updated_at: Date;
+  metadata: Record<string, unknown> | null;
+}
+
+// Type guard function
+function isPromptRow(row: unknown): row is PromptRow {
+  return (
+    typeof row === "object" &&
+    row !== null &&
+    "id" in row &&
+    "category_id" in row &&
+    "use_case" in row &&
+    "title" in row &&
+    "content" in row
+  );
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -13,7 +41,7 @@ export async function GET(request: NextRequest) {
       SELECT * FROM example_prompts 
       WHERE 1=1
     `;
-    const queryParams: any[] = [];
+    const queryParams: (string | boolean)[] = [];
     let paramIndex = 1;
 
     if (useCase) {
@@ -41,24 +69,35 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(response, { status: 404 });
     }
 
-    // Track that this prompt was viewed (not used yet)
-    const prompt = result.rows[0];
+    // Get the prompt row
+    const row = result.rows[0];
+
+    if (!isPromptRow(row)) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: "Invalid prompt data returned from database",
+      };
+      return NextResponse.json(response, { status: 500 });
+    }
+
+    // Convert to ExamplePrompt
+    const prompt: ExamplePrompt = {
+      id: row.id,
+      category_id: row.category_id,
+      use_case: row.use_case,
+      title: row.title,
+      content: row.content,
+      description: row.description,
+      is_active: row.is_active,
+      display_order: row.display_order,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      metadata: row.metadata || {},
+    };
 
     const response: ApiResponse<ExamplePrompt> = {
       success: true,
-      data: {
-        id: prompt.id,
-        category_id: prompt.category_id,
-        use_case: prompt.use_case,
-        title: prompt.title,
-        content: prompt.content,
-        description: prompt.description,
-        is_active: prompt.is_active,
-        display_order: prompt.display_order,
-        created_at: prompt.created_at,
-        updated_at: prompt.updated_at,
-        metadata: prompt.metadata || {},
-      },
+      data: prompt,
     };
 
     return NextResponse.json(response);

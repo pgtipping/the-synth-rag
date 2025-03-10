@@ -2,6 +2,9 @@ import { Suspense } from "react";
 import { PromptManager } from "@/src/components/prompts/admin/prompt-manager";
 import { fetchPromptCategories } from "@/src/lib/api/prompts";
 
+// Add dynamic rendering to prevent static generation
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Admin | Example Prompts | RAG Demo",
   description: "Manage example prompts for different use cases",

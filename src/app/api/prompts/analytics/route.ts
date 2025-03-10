@@ -1,6 +1,78 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/src/lib/db";
-import { ApiResponse } from "@/src/lib/types/prompts";
+import { ApiResponse, ExamplePrompt } from "@/src/lib/types/prompts";
+
+// Define types for database query results
+interface TotalUsageResult {
+  total: string;
+}
+
+interface PromptUsageRow extends Omit<ExamplePrompt, "metadata"> {
+  usage_count: string;
+  avg_rating: string | null;
+  metadata: Record<string, unknown> | null;
+}
+
+interface UsageByDayRow {
+  date: Date;
+  count: string;
+}
+
+interface UsageByUseCaseRow {
+  use_case: string;
+  count: string;
+}
+
+// Define a type for the analytics response
+interface AnalyticsData {
+  totalUsage: number;
+  promptUsage: Array<{
+    prompt: ExamplePrompt;
+    usageCount: number;
+    averageRating: number | null;
+  }>;
+  usageByDay: Array<{
+    date: string;
+    count: number;
+  }>;
+  usageByUseCase: Array<{
+    useCase: string;
+    count: number;
+  }>;
+}
+
+// Type guard functions
+function isTotalUsageResult(row: unknown): row is TotalUsageResult {
+  return typeof row === "object" && row !== null && "total" in row;
+}
+
+function isPromptUsageRow(row: unknown): row is PromptUsageRow {
+  return (
+    typeof row === "object" &&
+    row !== null &&
+    "id" in row &&
+    "category_id" in row &&
+    "use_case" in row &&
+    "title" in row &&
+    "content" in row &&
+    "usage_count" in row
+  );
+}
+
+function isUsageByDayRow(row: unknown): row is UsageByDayRow {
+  return (
+    typeof row === "object" && row !== null && "date" in row && "count" in row
+  );
+}
+
+function isUsageByUseCaseRow(row: unknown): row is UsageByUseCaseRow {
+  return (
+    typeof row === "object" &&
+    row !== null &&
+    "use_case" in row &&
+    "count" in row
+  );
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,7 +106,14 @@ export async function GET(request: NextRequest) {
        WHERE used_at >= $1`,
       [startDate]
     );
-    const totalUsage = parseInt(totalUsageResult.rows[0].total, 10);
+
+    let totalUsage = 0;
+    if (totalUsageResult.rows.length > 0) {
+      const row = totalUsageResult.rows[0];
+      if (isTotalUsageResult(row)) {
+        totalUsage = parseInt(row.total, 10);
+      }
+    }
 
     // Get usage by prompt with average rating
     const promptUsageResult = await db.query(
@@ -77,49 +156,57 @@ export async function GET(request: NextRequest) {
       [startDate]
     );
 
-    const promptUsage = promptUsageResult.rows.map((row: any) => ({
-      prompt: {
-        id: row.id,
-        category_id: row.category_id,
-        use_case: row.use_case,
-        title: row.title,
-        content: row.content,
-        description: row.description,
-        is_active: row.is_active,
-        display_order: row.display_order,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-        metadata: row.metadata || {},
-      },
-      usageCount: parseInt(row.usage_count, 10),
-      averageRating: row.avg_rating ? parseFloat(row.avg_rating) : null,
-    }));
+    const promptUsage = promptUsageResult.rows
+      .filter(isPromptUsageRow)
+      .map((row) => ({
+        prompt: {
+          id: row.id,
+          category_id: row.category_id,
+          use_case: row.use_case,
+          title: row.title,
+          content: row.content,
+          description: row.description,
+          is_active: row.is_active,
+          display_order: row.display_order,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+          metadata: row.metadata || {},
+        },
+        usageCount: parseInt(row.usage_count, 10),
+        averageRating: row.avg_rating ? parseFloat(row.avg_rating) : null,
+      }));
 
-    const usageByDay = usageByDayResult.rows.map((row: any) => ({
-      date: row.date.toISOString().split("T")[0],
-      count: parseInt(row.count, 10),
-    }));
+    const usageByDay = usageByDayResult.rows
+      .filter(isUsageByDayRow)
+      .map((row) => ({
+        date: row.date.toISOString().split("T")[0],
+        count: parseInt(row.count, 10),
+      }));
 
-    const usageByUseCase = usageByUseCaseResult.rows.map((row: any) => ({
-      useCase: row.use_case,
-      count: parseInt(row.count, 10),
-    }));
+    const usageByUseCase = usageByUseCaseResult.rows
+      .filter(isUsageByUseCaseRow)
+      .map((row) => ({
+        useCase: row.use_case,
+        count: parseInt(row.count, 10),
+      }));
 
-    const response: ApiResponse<any> = {
+    const data: AnalyticsData = {
+      totalUsage,
+      promptUsage,
+      usageByDay,
+      usageByUseCase,
+    };
+
+    const response: ApiResponse<AnalyticsData> = {
       success: true,
-      data: {
-        totalUsage,
-        promptUsage,
-        usageByDay,
-        usageByUseCase,
-      },
+      data,
     };
 
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching prompt analytics:", error);
 
-    const response: ApiResponse<any> = {
+    const response: ApiResponse<null> = {
       success: false,
       error: "Failed to fetch prompt analytics",
     };

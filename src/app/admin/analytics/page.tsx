@@ -1,5 +1,8 @@
 import { PromptAnalytics } from "@/src/components/prompts/admin/prompt-analytics";
 
+// Add dynamic rendering to prevent static generation
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Analytics | Example Prompts | RAG Demo",
   description: "View analytics for example prompts usage",

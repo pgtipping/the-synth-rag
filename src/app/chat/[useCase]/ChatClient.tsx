@@ -57,55 +57,19 @@ export default function ChatClient({ useCase }: { useCase: string }) {
     }
   };
 
-  const useCaseConfig = {
-    onboarding: {
-      title: "Onboarding Assistant",
-      uploadHints: {
-        title: "Upload Onboarding Materials",
-        description:
-          "Add employee handbooks, policies, and training documents to get started.",
-        exampleFiles: [
-          "employee_handbook.pdf",
-          "it_policies.docx",
-          "training_guide.pdf",
-        ],
-      },
-    },
-    sales: {
-      title: "Sales Assistant",
-      uploadHints: {
-        title: "Upload Sales Materials",
-        description:
-          "Add product specs, pricing sheets, and competitor analysis to get insights.",
-        exampleFiles: [
-          "product_catalog.pdf",
-          "pricing_2024.xlsx",
-          "market_analysis.docx",
-        ],
-      },
-    },
-    knowledge: {
-      title: "Knowledge Hub",
-      uploadHints: {
-        title: "Upload Knowledge Base",
-        description:
-          "Add documentation, FAQs, and guides to build your knowledge base.",
-        exampleFiles: ["technical_docs.pdf", "faq.docx", "best_practices.pdf"],
-      },
-    },
-  };
-
-  const currentConfig = useCaseConfig[useCase as keyof typeof useCaseConfig];
-
   return (
     <div className="flex h-screen flex-col">
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
+        <Sidebar useCase={useCase} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <div className="flex flex-1 flex-col overflow-hidden">
             <div className="relative flex flex-1 flex-col overflow-hidden">
               <div className="flex-1 overflow-auto p-4">
-                <ChatStream messages={messages} isTyping={isTyping} />
+                <ChatStream
+                  messages={messages}
+                  isTyping={isTyping}
+                  isLoading={isLoading}
+                />
               </div>
 
               {/* Prompt Rotation Component */}
@@ -157,10 +121,10 @@ export default function ChatClient({ useCase }: { useCase: string }) {
                 <div className="mt-4">
                   <ChatInput
                     onSend={handleSend}
-                    isLoading={isLoading}
-                    disabled={!isChatReady}
+                    isSending={isLoading}
                     value={inputValue}
                     onChange={setInputValue}
+                    disabled={!isChatReady}
                   />
                 </div>
               </div>

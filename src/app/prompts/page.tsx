@@ -2,6 +2,9 @@ import { Suspense } from "react";
 import { PromptList } from "@/src/components/prompts/prompt-list";
 import { fetchPromptCategories } from "@/src/lib/api/prompts";
 
+// Add dynamic rendering to prevent static generation
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Example Prompts | RAG Demo",
   description: "Browse and use example prompts for different use cases",

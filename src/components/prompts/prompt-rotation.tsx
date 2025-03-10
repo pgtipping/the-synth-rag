@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ExamplePrompt } from "@/src/lib/types/prompts";
 import { Button } from "../ui/button";
 import { RefreshCw } from "lucide-react";
@@ -18,7 +18,7 @@ export function PromptRotation({ useCase, onUsePrompt }: PromptRotationProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchRandomPrompt = async () => {
+  const fetchRandomPrompt = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -39,11 +39,11 @@ export function PromptRotation({ useCase, onUsePrompt }: PromptRotationProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [useCase]);
 
   useEffect(() => {
     fetchRandomPrompt();
-  }, [useCase]);
+  }, [fetchRandomPrompt]);
 
   const handleUsePrompt = () => {
     if (currentPrompt) {

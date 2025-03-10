@@ -1,4 +1,4 @@
-# Cursor Rules - Updated on March 9, 2025 14:52:25 EST
+# Cursor Rules - Updated on March 9, 2025 19:45 EST
 
 ## Project Structure
 
@@ -10,7 +10,10 @@ The application uses Next.js App Router with the following structure:
 - `/chat` - Redirects to `/chat/onboarding` for better user experience
 - `/chat/[useCase]` - Dynamic route for specific use cases (onboarding, sales, knowledge)
 - `/documents` - Document management page
-- `/api/*` - API routes for chat, documents, and file uploads
+- `/prompts` - Example prompts browsing page
+- `/admin/prompts` - Admin interface for managing prompts
+- `/admin/analytics` - Analytics dashboard for prompt usage
+- `/api/*` - API routes for chat, documents, file uploads, and prompts
 
 ### Component Organization - March 8, 2025
 
@@ -18,7 +21,8 @@ The application uses Next.js App Router with the following structure:
 - `src/components/layout` - Layout components (header, footer, etc.)
 - `src/components/chat` - Chat-specific components
 - `src/components/file-upload` - File upload components
-- `src/lib` - Utility functions and services
+- `src/components/prompts` - Prompt-related components
+- `src/components/prompts/admin` - Admin components for prompts
 
 ## API Implementation
 
@@ -349,3 +353,107 @@ If you see the error:
 "A <SelectItem /> must have a value prop that is not an empty string"
 
 The solution is to provide a non-empty string value for each SelectItem, using "all" or similar for default options.
+
+## TypeScript Patterns - March 9, 2025
+
+### Database Query Type Safety - March 9, 2025
+
+When working with database query results, follow these patterns:
+
+1. Define clear interfaces for expected row types:
+
+```typescript
+interface PromptRow {
+  id: number;
+  title: string;
+  content: string;
+  // other fields...
+}
+```
+
+2. Create type guard functions to validate unknown data:
+
+```typescript
+function isPromptRow(row: unknown): row is PromptRow {
+  return (
+    typeof row === "object" &&
+    row !== null &&
+    "id" in row &&
+    "title" in row &&
+    "content" in row
+  );
+}
+```
+
+3. Use filter methods to ensure only valid data is processed:
+
+```typescript
+const validRows = rows.filter(isPromptRow).map((row) => ({
+  id: row.id,
+  title: row.title,
+  // other fields...
+}));
+```
+
+4. Add proper error handling for invalid data:
+
+```typescript
+if (!isPromptRow(row)) {
+  throw new Error("Invalid data structure");
+}
+```
+
+5. Avoid type assertions (as) in favor of proper validation:
+
+```typescript
+// Avoid this:
+const id = (row as PromptRow).id;
+
+// Do this instead:
+if (isPromptRow(row)) {
+  const id = row.id;
+}
+```
+
+### Component Props Type Safety - March 9, 2025
+
+When defining component props, follow these patterns:
+
+1. Define clear interfaces for component props:
+
+```typescript
+interface ButtonProps {
+  onClick: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}
+```
+
+2. Use destructuring with default values:
+
+```typescript
+function Button({ onClick, disabled = false, children }: ButtonProps) {
+  // Component implementation
+}
+```
+
+3. Handle optional props safely:
+
+```typescript
+function Component({ value, onChange }: Props) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (onChange) {
+      onChange(e.target.value);
+    }
+  };
+}
+```
+
+4. Use proper React event types:
+
+```typescript
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  // Handle form submission
+};
+```
