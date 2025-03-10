@@ -77,9 +77,21 @@ export function Sidebar({ useCase }: SidebarProps) {
         "Upload best practices",
       ],
     },
+    general: {
+      title: "General Assistant",
+      description:
+        "Upload any documents for general assistance and information.",
+      tips: [
+        "Add any relevant documents",
+        "Ask general questions",
+        "Explore various topics",
+      ],
+    },
   };
 
-  const guide = useCaseGuides[useCase as keyof typeof useCaseGuides];
+  const guide =
+    useCaseGuides[useCase as keyof typeof useCaseGuides] ||
+    useCaseGuides.general;
 
   return (
     <aside className="w-[280px] h-screen bg-light-secondary dark:bg-dark-secondary border-r border-black/10 dark:border-white/10 p-4 flex flex-col">

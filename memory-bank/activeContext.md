@@ -1,8 +1,8 @@
-# Active Context - Updated on March 10, 2025 22:30 EST
+# Active Context - Updated on May 28, 2024 15:45 EST
 
 ## Current Work Focus
 
-The project is entering an enhancement phase focused on implementing value-adding features and fixing critical issues. We have completed the Example Prompts System implementation, fixed the documents page issue, and created a detailed implementation plan for the Progress Indicators feature. We've also enhanced the UI with improved navigation.
+The project is entering an enhancement phase focused on implementing value-adding features and fixing critical issues. We have completed the Example Prompts System implementation, fixed the documents page issue, and created a detailed implementation plan for the Progress Indicators feature. We've also enhanced the UI with improved navigation and fixed several dependency and component issues.
 
 ### Recent Enhancements
 
@@ -20,6 +20,19 @@ The project is entering an enhancement phase focused on implementing value-addin
 - ✅ Created a general chat page for selecting any use case
 - ✅ Enhanced the prompts page with "Try in Chat" button functionality
 - ✅ Improved header navigation with link to the Prompts page
+
+#### UI Component Improvements
+
+- ✅ Added Shadcn Textarea component for improved text input
+- ✅ Fixed linter errors in the Textarea component
+- ✅ Improved ChatInput component to use the new Textarea component
+
+#### Dependency and Build Fixes
+
+- ✅ Fixed LangChain dependency issues by updating to the latest versions
+- ✅ Updated environment variable handling to use LangChain's getEnvironmentVariable utility
+- ✅ Fixed database configuration to use pure JavaScript implementation instead of native bindings
+- ✅ Resolved module resolution errors for @langchain/core/utils/env
 
 ### Recent Fixes
 
@@ -129,6 +142,15 @@ The Example Prompts System is now fully implemented with all planned features. T
   - Added API endpoint for fetching analytics data
   - Added time-based filtering for analytics
   - Created visualizations for usage metrics
+
+### March 10, 2025 07:30 EST - General Use Case Prompts
+
+- Added example prompts for the general use case:
+  - "Ask a Question" - Basic prompt for asking questions about documents
+  - "Document Summary" - Prompt for requesting document summaries
+  - "Find Information" - Prompt for searching specific information in documents
+- Verified prompts are accessible through the API
+- Integrated with prompt rotation system for general chat
 
 ## Technical Decisions
 

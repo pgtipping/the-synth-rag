@@ -1,13 +1,14 @@
-# Technical Context - Created on March 8, 2023
+# Technical Context - Updated on May 28, 2024 15:45 EST
 
 ## Technologies Used
 
 ### Frontend
 
-- **Next.js 14**: React framework with server components and app router
-- **React 18**: UI library for component-based development
+- **Next.js 15.2.1**: React framework with server components and app router
+- **React 19**: UI library for component-based development
 - **Tailwind CSS**: Utility-first CSS framework
 - **Shadcn/ui**: Accessible and customizable component library
+  - Added Textarea component for improved text input
 - **Framer Motion**: Animation library for smooth transitions
 - **Vercel AI SDK**: Utilities for AI chat interfaces and streaming
 - **React Dropzone**: File upload component
@@ -17,18 +18,18 @@
 
 - **Next.js API Routes**: Serverless backend functions
 - **Node.js**: JavaScript runtime
-- **Firebase/Vercel Blob**: File storage solution
+- **Vercel Blob**: File storage solution
 - **Pinecone**: Vector database for similarity search
 - **OpenAI API**: Large language model provider
-- **Firebase Auth**: Authentication service (anonymous login for demos)
+- **PostgreSQL**: Database for storing document metadata and example prompts
 
 ### Document Processing
 
 - **pdf-parse**: PDF parsing library
 - **mammoth.js**: DOCX parsing library
 - **PapaParse**: CSV parsing library
-- **xlsx**: Excel file parsing library
-- **langchain**: Framework for building LLM applications
+- **@langchain/core**: Core utilities for LangChain
+- **@langchain/openai**: OpenAI integration for LangChain
 
 ### State Management
 
@@ -136,22 +137,23 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```json
 {
   "dependencies": {
-    "@pinecone-database/pinecone": "^1.1.0",
-    "@vercel/blob": "^0.14.0",
-    "ai": "^2.2.0",
-    "firebase": "^10.0.0",
-    "framer-motion": "^10.16.0",
-    "langchain": "^0.0.150",
-    "mammoth": "^1.6.0",
-    "next": "^14.0.0",
-    "openai": "^4.0.0",
+    "@ai-sdk/openai": "^1.1.2",
+    "@langchain/core": "^0.3.42",
+    "@langchain/openai": "^0.4.4",
+    "@pinecone-database/pinecone": "^4.1.0",
+    "@vercel/blob": "^0.27.1",
+    "ai": "^4.1.16",
+    "framer-motion": "^12.0.5",
+    "mammoth": "^1.9.0",
+    "next": "^15.2.1",
+    "openai": "^4.82.0",
     "pdf-parse": "^1.1.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-dropzone": "^14.2.3",
+    "pg": "^8.13.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-dropzone": "^14.3.5",
     "tailwindcss": "^3.3.0",
-    "xlsx": "^0.18.5",
-    "zustand": "^4.4.0"
+    "zustand": "^5.0.3"
   }
 }
 ```

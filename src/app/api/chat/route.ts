@@ -6,6 +6,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { withCors } from "@/src/lib/middleware/cors";
 import { NextRequest } from "next/server";
+import { getEnvironmentVariable } from "@langchain/core/utils/env";
 
 export const runtime = "edge";
 export const maxDuration = 30;
@@ -14,7 +15,7 @@ export const maxDuration = 30;
 let openai: OpenAI;
 try {
   openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY || "",
+    apiKey: getEnvironmentVariable("OPENAI_API_KEY") as string,
   });
 } catch (error) {
   console.error("Failed to initialize OpenAI:", error);
@@ -38,7 +39,7 @@ try {
 let pinecone: Pinecone;
 try {
   pinecone = new Pinecone({
-    apiKey: process.env.PINECONE_API_KEY || "",
+    apiKey: getEnvironmentVariable("PINECONE_API_KEY") as string,
   });
 } catch (error) {
   console.error("Failed to initialize Pinecone:", error);
@@ -49,7 +50,7 @@ try {
 let embeddings: OpenAIEmbeddings;
 try {
   embeddings = new OpenAIEmbeddings({
-    openAIApiKey: process.env.OPENAI_API_KEY || "",
+    openAIApiKey: getEnvironmentVariable("OPENAI_API_KEY") as string,
     modelName: "text-embedding-3-small",
   });
 } catch (error) {

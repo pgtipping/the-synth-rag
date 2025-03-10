@@ -1,4 +1,4 @@
-# Progress - Updated on March 10, 2025 22:30 EST
+# Progress - Updated on May 28, 2024 15:45 EST
 
 ## What Works
 
@@ -14,6 +14,7 @@
 - ✅ Proper routing with redirects for better user experience
 - ✅ Development environment running without permission errors
 - ✅ TypeScript type checking enabled with proper type safety
+- ✅ LangChain integration with proper environment variable handling
 
 ### UI Components
 
@@ -28,6 +29,7 @@
 - ✅ Breadcrumb navigation on all pages
 - ✅ General chat page for selecting any use case
 - ✅ "Try in Chat" button on prompt cards
+- ✅ Shadcn Textarea component for improved text input
 
 ### Backend Services
 
@@ -198,6 +200,12 @@ The project is now entering the **Enhancement Phase**. Core functionality is imp
     - **Priority**: High
     - **Solution**: Implemented proper type definitions, type guards, and validation
 
+12. **LangChain Dependency Issues**: Module resolution errors for @langchain/core/utils/env
+
+    - **Status**: Resolved
+    - **Priority**: High
+    - **Solution**: Updated LangChain dependencies and environment variable handling
+
 ### UX Issues
 
 1. **Error Feedback**: Need to improve error feedback for users
@@ -213,6 +221,15 @@ The project is now entering the **Enhancement Phase**. Core functionality is imp
    - **Solution**: Updated README with deployment instructions
 
 ## Recent Milestones
+
+### May 28, 2024 15:45 EST
+
+- Fixed LangChain dependency issues by updating to the latest versions
+- Updated environment variable handling to use LangChain's getEnvironmentVariable utility
+- Added Shadcn Textarea component for improved text input
+- Fixed linter errors in the Textarea component
+- Improved ChatInput component to use the new Textarea component
+- Fixed database configuration to use pure JavaScript implementation instead of native bindings
 
 ### March 10, 2025 22:30 EST
 
@@ -298,6 +315,15 @@ The project is now entering the **Enhancement Phase**. Core functionality is imp
   - Restored the useCase filtering functionality in the document-list component
   - Documents API now returns data correctly with use_case information
   - Document filtering by use case now works properly
+
+### March 10, 2025 07:30 EST
+
+- Added example prompts for the general use case:
+  - Created "Ask a Question" prompt for basic document queries
+  - Created "Document Summary" prompt for document summarization
+  - Created "Find Information" prompt for specific information search
+- Verified API functionality for random prompt retrieval
+- Integrated prompts with the prompt rotation system in general chat
 
 ## Next Milestones
 

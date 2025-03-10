@@ -1,14 +1,15 @@
 import { Pinecone } from "@pinecone-database/pinecone";
 import { OpenAIEmbeddings } from "@langchain/openai";
+import { getEnvironmentVariable } from "@langchain/core/utils/env";
 
 // Initialize Pinecone client
 const pinecone = new Pinecone({
-  apiKey: process.env.PINECONE_API_KEY!,
+  apiKey: getEnvironmentVariable("PINECONE_API_KEY") as string,
 });
 
 // Initialize embeddings model
 const embeddings = new OpenAIEmbeddings({
-  openAIApiKey: process.env.OPENAI_API_KEY,
+  openAIApiKey: getEnvironmentVariable("OPENAI_API_KEY") as string,
   modelName: "text-embedding-3-small",
 });
 

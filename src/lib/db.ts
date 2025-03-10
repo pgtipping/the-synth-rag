@@ -9,7 +9,9 @@ const pool = new Pool({
   password: process.env.PGPASSWORD,
   port: process.env.PGPORT ? parseInt(process.env.PGPORT, 10) : 5432,
   // Disable SSL for local development
-  ssl: false
+  ssl: false,
+  // Use pure JavaScript implementation
+  native: false,
 });
 
 export default pool;
