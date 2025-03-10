@@ -1,9 +1,31 @@
 import { Card } from "../../components/ui/card";
 import { DocumentList } from "./document-list";
+import Link from "next/link";
+import { Home, ChevronRight } from "lucide-react";
 
 export function DocumentManager() {
   return (
     <div className="container mx-auto py-6 space-y-6">
+      {/* Breadcrumb */}
+      <nav className="flex mb-6" aria-label="Breadcrumb">
+        <ol className="flex items-center space-x-2">
+          <li>
+            <Link href="/" className="text-gray-500 hover:text-gray-700">
+              <Home className="h-4 w-4" />
+            </Link>
+          </li>
+          <li className="flex items-center">
+            <ChevronRight className="h-4 w-4 text-gray-500" />
+            <Link
+              href="/documents"
+              className="ml-2 text-gray-500 hover:text-gray-700"
+            >
+              Documents
+            </Link>
+          </li>
+        </ol>
+      </nav>
+
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">
           Document Management

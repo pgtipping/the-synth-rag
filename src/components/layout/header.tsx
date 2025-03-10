@@ -9,6 +9,7 @@ const navigation = [
   { name: "Home", href: "/" },
   { name: "Documents", href: "/documents" },
   { name: "Chat", href: "/chat" },
+  { name: "Prompts", href: "/prompts" },
 ];
 
 export function Header() {
@@ -39,8 +40,7 @@ export function Header() {
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
-          </div>
+          <div className="w-full flex-1 md:w-auto md:flex-none"></div>
           <nav className="flex items-center space-x-2">
             <ThemeToggle />
           </nav>

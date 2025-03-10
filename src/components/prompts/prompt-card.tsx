@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface PromptCardProps {
   prompt: ExamplePrompt;
@@ -23,6 +24,7 @@ export function PromptCard({
   usageStats,
 }: PromptCardProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleUse = async () => {
     if (!onUse) return;
@@ -32,6 +34,11 @@ export function PromptCard({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleTryInChat = () => {
+    // Navigate to the chat page with the specific use case
+    router.push(`/chat/${prompt.use_case}`);
   };
 
   return (
@@ -63,7 +70,14 @@ export function PromptCard({
           )}
 
           {onUse && (
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={handleTryInChat}
+                disabled={!prompt.is_active}
+              >
+                Try in Chat
+              </Button>
               <Button
                 onClick={handleUse}
                 disabled={isLoading || !prompt.is_active}
