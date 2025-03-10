@@ -1,8 +1,19 @@
-# Active Context - Updated on March 9, 2025 19:45 EST
+# Active Context - Updated on March 10, 2025 20:40 EST
 
 ## Current Work Focus
 
-The project is entering an enhancement phase focused on implementing value-adding features. We have completed the Example Prompts System implementation, which was the highest priority feature from Phase 1 of our enhancement plan.
+The project is entering an enhancement phase focused on implementing value-adding features and fixing critical issues. We have completed the Example Prompts System implementation and fixed the documents page issue.
+
+### Recent Fixes
+
+#### Documents Page Issue
+
+- ✅ Identified and fixed HTTP 500 error on the documents page
+- ✅ Root cause: SQL query referenced a non-existent "use_case" column in the database
+- ✅ Solution:
+  - Removed "use_case" column from SQL query and DocumentRow interface
+  - Updated document normalization logic to handle missing fields
+  - Documents API now returns data correctly
 
 ### Example Prompts System Implementation Progress
 

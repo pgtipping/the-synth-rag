@@ -457,3 +457,14 @@ const handleSubmit = (e: React.FormEvent) => {
   // Handle form submission
 };
 ```
+
+## Development Environment - March 10, 2025 20:30 EST
+
+### Terminal Command Behavior
+
+When executing terminal commands in this environment, the first character of the command is sometimes trimmed. To prevent this issue:
+
+- Always add a space at the beginning of terminal commands
+- Example: ` curl http://localhost:3000/api/documents` instead of `curl http://localhost:3000/api/documents`
+
+This ensures that the command is properly executed without losing the first character.

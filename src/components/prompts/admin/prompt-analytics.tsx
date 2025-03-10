@@ -90,13 +90,13 @@ export function PromptAnalytics() {
     <div className="space-y-8">
       <div className="flex justify-end">
         <Select value={timeRange} onValueChange={setTimeRange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select time range" />
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Filter by time period" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7days">Last 7 days</SelectItem>
-            <SelectItem value="30days">Last 30 days</SelectItem>
-            <SelectItem value="90days">Last 90 days</SelectItem>
+          <SelectContent className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
+            <SelectItem value="7">Last 7 days</SelectItem>
+            <SelectItem value="30">Last 30 days</SelectItem>
+            <SelectItem value="90">Last 90 days</SelectItem>
             <SelectItem value="all">All time</SelectItem>
           </SelectContent>
         </Select>

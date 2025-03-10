@@ -203,7 +203,7 @@ export function PromptManager({ categories }: PromptManagerProps) {
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Filter by category" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
             <SelectItem value="">All Categories</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category.id} value={category.id.toString()}>
@@ -238,7 +238,7 @@ export function PromptManager({ categories }: PromptManagerProps) {
               <SelectTrigger>
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id.toString()}>
                     {category.name}
@@ -387,7 +387,7 @@ export function PromptManager({ categories }: PromptManagerProps) {
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
                   {categories.map((category) => (
                     <SelectItem
                       key={category.id}
@@ -455,7 +455,7 @@ export function PromptManager({ categories }: PromptManagerProps) {
                 <SelectTrigger>
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
                   <SelectItem value="true">Active</SelectItem>
                   <SelectItem value="false">Inactive</SelectItem>
                 </SelectContent>

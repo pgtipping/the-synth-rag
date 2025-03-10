@@ -20,11 +20,8 @@ const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY!,
 });
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const useCase = searchParams.get("useCase");
-
     const client = await pool.connect();
     try {
       let query = `
@@ -33,11 +30,6 @@ export async function GET(request: NextRequest) {
         WHERE status != 'failed'
       `;
       const params: string[] = [];
-
-      if (useCase) {
-        query += " AND metadata->>'useCase' = $1";
-        params.push(useCase);
-      }
 
       query += " ORDER BY created_at DESC";
 

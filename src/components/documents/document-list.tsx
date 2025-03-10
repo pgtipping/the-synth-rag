@@ -34,6 +34,7 @@ interface ApiDocument {
   created_at?: string | Date;
   createdAt?: string | Date;
   useCase?: string;
+  use_case?: string;
   error_message?: string | null;
   errorMessage?: string | null;
   metadata?: {
@@ -70,10 +71,8 @@ export function DocumentList() {
   const fetchDocuments = useCallback(async () => {
     try {
       setLoading(true);
-      const url =
-        selectedUseCase === "all"
-          ? "/api/documents"
-          : `/api/documents?useCase=${selectedUseCase}`;
+      // Always fetch all documents since use_case column doesn't exist in the database
+      const url = "/api/documents";
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -90,8 +89,7 @@ export function DocumentList() {
         sizeBytes: doc.sizeBytes || doc.size_bytes || 0,
         status: doc.status || "uploaded",
         createdAt: doc.createdAt || doc.created_at || new Date(),
-        useCase:
-          doc.useCase || (doc.metadata && doc.metadata.useCase) || "general",
+        useCase: "general", // Default value since use_case doesn't exist in the database
         errorMessage: doc.errorMessage || doc.error_message || null,
       }));
 
