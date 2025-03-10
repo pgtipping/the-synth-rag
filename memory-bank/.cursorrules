@@ -468,3 +468,93 @@ When executing terminal commands in this environment, the first character of the
 - Example: ` curl http://localhost:3000/api/documents` instead of `curl http://localhost:3000/api/documents`
 
 This ensures that the command is properly executed without losing the first character.
+
+# Database Schema Changes - March 10, 2025 21:20 EST
+
+## Adding New Columns to Existing Tables
+
+When adding new columns to existing database tables, follow these steps:
+
+1. Create a script in the `scripts` directory to handle the schema change:
+
+   - Use ES modules syntax (import/export) instead of CommonJS (require)
+   - Check if the column already exists before attempting to add it
+   - Use transactions to ensure atomicity
+   - Add appropriate indexes for columns that will be used in WHERE clauses
+   - Set default values for NOT NULL columns
+
+2. Example pattern:
+
+```javascript
+// scripts/add-column.js
+import pg from "pg";
+import dotenv from "dotenv";
+
+dotenv.config();
+const { Pool } = pg;
+
+async function addColumn() {
+  const pool = new Pool();
+
+  try {
+    const client = await pool.connect();
+
+    try {
+      // Check if column already exists
+      const checkResult = await client.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'table_name' AND column_name = 'column_name'
+      `);
+
+      if (checkResult.rows.length > 0) {
+        console.log("Column already exists.");
+        return;
+      }
+
+      // Start transaction
+      await client.query("BEGIN");
+
+      // Add column
+      await client.query(`
+        ALTER TABLE table_name
+        ADD COLUMN column_name data_type NOT NULL DEFAULT default_value
+      `);
+
+      // Create index if needed
+      await client.query(`
+        CREATE INDEX idx_table_column ON table_name(column_name)
+      `);
+
+      // Commit transaction
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  } finally {
+    await pool.end();
+  }
+}
+
+addColumn().catch(console.error);
+```
+
+3. Run the script with:
+
+   ```
+   node scripts/add-column.js
+   ```
+
+4. Update the relevant interfaces and queries in the codebase to use the new column
+
+5. Document the schema change in the memory bank
+
+### Common Issues
+
+- ES modules vs CommonJS: The project uses ES modules, so use `import` instead of `require`
+- Connection issues: Ensure database credentials are correct in .env file
+- Permission issues: Ensure the database user has ALTER TABLE permissions
+- Default values: Always provide default values for NOT NULL columns to handle existing rows

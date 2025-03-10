@@ -71,8 +71,10 @@ export function DocumentList() {
   const fetchDocuments = useCallback(async () => {
     try {
       setLoading(true);
-      // Always fetch all documents since use_case column doesn't exist in the database
-      const url = "/api/documents";
+      const url =
+        selectedUseCase === "all"
+          ? "/api/documents"
+          : `/api/documents?useCase=${selectedUseCase}`;
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -89,7 +91,7 @@ export function DocumentList() {
         sizeBytes: doc.sizeBytes || doc.size_bytes || 0,
         status: doc.status || "uploaded",
         createdAt: doc.createdAt || doc.created_at || new Date(),
-        useCase: "general", // Default value since use_case doesn't exist in the database
+        useCase: doc.useCase || doc.use_case || "general",
         errorMessage: doc.errorMessage || doc.error_message || null,
       }));
 

@@ -1,4 +1,4 @@
-# Progress - Updated on March 10, 2025 20:35 EST
+# Progress - Updated on March 10, 2025 21:15 EST
 
 ## What Works
 
@@ -275,13 +275,16 @@ The project is now entering the **Enhancement Phase**. Core functionality is imp
 
 ### Recent Fixes - March 10, 2025
 
-### Documents Page
+#### Documents Page
 
 - ✅ Fixed HTTP 500 error on the documents page
-- ✅ Resolved database schema mismatch by removing non-existent "use_case" column from SQL query
-- ✅ Updated DocumentRow interface to match actual database schema
-- ✅ Modified document normalization logic to handle missing fields
-- ✅ Documents API now returns data correctly without errors
+- ✅ Root cause: Missing "use_case" column in the database
+- ✅ Solution:
+  - Created a Node.js script to add the "use_case" column to the documents table
+  - Restored the use_case field in the DocumentRow interface
+  - Restored the useCase filtering functionality in the document-list component
+  - Documents API now returns data correctly with use_case information
+  - Document filtering by use case now works properly
 
 ## Next Milestones
 

@@ -10,6 +10,7 @@ interface DocumentRow {
   status: string;
   created_at: Date;
   error_message: string | null;
+  use_case: string;
 }
 
 interface DocumentChunkRow {
@@ -20,16 +21,24 @@ const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY!,
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const useCase = searchParams.get("useCase");
+
     const client = await pool.connect();
     try {
       let query = `
-        SELECT id, original_name, content_type, size_bytes, status, created_at, error_message
+        SELECT id, original_name, content_type, size_bytes, status, created_at, error_message, use_case
         FROM documents
         WHERE status != 'failed'
       `;
       const params: string[] = [];
+
+      if (useCase) {
+        query += " AND use_case = $1";
+        params.push(useCase);
+      }
 
       query += " ORDER BY created_at DESC";
 

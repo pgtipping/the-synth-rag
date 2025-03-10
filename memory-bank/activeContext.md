@@ -1,4 +1,4 @@
-# Active Context - Updated on March 10, 2025 20:40 EST
+# Active Context - Updated on March 10, 2025 21:15 EST
 
 ## Current Work Focus
 
@@ -9,11 +9,13 @@ The project is entering an enhancement phase focused on implementing value-addin
 #### Documents Page Issue
 
 - ✅ Identified and fixed HTTP 500 error on the documents page
-- ✅ Root cause: SQL query referenced a non-existent "use_case" column in the database
+- ✅ Root cause: Missing "use_case" column in the database
 - ✅ Solution:
-  - Removed "use_case" column from SQL query and DocumentRow interface
-  - Updated document normalization logic to handle missing fields
-  - Documents API now returns data correctly
+  - Created a Node.js script to add the "use_case" column to the documents table
+  - Restored the use_case field in the DocumentRow interface
+  - Restored the useCase filtering functionality in the document-list component
+  - Documents API now returns data correctly with use_case information
+  - Document filtering by use case now works properly
 
 ### Example Prompts System Implementation Progress
 
