@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS document_chunks (
     document_id INTEGER REFERENCES documents(id) ON DELETE CASCADE,
     chunk_index INTEGER NOT NULL,
     text_content TEXT NOT NULL,
+    token_count INTEGER NOT NULL DEFAULT 0,
     vector_id TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(document_id, chunk_index)

@@ -204,3 +204,107 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - Firebase Auth for user management
 - Anonymous sessions for demo users
 - Email/password for registered users
+
+## Text Processing Pipeline
+
+### Document Processing
+
+1. File upload and virus scanning
+2. Text extraction based on file type
+3. PII scrubbing and sanitization
+4. Semantic text chunking
+5. Token counting and metadata generation
+6. Vector embedding generation
+7. Storage and indexing
+
+### Text Chunking Strategy
+
+The system uses a semantic text chunking approach:
+
+1. **Chunk Creation**
+
+   - Uses natural text boundaries (paragraphs, sentences)
+   - Configurable chunk size (default: 1000 tokens)
+   - Configurable overlap (default: 200 tokens)
+   - Preserves semantic context between chunks
+
+2. **Boundary Detection**
+
+   ```
+   Priority order:
+   1. Triple line breaks (major sections)
+   2. Double line breaks (paragraphs)
+   3. Single line breaks
+   4. Sentences (period + space)
+   5. Colons
+   6. Semicolons
+   7. Commas
+   8. Words
+   9. Characters
+   ```
+
+3. **Token Management**
+
+   - Uses GPT tokenizer for accurate token counting
+   - Stores token count per chunk in database
+   - Indexes token counts for query optimization
+
+4. **Performance Optimizations**
+   - Transaction-based chunk insertion
+   - Indexed token counts
+   - Efficient text boundary detection
+   - Memory-efficient processing
+
+## Database Schema
+
+### Document Chunks
+
+```sql
+CREATE TABLE document_chunks (
+    id SERIAL PRIMARY KEY,
+    document_id INTEGER REFERENCES documents(id),
+    chunk_index INTEGER NOT NULL,
+    text_content TEXT NOT NULL,
+    token_count INTEGER NOT NULL DEFAULT 0,
+    vector_id TEXT,
+    created_at TIMESTAMP WITH TIME ZONE,
+    UNIQUE(document_id, chunk_index)
+);
+```
+
+### Indexes
+
+```sql
+CREATE INDEX idx_document_chunks_token_count
+ON document_chunks(token_count);
+```
+
+## Dependencies
+
+### Text Processing
+
+- `gpt-tokenizer`: Token counting
+- Custom `TextSplitter` utility
+- File type-specific processors (PDF, DOCX, CSV)
+
+### Database
+
+- PostgreSQL for document and chunk storage
+- Pinecone for vector storage
+- Redis for progress tracking
+
+## Error Handling
+
+### Chunk Processing
+
+1. Invalid chunk boundaries
+2. Token count mismatches
+3. Transaction failures
+4. Memory constraints
+
+### Recovery Strategies
+
+1. Automatic retry with different boundaries
+2. Fallback to smaller chunks
+3. Transaction rollback and retry
+4. Streaming processing for large files

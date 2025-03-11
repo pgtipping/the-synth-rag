@@ -30,6 +30,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 Token Usage
               </Link>
               <Link
+                href="/admin/usage-alerts"
+                className="text-sm font-medium hover:underline"
+              >
+                Alerts
+              </Link>
+              <Link
                 href="/admin/progress"
                 className="text-sm font-medium hover:underline"
               >

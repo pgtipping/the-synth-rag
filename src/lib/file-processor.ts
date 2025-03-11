@@ -3,6 +3,7 @@ import * as mammoth from "mammoth";
 import * as Papa from "papaparse";
 import { createScanner } from "clamscan";
 import type { ClamScan } from "clamscan";
+import { TextSplitter } from "./text-splitter";
 
 // Interface for file processors
 interface FileProcessor {
@@ -143,11 +144,24 @@ export const processFile = async (file: File, buffer: Buffer) => {
       const sanitizedText = scrubPII(rawText);
       console.log(`Sanitized text length: ${sanitizedText.length} characters`);
 
+      // Split text into chunks using TextSplitter
+      console.log("Splitting text into chunks...");
+      const textSplitter = new TextSplitter({
+        chunkSize: 1000, // Target ~1000 tokens per chunk
+        chunkOverlap: 200, // 200 tokens overlap between chunks
+      });
+      const chunks = textSplitter.splitBySemanticBoundaries(sanitizedText);
+      console.log(`Created ${chunks.length} chunks`);
+
       const expirationDate = new Date();
       expirationDate.setHours(expirationDate.getHours() + 24);
 
       return {
-        text: sanitizedText,
+        chunks: chunks.map((chunk) => ({
+          text: chunk.text,
+          index: chunk.index,
+          tokens: chunk.tokens,
+        })),
         metadata: {
           originalName: file.name,
           mimeType: file.type,
@@ -162,23 +176,11 @@ export const processFile = async (file: File, buffer: Buffer) => {
         },
       };
     } catch (error) {
-      console.error(`Error processing file ${file.name}:`, error);
-      console.error(
-        "Stack trace:",
-        error instanceof Error ? error.stack : "No stack trace"
-      );
-      throw new Error(
-        `Failed to process file ${file.name}: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+      console.error("Error processing file:", error);
+      throw error;
     }
   } catch (error) {
-    console.error("File processing error:", error);
-    console.error(
-      "Stack trace:",
-      error instanceof Error ? error.stack : "No stack trace"
-    );
+    console.error("Error in processFile:", error);
     throw error;
   }
 };

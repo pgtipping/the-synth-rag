@@ -147,7 +147,7 @@ export class DocumentService {
 
   async saveDocumentChunks(
     documentId: number,
-    chunks: { text: string; index: number }[]
+    chunks: { text: string; index: number; tokens: number }[]
   ): Promise<void> {
     const client = await this.pool.connect();
     try {
@@ -155,9 +155,9 @@ export class DocumentService {
 
       for (const chunk of chunks) {
         await client.query(
-          `INSERT INTO document_chunks (document_id, chunk_index, text_content)
-          VALUES ($1, $2, $3)`,
-          [documentId, chunk.index, chunk.text]
+          `INSERT INTO document_chunks (document_id, chunk_index, text_content, token_count)
+          VALUES ($1, $2, $3, $4)`,
+          [documentId, chunk.index, chunk.text, chunk.tokens]
         );
       }
 

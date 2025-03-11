@@ -1,10 +1,28 @@
-# Active Context - Updated on May 29, 2024 10:30 EST
+# Active Context - Updated on May 29, 2024 15:30 EST
 
 ## Current Work Focus
 
-The project is continuing its enhancement phase with a focus on implementing the admin dashboard and improving UI components. We've made significant progress on the Progress component implementation and admin dashboard features.
+The project is continuing its enhancement phase with a focus on implementing the cost optimization plan. We've made significant progress on Phase 1 (Usage Monitoring and Controls) with the implementation of the Usage Alerts System.
 
 ### Recent Changes
+
+#### May 29, 2024 15:30 EST - Usage Alerts System Implementation
+
+- Implemented a comprehensive Usage Alerts System:
+
+  - Created API endpoint for detecting unusual usage patterns
+  - Implemented alert detection for cost spikes
+  - Implemented alert detection for users approaching quota limits
+  - Implemented alert detection for unusual activity patterns
+  - Created admin dashboard for viewing and managing alerts
+  - Added real-time alert monitoring with automatic refresh
+  - Integrated with existing token usage tracking system
+
+- Enhanced Admin Dashboard:
+  - Added Usage Alerts page to the admin navigation
+  - Implemented alert severity visualization with color-coded alerts
+  - Added alert filtering options (show/hide resolved)
+  - Implemented alert management functionality (mark as resolved)
 
 #### May 29, 2024 10:30 EST - Admin Dashboard Error States Enhancement
 
@@ -885,3 +903,69 @@ We have created a comprehensive implementation plan for further cost optimizatio
    - Create performance monitoring framework
 
 The plan includes detailed tasks, deliverables, success metrics, and risk mitigations. Future phases will address batch processing, self-hosting evaluation, and storage optimization.
+
+## Recent Changes
+
+### Text Chunking Implementation
+
+- Added semantic text chunking with the new `TextSplitter` utility
+- Chunks are created based on natural text boundaries (paragraphs, sentences)
+- Configurable chunk size and overlap
+- Token counting for each chunk
+- Updated database schema to track token counts
+
+### Database Changes
+
+- Added `token_count` column to `document_chunks` table
+- Created migration script for schema update
+- Added index on `token_count` for performance
+
+### File Processing Updates
+
+- Modified file processor to use semantic chunking
+- Updated document service to handle chunk token counts
+- Improved error handling and logging
+
+## Next Steps
+
+### Immediate Tasks
+
+- Run database migrations
+- Test chunking with various document types
+- Monitor token usage patterns
+- Update documentation
+
+### Future Improvements
+
+- Fine-tune chunk size based on content type
+- Implement adaptive overlap
+- Add chunk compression for storage optimization
+- Create chunk visualization tools
+
+## Active Decisions
+
+### Chunking Strategy
+
+- Using semantic boundaries for more natural text splits
+- Default chunk size: 1000 tokens
+- Default overlap: 200 tokens
+- Prioritizing sentence and paragraph boundaries
+
+### Performance Considerations
+
+- Added index on token_count for query optimization
+- Using transactions for chunk insertion
+- Monitoring chunk sizes and counts
+
+## Current Status
+
+- Text chunking implementation complete
+- Database schema updated
+- Migration scripts ready
+- Testing framework in place
+
+## Known Issues
+
+- Need to handle edge cases with very long sentences
+- Token count estimation for existing chunks needs refinement
+- Performance impact of chunk overlap needs monitoring

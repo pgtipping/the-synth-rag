@@ -86,11 +86,20 @@
     - User quota management system
 
 - ✅ Hybrid Search Implementation
+
   - Combined vector search with keyword matching
   - Configurable weights for scoring (vector vs keyword)
   - Improved result relevance with combined scoring
   - Keyword extraction with stop word filtering
   - Seamless API integration
+
+- ✅ Usage Alerts System
+  - API endpoint for detecting unusual usage patterns
+  - Alert detection for cost spikes
+  - Alert detection for users approaching quota limits
+  - Alert detection for unusual activity patterns
+  - Admin dashboard for viewing and managing alerts
+  - Real-time alert monitoring with automatic refresh
 
 ## What's Left to Build
 
@@ -442,6 +451,17 @@ The project is now entering the **Enhancement Phase**. Core functionality is imp
 - Verified API functionality for random prompt retrieval
 - Integrated prompts with the prompt rotation system in general chat
 
+### May 29, 2024 15:30 EST - Usage Alerts System
+
+- Implemented Usage Alerts System:
+  - Created API endpoint for detecting unusual usage patterns
+  - Implemented alert detection for cost spikes
+  - Implemented alert detection for users approaching quota limits
+  - Implemented alert detection for unusual activity patterns
+  - Created admin dashboard for viewing and managing alerts
+  - Added real-time alert monitoring with automatic refresh
+  - Integrated with existing token usage tracking system
+
 ## Next Milestones
 
 ### Short-term (1-2 days)
@@ -681,3 +701,74 @@ The project is now entering the **Enhancement Phase**. Core functionality is imp
 2. Create cost analytics dashboard
 3. Set up monitoring alerts
 4. Optimize hybrid search performance
+
+# Progress Report - 2024-03-20 14:40
+
+## Completed Features
+
+### Text Processing
+
+- ✅ Semantic text chunking implementation
+- ✅ Token counting and tracking
+- ✅ Database schema updates
+- ✅ Migration scripts
+- ✅ Testing framework
+
+## In Progress
+
+### Testing and Validation
+
+- 🔄 Testing with various document types
+- 🔄 Performance monitoring
+- 🔄 Edge case handling
+
+### Documentation
+
+- 🔄 API documentation updates
+- 🔄 Usage guidelines
+- 🔄 Performance recommendations
+
+## Next Steps
+
+### Short Term
+
+1. Run database migrations
+2. Deploy schema changes
+3. Test chunking with real documents
+4. Monitor token usage
+
+### Medium Term
+
+1. Fine-tune chunk sizes
+2. Implement adaptive overlap
+3. Add compression
+4. Create visualization tools
+
+## Known Issues
+
+### High Priority
+
+- ⚠️ Need to handle very long sentences
+- ⚠️ Token count estimation needs improvement
+- ⚠️ Chunk overlap performance impact
+
+### Low Priority
+
+- ℹ️ Add more test cases
+- ℹ️ Improve error messages
+- ℹ️ Add chunk statistics
+
+## Metrics
+
+### Performance
+
+- Average chunk size: ~1000 tokens
+- Chunk overlap: ~200 tokens
+- Processing time: TBD
+- Storage efficiency: TBD
+
+### Quality
+
+- Semantic boundary preservation: High
+- Context retention between chunks: Good
+- Error rate: TBD
