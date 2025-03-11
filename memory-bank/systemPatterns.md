@@ -143,3 +143,100 @@ User → ChatInterface → ChatService → VectorStoreService + LLMService → U
 3. **Security First**: All user data must be encrypted and properly secured
 4. **Performance Budget**: Initial load under 2 seconds, chat responses under 5 seconds
 5. **Accessibility Compliance**: WCAG 2.1 AA compliance required
+
+## Progress Tracking Architecture
+
+### Component Structure
+
+1. Database Layer
+
+   - Progress sessions table for overall tracking
+   - Steps table for granular progress
+   - Metrics table for performance data
+   - Optimized queries and proper indexing
+
+2. Service Layer
+
+   - ProgressService for database operations
+   - Metrics aggregation and calculations
+   - Health monitoring functions
+   - Error handling and validation
+
+3. API Layer
+
+   - Admin-only endpoints
+   - Rate limiting middleware
+   - Authentication checks
+   - Error handling middleware
+
+4. Admin Dashboard
+   - Real-time metrics display
+   - System health monitoring
+   - Session tracking and debugging
+   - Error state handling
+
+### Data Flow
+
+1. Session Tracking
+
+   ```mermaid
+   flowchart TD
+       A[User Action] --> B[Progress Service]
+       B --> C[Database]
+       C --> D[Admin Dashboard]
+       D --> E[Metrics Display]
+   ```
+
+2. Health Monitoring
+   ```mermaid
+   flowchart TD
+       A[System Events] --> B[Health Service]
+       B --> C[Metrics Collection]
+       C --> D[Admin Dashboard]
+       D --> E[Health Display]
+   ```
+
+### Security Pattern
+
+1. Admin Access
+
+   - Middleware protection for /admin routes
+   - Session-based authentication
+   - Rate limiting for API endpoints
+   - Security headers
+
+2. Data Protection
+   - Sanitized inputs
+   - Validated outputs
+   - Error masking
+   - Rate limiting
+
+### Monitoring Pattern
+
+1. System Metrics
+
+   - Active sessions count
+   - Error rates
+   - Response times
+   - Memory usage
+
+2. Database Metrics
+   - Connection status
+   - Query latency
+   - Active/failed sessions
+   - Hourly statistics
+
+### Error Handling Pattern
+
+1. API Errors
+
+   - 401: Authentication
+   - 429: Rate limiting
+   - 500: Server errors
+   - Network issues
+
+2. UI Error States
+   - Visual indicators
+   - Recovery actions
+   - Graceful degradation
+   - Auto-retry logic
