@@ -24,6 +24,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 Analytics
               </Link>
               <Link
+                href="/admin/token-usage"
+                className="text-sm font-medium hover:underline"
+              >
+                Token Usage
+              </Link>
+              <Link
                 href="/admin/progress"
                 className="text-sm font-medium hover:underline"
               >

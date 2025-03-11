@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { withCors } from "@/src/lib/middleware/cors";
+import { withTokenTracking } from "@/src/lib/middleware/token-tracking";
 import { NextRequest } from "next/server";
 import { getEnvironmentVariable } from "@langchain/core/utils/env";
 import { chatCache, generateChatCacheKey } from "@/src/lib/cache";
@@ -35,9 +36,9 @@ try {
   console.warn("Failed to initialize rate limiter:", error);
 }
 
-// Handler function with CORS middleware
+// Handler function with CORS and token tracking middleware
 export async function POST(req: NextRequest) {
-  return withCors(req, handleChatRequest);
+  return withCors(req, (req) => withTokenTracking(req, handleChatRequest));
 }
 
 // Main handler function
@@ -53,7 +54,7 @@ async function handleChatRequest(req: NextRequest) {
     }
 
     // Parse request
-    const { messages, useCase } = await req.json();
+    const { messages, useCase, userId, sessionId } = await req.json();
     if (!messages?.length) {
       return new Response("Messages array is required", { status: 400 });
     }
