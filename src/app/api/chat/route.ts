@@ -1,18 +1,12 @@
 import { OpenAIStream } from "../../../lib/openai-stream";
 import OpenAI from "openai";
-import { Pinecone } from "@pinecone-database/pinecone";
-import { OpenAIEmbeddings } from "@langchain/openai";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { withCors } from "@/src/lib/middleware/cors";
 import { NextRequest } from "next/server";
 import { getEnvironmentVariable } from "@langchain/core/utils/env";
-import {
-  embeddingCache,
-  chatCache,
-  generateChatCacheKey,
-  generateEmbeddingCacheKey,
-} from "@/src/lib/cache";
+import { chatCache, generateChatCacheKey } from "@/src/lib/cache";
+import { hybridSearch } from "@/src/lib/hybrid-search";
 
 export const runtime = "edge";
 export const maxDuration = 30;
@@ -41,29 +35,6 @@ try {
   console.warn("Failed to initialize rate limiter:", error);
 }
 
-// Initialize Pinecone client
-let pinecone: Pinecone;
-try {
-  pinecone = new Pinecone({
-    apiKey: getEnvironmentVariable("PINECONE_API_KEY") as string,
-  });
-} catch (error) {
-  console.error("Failed to initialize Pinecone:", error);
-  pinecone = {} as Pinecone; // Fallback empty object to prevent crashes
-}
-
-// Initialize embeddings model
-let embeddings: OpenAIEmbeddings;
-try {
-  embeddings = new OpenAIEmbeddings({
-    openAIApiKey: getEnvironmentVariable("OPENAI_API_KEY") as string,
-    modelName: "text-embedding-3-small",
-  });
-} catch (error) {
-  console.error("Failed to initialize OpenAI embeddings:", error);
-  embeddings = {} as OpenAIEmbeddings; // Fallback empty object to prevent crashes
-}
-
 // Handler function with CORS middleware
 export async function POST(req: NextRequest) {
   return withCors(req, handleChatRequest);
@@ -82,7 +53,7 @@ async function handleChatRequest(req: NextRequest) {
     }
 
     // Parse request
-    const { messages } = await req.json();
+    const { messages, useCase } = await req.json();
     if (!messages?.length) {
       return new Response("Messages array is required", { status: 400 });
     }
@@ -123,104 +94,67 @@ async function handleChatRequest(req: NextRequest) {
     }
 
     try {
-      // Check cache for query embedding
-      const embeddingCacheKey = generateEmbeddingCacheKey(lastMessage.content);
-      let queryEmbedding = await embeddingCache.get<number[]>(
-        embeddingCacheKey
-      );
-
-      if (!queryEmbedding) {
-        // Generate embedding if not in cache
-        queryEmbedding = await embeddings.embedQuery(lastMessage.content);
-        // Cache the embedding
-        await embeddingCache.set(embeddingCacheKey, queryEmbedding);
-      }
-
-      console.log("Generated/Retrieved query embedding");
-
-      // Query Pinecone for relevant context
-      const index = pinecone.index(process.env.PINECONE_INDEX);
-      console.log("Querying Pinecone with:", {
+      // Perform hybrid search
+      console.log("Performing hybrid search for:", {
         query: lastMessage.content,
-        indexName: process.env.PINECONE_INDEX,
+        useCase: useCase || "general",
       });
 
-      try {
-        const queryResponse = await index.query({
-          vector: queryEmbedding,
-          topK: 5,
-          includeMetadata: true,
+      const searchResults = await hybridSearch({
+        query: lastMessage.content,
+        useCase: useCase || undefined,
+        topK: 5,
+        minScore: 0.3,
+        vectorWeight: 0.7,
+        keywordWeight: 0.3,
+      });
+
+      console.log("Hybrid search results:", {
+        resultCount: searchResults.length,
+        scores: searchResults.map((r) => r.score),
+      });
+
+      if (!searchResults.length) {
+        const noContextMessage =
+          "I apologize, but I couldn't find any relevant information in the uploaded documents to answer your question. This could be because:\n\n1. The document might still be processing\n2. The relevant information might not be in the uploaded documents\n3. The question might need to be rephrased\n\nPlease try:\n- Waiting a moment if you just uploaded the document\n- Rephrasing your question\n- Checking if the correct documents are uploaded";
+
+        // Cache the no-context response
+        await chatCache.set(chatCacheKey, noContextMessage);
+
+        // Create an error message stream
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+          start(controller) {
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  content: noContextMessage,
+                  role: "assistant",
+                })}\n\n`
+              )
+            );
+            controller.close();
+          },
         });
-        console.log("Pinecone query response:", {
-          matchCount: queryResponse.matches.length,
-          matches: queryResponse.matches.map((m) => ({
-            score: m.score,
-            metadata: m.metadata,
-          })),
+
+        return new Response(stream, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive",
+          },
         });
+      }
 
-        // Extract and process context from matches
-        const contexts = queryResponse.matches
-          .filter(
-            (match) => match.metadata && typeof match.metadata.text === "string"
-          )
-          .map((match) => ({
-            text: match.metadata!.text as string,
-            score: match.score || 0,
-            source: (match.metadata!.originalName as string) || "unknown",
-          }))
-          .filter((context) => context.score > 0.3);
+      // Prepare context for the prompt
+      const contextText = searchResults
+        .map((ctx) => `[Source: ${ctx.source}]\n${ctx.text}`)
+        .join("\n\n");
 
-        console.log("Processed contexts:", {
-          beforeFiltering: queryResponse.matches.length,
-          afterMetadataFilter: queryResponse.matches.filter(
-            (m) => m.metadata && typeof m.metadata.text === "string"
-          ).length,
-          afterScoreFilter: contexts.length,
-          scores: contexts.map((c) => c.score),
-        });
-
-        if (!contexts.length) {
-          const noContextMessage =
-            "I apologize, but I couldn't find any relevant information in the uploaded documents to answer your question. This could be because:\n\n1. The document might still be processing\n2. The relevant information might not be in the uploaded documents\n3. The question might need to be rephrased\n\nPlease try:\n- Waiting a moment if you just uploaded the document\n- Rephrasing your question\n- Checking if the correct documents are uploaded";
-
-          // Cache the no-context response
-          await chatCache.set(chatCacheKey, noContextMessage);
-
-          // Create an error message stream
-          const encoder = new TextEncoder();
-          const stream = new ReadableStream({
-            start(controller) {
-              controller.enqueue(
-                encoder.encode(
-                  `data: ${JSON.stringify({
-                    content: noContextMessage,
-                    role: "assistant",
-                  })}\n\n`
-                )
-              );
-              controller.close();
-            },
-          });
-
-          return new Response(stream, {
-            headers: {
-              "Content-Type": "text/event-stream",
-              "Cache-Control": "no-cache",
-              Connection: "keep-alive",
-            },
-          });
-        }
-
-        // Prepare context for the prompt
-        const contextText = contexts
-          .map((ctx) => `[Source: ${ctx.source}]\n${ctx.text}`)
-          .join("\n\n");
-
-        // System message with context and instructions
-        const systemMessage = {
-          role: "system",
-          content: `You are a helpful AI assistant. Use the following context to answer the user's questions. If you cannot find the answer in the context, say so - do not make up information.
+      // System message with context and instructions
+      const systemMessage = {
+        role: "system",
+        content: `You are a helpful AI assistant. Use the following context to answer the user's questions. If you cannot find the answer in the context, say so - do not make up information.
 
 Context:
 ${contextText}
@@ -229,61 +163,50 @@ Instructions:
 1. Only use information from the provided context
 2. If you're unsure, ask for clarification
 3. Cite sources when possible using [Source: filename]`,
-        };
+      };
 
-        // Create the chat completion with streaming
-        try {
-          if (!openai.chat?.completions?.create) {
-            throw new Error("OpenAI API not properly initialized");
-          }
-
-          const stream = await openai.chat.completions.create({
-            model: "gpt-4-turbo-preview",
-            messages: [systemMessage, ...messages],
-            stream: true,
-            temperature: 0.7,
-            max_tokens: 2000,
-          });
-
-          // Create a modified stream that caches the response
-          let fullResponse = "";
-          const modifiedStream = new TransformStream({
-            transform(chunk, controller) {
-              const text = new TextDecoder().decode(chunk);
-              fullResponse += text;
-              controller.enqueue(chunk);
-            },
-            flush(controller) {
-              // Cache the complete response when the stream ends
-              chatCache.set(chatCacheKey, fullResponse).catch(console.error);
-              controller.terminate();
-            },
-          });
-
-          // Return the streaming response through the modified stream
-          const responseStream = OpenAIStream(stream);
-          return new Response(responseStream.pipeThrough(modifiedStream), {
-            headers: {
-              "Content-Type": "text/event-stream",
-              "Cache-Control": "no-cache",
-              Connection: "keep-alive",
-            },
-          });
-        } catch (error) {
-          console.error("OpenAI API error:", error);
-          return new Response(
-            `OpenAI API error: ${
-              error instanceof Error ? error.message : String(error)
-            }`,
-            {
-              status: 500,
-            }
-          );
+      // Create the chat completion with streaming
+      try {
+        if (!openai.chat?.completions?.create) {
+          throw new Error("OpenAI API not properly initialized");
         }
+
+        const stream = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [systemMessage, ...messages],
+          stream: true,
+          temperature: 0.7,
+          max_tokens: 2000,
+        });
+
+        // Create a modified stream that caches the response
+        let fullResponse = "";
+        const modifiedStream = new TransformStream({
+          transform(chunk, controller) {
+            const text = new TextDecoder().decode(chunk);
+            fullResponse += text;
+            controller.enqueue(chunk);
+          },
+          flush(controller) {
+            // Cache the complete response when the stream ends
+            chatCache.set(chatCacheKey, fullResponse).catch(console.error);
+            controller.terminate();
+          },
+        });
+
+        // Return the streaming response through the modified stream
+        const responseStream = OpenAIStream(stream);
+        return new Response(responseStream.pipeThrough(modifiedStream), {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive",
+          },
+        });
       } catch (error) {
-        console.error("Vector database error:", error);
+        console.error("OpenAI API error:", error);
         return new Response(
-          `Vector database error: ${
+          `OpenAI API error: ${
             error instanceof Error ? error.message : String(error)
           }`,
           {
@@ -292,9 +215,9 @@ Instructions:
         );
       }
     } catch (error) {
-      console.error("Embedding generation error:", error);
+      console.error("Search error:", error);
       return new Response(
-        `Embedding generation error: ${
+        `Search error: ${
           error instanceof Error ? error.message : String(error)
         }`,
         {

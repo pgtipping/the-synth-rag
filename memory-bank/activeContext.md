@@ -744,7 +744,7 @@ After analyzing market opportunities and our technical strengths, we've identifi
    - Market recognition
    - Competitive position
 
-## Cost Optimization Implementation (March 11, 2025)
+## Cost Optimization Implementation (March 12, 2025)
 
 ### Implemented Features
 
@@ -762,15 +762,25 @@ After analyzing market opportunities and our technical strengths, we've identifi
    - Cached embeddings to reduce OpenAI API calls
    - Cached chat responses for identical queries
    - Efficient streaming response handling
-   - Model upgraded to gpt-4-turbo-preview for better cost/performance ratio
+   - Model upgraded to gpt-4o (latest model) from deprecated gpt-4-turbo-preview
 
-3. **Testing Coverage**
+3. **Hybrid Search Implementation**
+
+   - Combined vector search with keyword matching
+   - Configurable weights for vector and keyword scores
+   - Improved result relevance through multi-factor scoring
+   - Keyword extraction with stop word filtering
+   - Implemented in `src/lib/hybrid-search.ts`
+   - Integrated with chat API route
+
+4. **Testing Coverage**
    - Added unit tests for caching functionality
+   - Added tests for hybrid search integration
    - Test scenarios:
      - Cached response retrieval
-     - Cached embedding usage
-     - New embedding caching
-   - Mocked Redis interactions for testing
+     - Hybrid search result processing
+     - Error handling
+   - Mocked Redis and search interactions for testing
 
 ### Next Steps
 
@@ -782,7 +792,6 @@ After analyzing market opportunities and our technical strengths, we've identifi
 
 2. **Further Optimizations**
 
-   - Implement hybrid search
    - Add token usage tracking
    - Optimize chunk sizes
    - Implement batch processing
