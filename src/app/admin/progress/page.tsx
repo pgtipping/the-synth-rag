@@ -152,11 +152,32 @@ export default function AdminProgress() {
     };
 
     const severityClasses = {
-      auth: "border-yellow-500 bg-yellow-50",
-      rate_limit: "border-orange-500 bg-orange-50",
-      server: "border-red-500 bg-red-50",
-      network: "border-orange-500 bg-orange-50",
-      unknown: "border-gray-500 bg-gray-50",
+      auth: "border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20 dark:border-yellow-800",
+      rate_limit:
+        "border-orange-500 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800",
+      server: "border-red-500 bg-red-50 dark:bg-red-950/20 dark:border-red-800",
+      network:
+        "border-orange-500 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800",
+      unknown:
+        "border-gray-500 bg-gray-50 dark:bg-gray-800/20 dark:border-gray-700",
+    };
+
+    const errorTitles = {
+      auth: "Authentication Error",
+      rate_limit: "Rate Limit Exceeded",
+      server: "Server Error",
+      network: "Network Error",
+      unknown: "Unknown Error",
+    };
+
+    const errorHelp = {
+      auth: "Try logging out and logging back in to refresh your session.",
+      rate_limit:
+        "The system is experiencing high traffic. Please wait a moment before trying again.",
+      server:
+        "Our team has been automatically notified and is working to resolve this issue.",
+      network: "Check your internet connection or try again later.",
+      unknown: "If this error persists, please contact support.",
     };
 
     return (
@@ -164,21 +185,66 @@ export default function AdminProgress() {
         <div className="flex items-center gap-2">
           {icons[error.type]}
           <AlertTitle className="text-lg font-semibold">
-            {error.code ? `Error ${error.code}` : "Error"}
+            {errorTitles[error.type]} {error.code ? `(${error.code})` : ""}
           </AlertTitle>
         </div>
         <AlertDescription className="mt-2">
-          <p className="text-sm">{error.message}</p>
-          {error.retryable && (
+          <p className="text-sm mb-1">{error.message}</p>
+          <p className="text-xs text-muted-foreground">
+            {errorHelp[error.type]}
+          </p>
+          <div className="mt-3 flex gap-2">
+            {error.retryable && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchData}
+                className="gap-1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-refresh-cw"
+                >
+                  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                  <path d="M21 3v5h-5" />
+                  <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                  <path d="M3 21v-5h5" />
+                </svg>
+                Retry
+              </Button>
+            )}
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={fetchData}
-              className="mt-2"
+              onClick={() => setError(null)}
+              className="gap-1"
             >
-              Retry
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-x"
+              >
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
+              Dismiss
             </Button>
-          )}
+          </div>
         </AlertDescription>
       </Alert>
     );

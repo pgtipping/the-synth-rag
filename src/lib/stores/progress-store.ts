@@ -18,6 +18,8 @@ interface ProgressState {
   recordMetric: (name: string, value: number) => Promise<void>;
   createStep: (update: ProgressUpdate) => Promise<void>;
   reset: () => void;
+  clearError: () => void;
+  setError: (message: string) => void;
 }
 
 export const useProgressStore = create<ProgressState>((set, get) => ({
@@ -39,9 +41,12 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
         isLoading: false,
       });
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to start session";
+
+      console.error("Start session error:", error);
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to start session",
+        error: errorMessage,
         isLoading: false,
       });
     }
@@ -72,8 +77,12 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
         };
       });
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update step";
+
+      console.error("Update step error:", error);
       set({
-        error: error instanceof Error ? error.message : "Failed to update step",
+        error: errorMessage,
         isLoading: false,
       });
     }
@@ -107,8 +116,12 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
         isLoading: false,
       }));
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to create step";
+
+      console.error("Create step error:", error);
       set({
-        error: error instanceof Error ? error.message : "Failed to create step",
+        error: errorMessage,
         isLoading: false,
       });
     }
@@ -138,9 +151,12 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
         isLoading: false,
       }));
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to complete session";
+
+      console.error("Complete session error:", error);
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to complete session",
+        error: errorMessage,
         isLoading: false,
       });
     }
@@ -171,9 +187,12 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
         isLoading: false,
       }));
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to record metric";
+
+      console.error("Record metric error:", error);
       set({
-        error:
-          error instanceof Error ? error.message : "Failed to record metric",
+        error: errorMessage,
         isLoading: false,
       });
     }
@@ -185,5 +204,13 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
       isLoading: false,
       error: null,
     });
+  },
+
+  clearError: () => {
+    set({ error: null });
+  },
+
+  setError: (message: string) => {
+    set({ error: message });
   },
 }));
