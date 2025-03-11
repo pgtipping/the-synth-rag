@@ -42,7 +42,7 @@ export async function hybridSearch({
     // Initialize embeddings model
     const embeddings = new OpenAIEmbeddings({
       openAIApiKey: getEnvironmentVariable("OPENAI_API_KEY") as string,
-      modelName: "text-embedding-3-small",
+      modelName: "text-embedding-3-mini",
     });
 
     // Check cache for query embedding

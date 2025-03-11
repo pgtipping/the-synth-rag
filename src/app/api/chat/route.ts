@@ -172,7 +172,7 @@ Instructions:
         }
 
         const stream = await openai.chat.completions.create({
-          model: "gpt-4o",
+          model: "gpt-4o-mini",
           messages: [systemMessage, ...messages],
           stream: true,
           temperature: 0.7,
