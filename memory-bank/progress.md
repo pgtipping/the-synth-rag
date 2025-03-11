@@ -72,7 +72,7 @@
   - Efficient streaming response handling
   - Model optimization (upgraded to cost-effective models)
     - Switched from `gpt-4o` to `gpt-4o-mini` (94% cost reduction)
-    - Changed from `text-embedding-3-small` to `text-embedding-3-mini` (60% cost reduction)
+    - Continued use of `text-embedding-3-small` for optimal embedding quality
 
 - ✅ Hybrid Search Implementation
   - Combined vector search with keyword matching

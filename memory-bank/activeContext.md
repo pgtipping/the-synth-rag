@@ -807,26 +807,25 @@ After analyzing market opportunities and our technical strengths, we've identifi
 1. **Model Selection Updates**
 
    - Updated the OpenAI model from `gpt-4o` to `gpt-4o-mini` for significant cost savings
-   - Changed embedding model from `text-embedding-3-small` to `text-embedding-3-mini`
+   - Maintained `text-embedding-3-small` as the embedding model (no change)
    - Maintained performance while reducing costs by approximately 94% for chat completions
-   - Reduced embedding costs by approximately 60%
 
 2. **Cost Comparison**
 
    - Previous configuration:
      - `gpt-4o`: $2.50 per million tokens (input), $10.00 per million tokens (output)
-     - `text-embedding-3-small`: $0.13 per million tokens
+     - `text-embedding-3-small`: $0.02 per million tokens
    - New configuration:
      - `gpt-4o-mini`: $0.15 per million tokens (input), $0.60 per million tokens (output)
-     - `text-embedding-3-mini`: $0.05 per million tokens
-   - Total savings: Approximately 90% reduction in API costs
+     - `text-embedding-3-small`: $0.02 per million tokens (unchanged)
+   - Total savings: Approximately 90% reduction in API costs for chat completions
 
 3. **Performance Considerations**
 
    - `gpt-4o-mini` maintains 73/78 quality score compared to `gpt-4o`
    - Faster token generation (114.4 tokens/sec vs 104.9 tokens/sec)
    - Slightly reduced context understanding but sufficient for RAG applications
-   - `text-embedding-3-mini` provides 80% of the performance of `text-embedding-3-small` at 38% of the cost
+   - Continued use of `text-embedding-3-small` for optimal embedding quality
 
 4. **Next Steps for Cost Optimization**
    - Implement usage tracking and analytics dashboard
