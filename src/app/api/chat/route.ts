@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import { Configuration, OpenAIApi } from "openai-edge";
-import { ContextManager } from "@/src/lib/context/ContextManager";
-import { ResponseOptimizer } from "@/src/lib/response/ResponseOptimizer";
-import { TokenUsageTracker } from "@/src/lib/analytics/TokenUsageTracker";
+import { ContextManager } from "../../../lib/context-manager";
+import { ResponseOptimizer } from "../../../lib/response/ResponseOptimizer";
+import { TokenUsageTracker } from "../../../lib/analytics/TokenUsageTracker";
 import { encode } from "gpt-tokenizer";
 
 // Initialize OpenAI configuration
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     );
 
     // Prepare system message with context
-    const contextStr = chunks.map((chunk) => chunk.content).join("\n\n");
+    const contextStr = chunks.map((chunk) => chunk.text).join("\n\n");
     const systemMessage = {
       role: "system",
       content: `You are a helpful AI assistant. Use the following context to answer the user's question:\n\n${contextStr}\n\nIf the context doesn't contain relevant information, say so. Always cite your sources using [1], [2], etc.`,
@@ -38,7 +38,8 @@ export async function POST(req: Request) {
     const inputTokens =
       encode(systemMessage.content).length +
       messages.reduce(
-        (sum: number, msg: any) => sum + encode(msg.content).length,
+        (sum: number, msg: { content: string }) =>
+          sum + encode(msg.content).length,
         0
       );
 
@@ -55,7 +56,7 @@ export async function POST(req: Request) {
       async onToken(token) {
         responseContent += token;
       },
-      async onFinal(completion) {
+      async onFinal() {
         // Optimize response
         const { response: optimizedResponse, metrics } =
           await responseOptimizer.optimizeResponse(

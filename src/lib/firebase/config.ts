@@ -1,6 +1,6 @@
 // Firebase configuration
-import { initializeApp, getApps, FirebaseApp } from "firebase/app";
-import { getAuth, Auth } from "firebase/auth";
+import { FirebaseApp } from "firebase/app";
+import { Auth } from "firebase/auth";
 import { Analytics } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -18,24 +18,41 @@ let app: FirebaseApp;
 let auth: Auth;
 let analytics: Analytics | null = null;
 
-// Check if we're in the browser environment
-if (typeof window !== "undefined") {
-  // Initialize Firebase only on the client side
-  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-  auth = getAuth(app);
+// Lazy initialization function
+async function initializeFirebase() {
+  if (typeof window === "undefined") {
+    // Server-side initialization (minimal)
+    const { initializeApp, getApps } = await import("firebase/app");
+    const { getAuth } = await import("firebase/auth");
 
-  // Initialize Analytics only on client side
-  import("firebase/analytics")
-    .then((module) => {
-      analytics = module.getAnalytics(app);
-    })
-    .catch((err) => {
+    const apps = getApps();
+    app = apps.length === 0 ? initializeApp(firebaseConfig) : apps[0];
+    auth = getAuth(app);
+    return { app, auth, analytics: null };
+  } else {
+    // Client-side initialization
+    const { initializeApp, getApps } = await import("firebase/app");
+    const { getAuth } = await import("firebase/auth");
+
+    const apps = getApps();
+    app = apps.length === 0 ? initializeApp(firebaseConfig) : apps[0];
+    auth = getAuth(app);
+
+    try {
+      const analyticsModule = await import("firebase/analytics");
+      analytics = analyticsModule.getAnalytics(app);
+    } catch (err) {
       console.error("Error loading analytics:", err);
-    });
-} else {
-  // Server-side initialization (minimal)
-  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-  auth = getAuth(app);
+    }
+
+    return { app, auth, analytics };
+  }
 }
 
+// Export a function to get Firebase instances
+export async function getFirebase() {
+  return initializeFirebase();
+}
+
+// For backward compatibility
 export { app, auth, analytics };

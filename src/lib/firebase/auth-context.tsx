@@ -1,13 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import {
-  User,
-  signInAnonymously,
-  signOut as firebaseSignOut,
-  onAuthStateChanged,
-} from "firebase/auth";
-import { auth } from "./config";
+import { User, Auth } from "firebase/auth";
+import { getFirebase } from "./config";
 
 interface AuthContextType {
   user: User | null;
@@ -26,19 +21,39 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authInstance, setAuthInstance] = useState<Auth | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
+    const initializeAuth = async () => {
+      try {
+        const { auth } = await getFirebase();
+        setAuthInstance(auth);
 
-    return () => unsubscribe();
+        const { onAuthStateChanged } = await import("firebase/auth");
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          setUser(user);
+          setLoading(false);
+        });
+
+        return () => unsubscribe();
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
   }, []);
 
   const signIn = async () => {
+    if (!authInstance) {
+      const { auth } = await getFirebase();
+      setAuthInstance(auth);
+    }
+
     try {
-      await signInAnonymously(auth);
+      const { signInAnonymously } = await import("firebase/auth");
+      await signInAnonymously(authInstance!);
     } catch (error) {
       console.error("Error signing in:", error);
       throw error;
@@ -46,8 +61,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    if (!authInstance) {
+      const { auth } = await getFirebase();
+      setAuthInstance(auth);
+    }
+
     try {
-      await firebaseSignOut(auth);
+      const { signOut: firebaseSignOut } = await import("firebase/auth");
+      await firebaseSignOut(authInstance!);
     } catch (error) {
       console.error("Error signing out:", error);
       throw error;

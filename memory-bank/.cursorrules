@@ -1,4 +1,4 @@
-# Cursor Rules - Updated on March 9, 2025 19:45 EST
+# Cursor Rules - Updated on May 29, 2024 10:30 EST
 
 ## Project Structure
 
@@ -474,3 +474,13 @@ When executing terminal commands in this environment, the first character of the
 
 - Always add a space at the beginning of terminal commands
 - Example: ` curl http://localhost:3000/api/documents` instead of `
+
+## Import Path Patterns - May 29, 2024
+
+When importing files in the project, use the following patterns:
+
+- For imports from the lib directory, use relative paths: `../../../lib/file-name`
+- Do not use the `@/` prefix as it may cause module resolution issues
+- The ContextManager is located at `src/lib/context-manager.ts` (with a hyphen)
+- The ResponseOptimizer is located at `src/lib/response/ResponseOptimizer.ts`
+- The TokenUsageTracker is located at `src/lib/analytics/TokenUsageTracker.ts`

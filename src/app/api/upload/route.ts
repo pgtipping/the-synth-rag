@@ -101,15 +101,20 @@ export async function POST(request: NextRequest) {
     // Process the file to extract text
     const processedContent = await processFile(file, buffer);
 
-    // Index the document in Pinecone
-    const vectorId = await indexDocument(processedContent.text, {
-      documentId: document.id,
-      chunkIndex: 0,
-      originalName: document.originalName,
-      mimeType: document.contentType,
-      processedAt: new Date().toISOString(),
-      text: processedContent.text,
-    });
+    // Index all document chunks in Pinecone
+    const vectorIds = [];
+    for (let i = 0; i < processedContent.chunks.length; i++) {
+      const chunk = processedContent.chunks[i];
+      const vectorId = await indexDocument(chunk.text, {
+        documentId: document.id,
+        chunkIndex: i,
+        originalName: document.originalName,
+        mimeType: document.contentType,
+        processedAt: new Date().toISOString(),
+        text: chunk.text,
+      });
+      vectorIds.push(vectorId);
+    }
 
     // Update status to indexed
     await documentService.updateDocumentStatus(document.id, "indexed");
@@ -120,7 +125,7 @@ export async function POST(request: NextRequest) {
         document: {
           ...document,
           status: "indexed",
-          vectorId,
+          vectorIds,
         },
         url: document.storageUrl,
       }),

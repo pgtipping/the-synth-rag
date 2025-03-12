@@ -26,13 +26,17 @@ const nextConfig = {
     return config;
   },
   // External packages that should be transpiled
-  transpilePackages: ["firebase", "@firebase/auth", "@firebase/app"],
+  transpilePackages: ["@firebase/util", "@firebase/component"],
+  // External packages for server components
   serverExternalPackages: [
     "pg",
     "@vercel/blob",
     "bullmq",
     "mammoth",
     "pdf-parse",
+    "firebase",
+    "@firebase/auth",
+    "@firebase/app",
   ],
   // Disable the X-Powered-By header
   poweredByHeader: false,
@@ -45,6 +49,10 @@ const nextConfig = {
   // Enable TypeScript checking during build
   typescript: {
     ignoreBuildErrors: false,
+  },
+  // Experimental features to better support ES modules
+  experimental: {
+    esmExternals: true,
   },
 };
 

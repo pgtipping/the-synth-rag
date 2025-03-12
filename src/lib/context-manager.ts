@@ -51,6 +51,25 @@ export class ContextManager {
   }
 
   /**
+   * Gets context chunks relevant to the query
+   */
+  public async getContext(
+    query: string
+  ): Promise<{ chunks: ContextChunk[]; scores: number[] }> {
+    // This is a placeholder implementation
+    // In a real implementation, you would:
+    // 1. Retrieve chunks from your vector database
+    // 2. Get embeddings for the query
+    // 3. Optimize the context using the optimizeContext method
+
+    // For now, return an empty result
+    return {
+      chunks: [],
+      scores: [],
+    };
+  }
+
+  /**
    * Prunes and prioritizes context chunks based on relevance and token limits
    */
   public async optimizeContext(
