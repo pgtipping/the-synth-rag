@@ -1,6 +1,6 @@
-# Active Context - Updated [2024-05-29 10:30:00]
+# Active Context - Updated [2024-05-29 11:15:00]
 
-## Current Focus - Updated [2024-05-29 10:30:00]
+## Current Focus - Updated [2024-05-29 11:15:00]
 
 ### Text Chunking Implementation
 
@@ -269,3 +269,10 @@ Currently in Phase 2 of the cost optimization plan:
   - Added missing getContext method to ContextManager class
   - Fixed type issues in the route.ts file
   - Server now runs without module not found errors
+
+- Fixed TokenUsageTracker implementation
+  - Created a simplified version that doesn't depend on the db module
+  - Removed database queries and replaced with console logging
+  - Updated model cost calculations with latest pricing
+  - Added support for newer models like gpt-4o and gpt-4o-mini
+  - Server now runs without db import errors

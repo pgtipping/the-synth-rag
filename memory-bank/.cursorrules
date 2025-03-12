@@ -1,4 +1,4 @@
-# Cursor Rules - Updated on May 29, 2024 10:30 EST
+# Cursor Rules - Updated on May 29, 2024 11:15 EST
 
 ## Project Structure
 
@@ -484,3 +484,13 @@ When importing files in the project, use the following patterns:
 - The ContextManager is located at `src/lib/context-manager.ts` (with a hyphen)
 - The ResponseOptimizer is located at `src/lib/response/ResponseOptimizer.ts`
 - The TokenUsageTracker is located at `src/lib/analytics/TokenUsageTracker.ts`
+
+## TokenUsageTracker Implementation - May 29, 2024
+
+The TokenUsageTracker class has been simplified to not depend on the database:
+
+- It now logs token usage to the console instead of saving to the database
+- It has placeholder implementations for metrics and alerts methods
+- It includes updated pricing for the latest OpenAI models
+- It supports newer models like gpt-4o and gpt-4o-mini
+- It uses a singleton pattern with getInstance() method
