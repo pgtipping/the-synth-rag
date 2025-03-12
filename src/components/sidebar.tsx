@@ -3,6 +3,7 @@ import { Icons } from "./icons";
 import { useFileStore } from "@/src/lib/store";
 import { motion } from "framer-motion";
 import { FileIcon } from "./file-icon";
+import { FileUpload } from "./file-upload";
 
 interface SidebarProps {
   useCase: string;
@@ -109,6 +110,12 @@ export function Sidebar({ useCase }: SidebarProps) {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* File Upload Section */}
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold mb-2">Upload Files</h3>
+        <FileUpload useCase={useCase} />
       </div>
 
       {/* Uploaded Files Section */}

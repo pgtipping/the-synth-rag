@@ -4,14 +4,24 @@ import { useChatStore } from "@/src/lib/stores/chat";
 import { useAppStore } from "@/src/lib/stores/app";
 import { ChatStream } from "@/src/components/chat/ChatStream";
 import { ChatInput } from "@/src/components/chat/ChatInput";
-import { FileUpload } from "@/src/components/file-upload";
 import { Button } from "@/src/components/ui/button";
-import { ChevronUp, ChevronDown } from "lucide-react";
 import { sendChatMessage } from "@/src/lib/api/chat";
 import { useEffect, useState } from "react";
 import { Sidebar } from "@/src/components/sidebar";
 import { useFileStore } from "@/src/lib/store";
 import { ChatPromptSuggestions } from "@/src/components/prompts/chat-prompt-suggestions";
+import { DocumentSelector } from "../../../components/documents/document-selector";
+
+interface Document {
+  id: number;
+  originalName: string;
+  contentType: string;
+  sizeBytes: number | string;
+  status: string;
+  createdAt: string | Date;
+  useCase: string;
+  errorMessage: string | null;
+}
 
 export default function ChatClient({ useCase }: { useCase: string }) {
   const { messages, isTyping, isLoading } = useChatStore();
@@ -28,6 +38,7 @@ export default function ChatClient({ useCase }: { useCase: string }) {
     (file) => file.status === "completed"
   );
   const [inputValue, setInputValue] = useState("");
+  const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
 
   useEffect(() => {
     setCurrentUseCase(useCase);
@@ -43,7 +54,10 @@ export default function ChatClient({ useCase }: { useCase: string }) {
   // }, [hasCompletedFiles, isUploadOpen, toggleUpload]);
 
   const handleSend = async (message: string) => {
-    await sendChatMessage(message);
+    await sendChatMessage(
+      message,
+      selectedDocuments.map((doc) => doc.id)
+    );
   };
 
   const handleUsePrompt = (
@@ -56,7 +70,10 @@ export default function ChatClient({ useCase }: { useCase: string }) {
     // If it doesn't need customization, automatically send it
     if (!needsCustomization) {
       setTimeout(() => {
-        sendChatMessage(promptText);
+        sendChatMessage(
+          promptText,
+          selectedDocuments.map((doc) => doc.id)
+        );
       }, 100);
     }
   };
@@ -65,6 +82,13 @@ export default function ChatClient({ useCase }: { useCase: string }) {
     if (hasCompletedFiles) {
       setIsChatReady(true);
       toggleUpload();
+    }
+  };
+
+  const handleDocumentsSelected = (documents: Document[]) => {
+    setSelectedDocuments(documents);
+    if (documents.length > 0) {
+      setIsChatReady(true);
     }
   };
 
@@ -95,24 +119,12 @@ export default function ChatClient({ useCase }: { useCase: string }) {
 
               <div className="border-t p-4">
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-1"
-                    onClick={toggleUpload}
-                  >
-                    {isUploadOpen ? (
-                      <>
-                        <ChevronDown className="h-4 w-4" />
-                        Hide Files
-                      </>
-                    ) : (
-                      <>
-                        <ChevronUp className="h-4 w-4" />
-                        Show Files
-                      </>
-                    )}
-                  </Button>
+                  <DocumentSelector
+                    useCase={useCase}
+                    onDocumentsSelected={handleDocumentsSelected}
+                    selectedDocumentIds={selectedDocuments.map((doc) => doc.id)}
+                  />
+
                   {isUploadOpen && hasCompletedFiles && !isChatReady && (
                     <Button
                       variant="default"
@@ -124,11 +136,23 @@ export default function ChatClient({ useCase }: { useCase: string }) {
                     </Button>
                   )}
                 </div>
-                {isUploadOpen && (
-                  <div className="mt-4">
-                    <FileUpload useCase={useCase} />
+
+                {selectedDocuments.length > 0 && (
+                  <div className="mt-2 p-2 bg-muted rounded-md">
+                    <p className="text-sm font-medium">Selected Documents:</p>
+                    <ul className="mt-1 space-y-1">
+                      {selectedDocuments.map((doc) => (
+                        <li
+                          key={doc.id}
+                          className="text-sm text-muted-foreground"
+                        >
+                          {doc.originalName}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
+
                 <div className="mt-4">
                   <ChatInput
                     onSend={handleSend}

@@ -5,6 +5,7 @@ import { ContextManager } from "../../../lib/context-manager";
 import { ResponseOptimizer } from "../../../lib/response/ResponseOptimizer";
 import { TokenUsageTracker } from "../../../lib/analytics/TokenUsageTracker";
 import { encode } from "gpt-tokenizer";
+import pool from "../../../lib/db";
 
 // Initialize OpenAI configuration
 const config = new Configuration({
@@ -17,15 +18,71 @@ const contextManager = new ContextManager();
 const responseOptimizer = new ResponseOptimizer();
 const tokenTracker = TokenUsageTracker.getInstance();
 
+interface DocumentChunk {
+  vector_id: string;
+  text: string;
+  metadata?: Record<string, unknown>;
+  chunk_index?: number;
+}
+
+interface ChunkData {
+  id: string;
+  text: string;
+  metadata: Record<string, unknown>;
+  relevanceScore: number;
+}
+
 export async function POST(req: Request) {
   try {
-    const { messages, useCase } = await req.json();
+    const { messages, useCase, documentIds = [] } = await req.json();
     const lastMessage = messages[messages.length - 1];
 
-    // Get optimized context
-    const { chunks, scores } = await contextManager.getContext(
-      lastMessage.content
-    );
+    // Get context based on document IDs or query
+    let chunks: ChunkData[] = [];
+    let relevanceScores: number[] = [];
+
+    if (documentIds && documentIds.length > 0) {
+      // Get context from specific documents
+      const client = await pool.connect();
+      try {
+        // Get vector IDs for the specified documents
+        const vectorResult = await client.query<DocumentChunk>(
+          `SELECT vector_id, text_content as text, '{}'::jsonb as metadata 
+           FROM document_chunks 
+           WHERE document_id IN (${documentIds.join(",")})
+           ORDER BY document_id, chunk_index`
+        );
+
+        // Format chunks from the database
+        chunks = vectorResult.rows.map((row) => ({
+          id: row.vector_id,
+          text: row.text,
+          metadata: row.metadata || {},
+          relevanceScore: 1.0, // All chunks from selected documents are considered relevant
+        }));
+
+        // Create scores array
+        relevanceScores = chunks.map(() => 1.0);
+      } finally {
+        client.release();
+      }
+    } else {
+      // Get context based on query
+      const contextResult = await contextManager.getContext(
+        lastMessage.content
+      );
+
+      // Convert ContextChunk[] to ChunkData[]
+      chunks = contextResult.chunks.map((chunk, index) => ({
+        id: `chunk_${index}`, // Generate an ID since ContextChunk doesn't have vector_id
+        text: chunk.text,
+        metadata: chunk.metadata || {},
+        relevanceScore: chunk.relevanceScore || 0,
+      }));
+
+      // Use the scores array directly from contextResult
+      relevanceScores = contextResult.scores;
+    }
 
     // Prepare system message with context
     const contextStr = chunks.map((chunk) => chunk.text).join("\n\n");
@@ -61,7 +118,7 @@ export async function POST(req: Request) {
         const { response: optimizedResponse, metrics } =
           await responseOptimizer.optimizeResponse(
             responseContent,
-            { chunks, scores },
+            { chunks, scores: relevanceScores },
             { useCase, targetLength: "balanced" }
           );
 
@@ -79,6 +136,7 @@ export async function POST(req: Request) {
           ),
           metadata: {
             useCase,
+            documentIds: documentIds.length > 0 ? documentIds : undefined,
             contextChunks: chunks.length,
             averageScore: metrics.averageChunkScore,
             compressionRatio: metrics.compressionRatio,

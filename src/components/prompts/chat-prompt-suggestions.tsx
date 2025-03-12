@@ -48,12 +48,34 @@ export function ChatPromptSuggestions({
           throw new Error(data.error || "Failed to fetch prompts");
         }
 
-        setPrompts(data.data.items);
+        // Filter out duplicate "Document Summary" prompts and "Ask a Question" prompts
+        const filteredItems = data.data.items.filter(
+          (prompt: ExamplePrompt, index: number, self: ExamplePrompt[]) => {
+            // Remove "Ask a Question" prompts
+            if (prompt.title === "Ask a Question") {
+              return false;
+            }
+
+            // Remove duplicate "Document Summary" prompts
+            if (prompt.title === "Document Summary") {
+              // Keep only the first occurrence of "Document Summary"
+              return (
+                self.findIndex(
+                  (p: ExamplePrompt) => p.title === "Document Summary"
+                ) === index
+              );
+            }
+
+            return true;
+          }
+        );
+
+        setPrompts(filteredItems);
 
         // Extract unique categories from prompts
         const uniqueCategories = Array.from(
           new Set(
-            data.data.items.map((prompt: ExamplePrompt) =>
+            filteredItems.map((prompt: ExamplePrompt) =>
               getCategory(prompt.metadata)
             )
           )
@@ -111,25 +133,6 @@ export function ChatPromptSuggestions({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium">Suggested prompts</h3>
-        {categories.length > 1 && (
-          <Tabs
-            value={selectedCategory}
-            onValueChange={setSelectedCategory}
-            className="h-8"
-          >
-            <TabsList className="h-8">
-              {categories.map((category) => (
-                <TabsTrigger
-                  key={category}
-                  value={category}
-                  className="text-xs h-7"
-                >
-                  {category === "all" ? "All" : category}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        )}
       </div>
 
       <div className="flex flex-wrap gap-2">
