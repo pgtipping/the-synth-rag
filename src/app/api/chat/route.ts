@@ -102,7 +102,7 @@ export async function POST(req: Request) {
 
     // Make API request
     const response = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
+      model: "gpt-3.5-turbo",
       messages: [systemMessage, ...messages],
       stream: true,
     });
@@ -125,12 +125,12 @@ export async function POST(req: Request) {
         // Track token usage
         const outputTokens = encode(optimizedResponse).length;
         await tokenTracker.trackUsage({
-          model: "gpt-4o-mini",
+          model: "gpt-3.5-turbo",
           feature: "chat",
           inputTokens,
           outputTokens,
           estimatedCostUsd: tokenTracker.calculateCost(
-            "gpt-4o-mini",
+            "gpt-3.5-turbo",
             inputTokens,
             outputTokens
           ),
