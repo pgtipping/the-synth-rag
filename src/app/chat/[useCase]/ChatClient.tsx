@@ -11,6 +11,8 @@ import { Sidebar } from "@/src/components/sidebar";
 import { useFileStore } from "@/src/lib/store";
 import { ChatPromptSuggestions } from "@/src/components/prompts/chat-prompt-suggestions";
 import { DocumentSelector } from "../../../components/documents/document-selector";
+import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface Document {
   id: number;
@@ -152,6 +154,19 @@ export default function ChatClient({ useCase }: { useCase: string }) {
                       ))}
                     </ul>
                   </div>
+                )}
+
+                {/* Add notification for unprocessed documents */}
+                {selectedDocuments.some((doc) => doc.status !== "indexed") && (
+                  <Alert variant="destructive" className="mt-2">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Warning</AlertTitle>
+                    <AlertDescription>
+                      Some selected documents are not properly processed. The AI
+                      may not be able to access their content. Please go back to
+                      document selection and check document status.
+                    </AlertDescription>
+                  </Alert>
                 )}
 
                 <div className="mt-4">

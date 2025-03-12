@@ -82,12 +82,8 @@ export function DocumentSelector({
         errorMessage: doc.errorMessage || doc.error_message || null,
       }));
 
-      // Filter out documents that are not indexed
-      const indexedDocuments = normalizedData.filter(
-        (doc: Document) => doc.status === "indexed"
-      );
-
-      setDocuments(indexedDocuments);
+      // Show all documents instead of filtering
+      setDocuments(normalizedData);
     } catch (error) {
       console.error("Error fetching documents:", error);
       toast({
@@ -123,8 +119,9 @@ export function DocumentSelector({
   };
 
   const handleConfirm = () => {
-    const selectedDocuments = documents.filter((doc) =>
-      selectedIds.includes(doc.id)
+    // Only allow indexed documents to be selected
+    const selectedDocuments = documents.filter(
+      (doc) => selectedIds.includes(doc.id) && doc.status === "indexed"
     );
     onDocumentsSelected(selectedDocuments);
     setOpen(false);
@@ -157,6 +154,23 @@ export function DocumentSelector({
     return `${size.toFixed(1)} ${units[unitIndex]}`;
   };
 
+  const getStatusBadge = (status: Document["status"]) => {
+    switch (status) {
+      case "indexed":
+        return <Badge variant="success">Indexed</Badge>;
+      case "processing":
+        return <Badge variant="secondary">Processing</Badge>;
+      case "failed":
+        return <Badge variant="destructive">Failed</Badge>;
+      default:
+        return <Badge variant="outline">Uploaded</Badge>;
+    }
+  };
+
+  const needsReprocessing = (doc: Document) => {
+    return doc.status === "uploaded" || doc.status === "failed";
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -183,6 +197,30 @@ export function DocumentSelector({
           </div>
         ) : (
           <div className="space-y-4">
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-700 mb-4">
+              <p className="font-medium mb-1">Document Status Guide:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>
+                  <span className="font-medium">Indexed</span>: Document is
+                  processed and ready to use
+                </li>
+                <li>
+                  <span className="font-medium">Processing</span>: Document is
+                  being processed, please wait
+                </li>
+                <li>
+                  <span className="font-medium">Failed</span>: Processing
+                  failed, click "Fix Document" to retry
+                </li>
+                <li>
+                  <span className="font-medium">Uploaded</span>: Document needs
+                  processing, click "Reprocess" to start
+                </li>
+              </ul>
+              <p className="mt-2">
+                Only indexed documents can be used for chat.
+              </p>
+            </div>
             <div className="grid gap-4">
               {documents.map((doc) => (
                 <div
@@ -191,8 +229,12 @@ export function DocumentSelector({
                     selectedIds.includes(doc.id)
                       ? "border-primary bg-primary/5"
                       : "hover:bg-gray-50"
-                  }`}
-                  onClick={() => toggleDocumentSelection(doc.id)}
+                  } ${doc.status !== "indexed" ? "opacity-70" : ""}`}
+                  onClick={() =>
+                    doc.status === "indexed"
+                      ? toggleDocumentSelection(doc.id)
+                      : null
+                  }
                 >
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
@@ -201,25 +243,39 @@ export function DocumentSelector({
                         {formatFileSize(doc.sizeBytes)} • Uploaded{" "}
                         {formatDate(doc.createdAt)}
                       </div>
+                      {doc.errorMessage && (
+                        <div className="text-sm text-red-500 mt-1">
+                          Error: {doc.errorMessage}
+                        </div>
+                      )}
                     </div>
-                    <Badge
-                      variant={
-                        selectedIds.includes(doc.id) ? "default" : "outline"
-                      }
-                    >
-                      {selectedIds.includes(doc.id) ? "Selected" : "Select"}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-2">
+                      {getStatusBadge(doc.status)}
+                      {doc.status === "indexed" && (
+                        <Badge
+                          variant={
+                            selectedIds.includes(doc.id) ? "default" : "outline"
+                          }
+                        >
+                          {selectedIds.includes(doc.id) ? "Selected" : "Select"}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
-                  <div
-                    className="mt-2 flex justify-end"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <DocumentReprocessor
-                      documentId={doc.id}
-                      onSuccess={() => fetchDocuments()}
-                    />
-                  </div>
+                  {/* Only show reprocessor for documents that need it */}
+                  {needsReprocessing(doc) && (
+                    <div
+                      className="mt-2 flex justify-end"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <DocumentReprocessor
+                        documentId={doc.id}
+                        onSuccess={() => fetchDocuments()}
+                        errorMessage={doc.errorMessage}
+                      />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -230,7 +286,14 @@ export function DocumentSelector({
               </Button>
               <Button
                 onClick={handleConfirm}
-                disabled={selectedIds.length === 0}
+                disabled={
+                  selectedIds.length === 0 ||
+                  !selectedIds.some(
+                    (id) =>
+                      documents.find((doc) => doc.id === id)?.status ===
+                      "indexed"
+                  )
+                }
               >
                 Use Selected Documents
               </Button>

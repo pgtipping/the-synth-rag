@@ -1,6 +1,15 @@
-# Active Context - Updated June 5, 2024 15:30 EST
+# Active Context - Updated June 5, 2024 16:00 EST
 
 ## Recent Changes
+
+### Document Status UI Improvements - June 5, 2024
+
+- Enhanced document selector to show all documents with their processing status
+- Added clear status badges (Indexed, Processing, Failed, Uploaded)
+- Added helpful explanation about document status in the document selector
+- Added warning alert when unprocessed documents are selected
+- Improved error messaging for failed document processing
+- Made document selection more intuitive by disabling selection of unprocessed documents
 
 ### Document Reprocessing Fix - June 5, 2024
 

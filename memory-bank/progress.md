@@ -1,4 +1,4 @@
-# Progress - Updated on June 5, 2024 15:30 EST
+# Progress - Updated on June 5, 2024 16:00 EST
 
 ## What Works
 
@@ -22,6 +22,7 @@
 - ✅ Fixed document retrieval to properly fetch content from Pinecone
 - ✅ Implemented parameterized SQL queries for security
 - ✅ Added document reprocessing functionality for documents that weren't properly processed
+- ✅ Enhanced document selector UI with clear status indicators and helpful explanations
 
 ### UI Components
 

@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { Button } from "../../components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw, AlertCircle } from "lucide-react";
 import { useToast } from "../../components/ui/use-toast";
 
 interface DocumentReprocessorProps {
   documentId: number;
   onSuccess?: () => void;
+  errorMessage?: string | null;
 }
 
 export function DocumentReprocessor({
   documentId,
   onSuccess,
+  errorMessage,
 }: DocumentReprocessorProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
@@ -57,20 +59,37 @@ export function DocumentReprocessor({
   };
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={handleReprocess}
-      disabled={isProcessing}
-    >
-      {isProcessing ? (
-        <>
-          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          Reprocessing...
-        </>
-      ) : (
-        "Reprocess Document"
+    <div className="flex flex-col gap-2">
+      {errorMessage && (
+        <div className="text-xs text-red-500 flex items-center gap-1">
+          <AlertCircle className="h-3 w-3" />
+          <span>Processing failed: {errorMessage}</span>
+        </div>
       )}
-    </Button>
+      <Button
+        variant={errorMessage ? "destructive" : "outline"}
+        size="sm"
+        onClick={handleReprocess}
+        disabled={isProcessing}
+        className="gap-2"
+      >
+        {isProcessing ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Reprocessing...
+          </>
+        ) : errorMessage ? (
+          <>
+            <RefreshCw className="h-4 w-4" />
+            Fix Document
+          </>
+        ) : (
+          <>
+            <RefreshCw className="h-4 w-4" />
+            Reprocess
+          </>
+        )}
+      </Button>
+    </div>
   );
 }
