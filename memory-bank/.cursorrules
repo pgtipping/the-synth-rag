@@ -50,6 +50,14 @@ The application uses Next.js App Router with the following structure:
 - Addressed permission issues with .next directory
 - Fixed font manifest error by simplifying font configuration
 
+### Database Connection Errors - May 29, 2024
+
+- Fixed password authentication error for PostgreSQL connection
+- Issue: Special characters in password (@) causing URL parsing issues
+- Solution: URL-encoded the password in the DATABASE_URL environment variable
+- Example: Changed `postgres://postgres:Pgpostgres@24@localhost:5432/RAG_test` to `postgres://postgres:Pgpostgres%4024@localhost:5432/RAG_test`
+- Note: The @ symbol in passwords must be URL-encoded as %40 in connection strings
+
 ### Runtime Errors - March 9, 2025
 
 - Implemented robust error handling for OpenAI and Pinecone initialization
@@ -465,122 +473,4 @@ const handleSubmit = (e: React.FormEvent) => {
 When executing terminal commands in this environment, the first character of the command is sometimes trimmed. To prevent this issue:
 
 - Always add a space at the beginning of terminal commands
-- Example: ` curl http://localhost:3000/api/documents` instead of `curl http://localhost:3000/api/documents`
-
-This ensures that the command is properly executed without losing the first character.
-
-# Database Schema Changes - March 10, 2025 21:20 EST
-
-## Adding New Columns to Existing Tables
-
-When adding new columns to existing database tables, follow these steps:
-
-1. Create a script in the `scripts` directory to handle the schema change:
-
-   - Use ES modules syntax (import/export) instead of CommonJS (require)
-   - Check if the column already exists before attempting to add it
-   - Use transactions to ensure atomicity
-   - Add appropriate indexes for columns that will be used in WHERE clauses
-   - Set default values for NOT NULL columns
-
-2. Example pattern:
-
-```javascript
-// scripts/add-column.js
-import pg from "pg";
-import dotenv from "dotenv";
-
-dotenv.config();
-const { Pool } = pg;
-
-async function addColumn() {
-  const pool = new Pool();
-
-  try {
-    const client = await pool.connect();
-
-    try {
-      // Check if column already exists
-      const checkResult = await client.query(`
-        SELECT column_name 
-        FROM information_schema.columns 
-        WHERE table_name = 'table_name' AND column_name = 'column_name'
-      `);
-
-      if (checkResult.rows.length > 0) {
-        console.log("Column already exists.");
-        return;
-      }
-
-      // Start transaction
-      await client.query("BEGIN");
-
-      // Add column
-      await client.query(`
-        ALTER TABLE table_name
-        ADD COLUMN column_name data_type NOT NULL DEFAULT default_value
-      `);
-
-      // Create index if needed
-      await client.query(`
-        CREATE INDEX idx_table_column ON table_name(column_name)
-      `);
-
-      // Commit transaction
-      await client.query("COMMIT");
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
-    }
-  } finally {
-    await pool.end();
-  }
-}
-
-addColumn().catch(console.error);
-```
-
-3. Run the script with:
-
-   ```
-   node scripts/add-column.js
-   ```
-
-4. Update the relevant interfaces and queries in the codebase to use the new column
-
-5. Document the schema change in the memory bank
-
-### Common Issues
-
-- ES modules vs CommonJS: The project uses ES modules, so use `import` instead of `require`
-- Connection issues: Ensure database credentials are correct in .env file
-- Permission issues: Ensure the database user has ALTER TABLE permissions
-- Default values: Always provide default values for NOT NULL columns to handle existing rows
-
-# Cost Optimization Patterns [2024-03-11 07:19:00]
-
-## Context Management
-- Use ContextManager for optimizing search results
-- Configure thresholds based on use case
-- Monitor token usage with middleware
-- Implement multi-level caching
-
-## Embedding Strategy
-- Use text-embedding-3-small for cost efficiency
-- Cache embeddings in Redis
-- Implement smart invalidation
-- Track embedding API usage
-
-## Search Optimization
-- Use hybrid search with configurable weights
-- Adjust score thresholds based on results
-- Implement smart deduplication
-- Monitor search performance
-
-## Caching Rules
-- Cache chat responses for frequent queries
-- Cache embeddings for reuse
-- Implement TTL based on content type
-- Monitor cache hit rates
+- Example: ` curl http://localhost:3000/api/documents` instead of `

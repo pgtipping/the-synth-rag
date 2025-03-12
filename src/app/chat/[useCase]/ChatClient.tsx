@@ -11,7 +11,7 @@ import { sendChatMessage } from "@/src/lib/api/chat";
 import { useEffect, useState } from "react";
 import { Sidebar } from "@/src/components/sidebar";
 import { useFileStore } from "@/src/lib/store";
-import { PromptRotation } from "@/src/components/prompts/prompt-rotation";
+import { ChatPromptSuggestions } from "@/src/components/prompts/chat-prompt-suggestions";
 
 export default function ChatClient({ useCase }: { useCase: string }) {
   const { messages, isTyping, isLoading } = useChatStore();
@@ -46,8 +46,19 @@ export default function ChatClient({ useCase }: { useCase: string }) {
     await sendChatMessage(message);
   };
 
-  const handleUsePrompt = (promptText: string) => {
+  const handleUsePrompt = (
+    promptText: string,
+    needsCustomization: boolean = false
+  ) => {
+    // If the prompt needs customization, just set it in the input field
     setInputValue(promptText);
+
+    // If it doesn't need customization, automatically send it
+    if (!needsCustomization) {
+      setTimeout(() => {
+        sendChatMessage(promptText);
+      }, 100);
+    }
   };
 
   const handleDone = () => {
@@ -72,12 +83,12 @@ export default function ChatClient({ useCase }: { useCase: string }) {
                 />
               </div>
 
-              {/* Prompt Rotation Component */}
+              {/* Chat Prompt Suggestions Component */}
               {isChatReady && (
                 <div className="px-4 py-2 border-t">
-                  <PromptRotation
+                  <ChatPromptSuggestions
                     useCase={useCase}
-                    onUsePrompt={handleUsePrompt}
+                    onSelectPrompt={handleUsePrompt}
                   />
                 </div>
               )}

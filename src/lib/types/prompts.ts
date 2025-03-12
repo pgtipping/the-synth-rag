@@ -8,6 +8,12 @@ export interface PromptCategory {
   updated_at: Date;
 }
 
+// Define a more specific type for prompt metadata
+export interface PromptMetadata {
+  category?: string;
+  [key: string]: unknown;
+}
+
 export interface ExamplePrompt {
   id: number;
   category_id: number;
@@ -19,7 +25,7 @@ export interface ExamplePrompt {
   display_order: number;
   created_at: Date;
   updated_at: Date;
-  metadata: Record<string, unknown>;
+  metadata: PromptMetadata;
 }
 
 export interface PromptUsage {

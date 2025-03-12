@@ -1,7 +1,7 @@
 // Firebase configuration
-import { initializeApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
+import { initializeApp, getApps, FirebaseApp } from "firebase/app";
+import { getAuth, Auth } from "firebase/auth";
+import { Analytics } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,14 +14,28 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app =
-  getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const auth = getAuth(app);
+let app: FirebaseApp;
+let auth: Auth;
+let analytics: Analytics | null = null;
 
-// Initialize Analytics only on client side
-let analytics = null;
+// Check if we're in the browser environment
 if (typeof window !== "undefined") {
-  analytics = getAnalytics(app);
+  // Initialize Firebase only on the client side
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  auth = getAuth(app);
+
+  // Initialize Analytics only on client side
+  import("firebase/analytics")
+    .then((module) => {
+      analytics = module.getAnalytics(app);
+    })
+    .catch((err) => {
+      console.error("Error loading analytics:", err);
+    });
+} else {
+  // Server-side initialization (minimal)
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  auth = getAuth(app);
 }
 
 export { app, auth, analytics };

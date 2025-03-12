@@ -96,9 +96,9 @@ export default function TokenUsageDashboard() {
   const [groupBy, setGroupBy] = useState<"day" | "model" | "feature" | "user">(
     "day"
   );
-  const [model, setModel] = useState<string | undefined>(undefined);
-  const [feature, setFeature] = useState<string | undefined>(undefined);
-  const [userId, setUserId] = useState<string | undefined>(undefined);
+  const [model] = useState<string | undefined>(undefined);
+  const [feature] = useState<string | undefined>(undefined);
+  const [userId] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<TokenUsageResponse | null>(null);
@@ -194,9 +194,19 @@ export default function TokenUsageDashboard() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Date Range</label>
               <div className="flex space-x-2">
-                <DatePicker date={startDate} setDate={setStartDate} />
+                <DatePicker
+                  date={startDate}
+                  setDate={(date: Date | undefined) => {
+                    if (date) setStartDate(date);
+                  }}
+                />
                 <span className="flex items-center">to</span>
-                <DatePicker date={endDate} setDate={setEndDate} />
+                <DatePicker
+                  date={endDate}
+                  setDate={(date: Date | undefined) => {
+                    if (date) setEndDate(date);
+                  }}
+                />
               </div>
             </div>
 
@@ -204,7 +214,9 @@ export default function TokenUsageDashboard() {
               <label className="text-sm font-medium">Group By</label>
               <Select
                 value={groupBy}
-                onValueChange={(value) => setGroupBy(value as any)}
+                onValueChange={(value: "day" | "model" | "feature" | "user") =>
+                  setGroupBy(value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select grouping" />

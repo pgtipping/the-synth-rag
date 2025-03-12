@@ -20,9 +20,13 @@ const nextConfig = {
       loader: "ignore-loader",
     });
 
+    // Add specific handling for Firebase
+    config.externals = [...(config.externals || []), { encoding: "encoding" }];
+
     return config;
   },
   // External packages that should be transpiled
+  transpilePackages: ["firebase", "@firebase/auth", "@firebase/app"],
   serverExternalPackages: [
     "pg",
     "@vercel/blob",
