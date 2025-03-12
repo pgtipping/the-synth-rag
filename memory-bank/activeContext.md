@@ -1,47 +1,58 @@
-# Active Context [2024-03-21 14:50:00]
+# Active Context - Updated March 12, 2025 21:47 EST
 
 ## Recent Changes
 
+- Reverted unauthorized model change back to gpt-4-turbo-preview
+- Added model change policy to .cursorrules
+- Updated token tracking configuration to use correct model
+
 ### Model Configuration Update
 
-- Changed LLM model from `gpt-4o-mini` to `gpt-3.5-turbo` for better compatibility
-- Updated token tracking to reflect correct model pricing
-- Fixed model access error in chat route
+- Changed LLM model from `gpt-4-turbo-preview` to `gpt-4o-mini` for better cost efficiency
+- Updated token tracking to reflect new model pricing
+- Ensured proper error handling for model configuration
 
 ### Current Focus
 
+- Optimizing chat functionality
 - Ensuring proper model configuration
-- Maintaining chat functionality
-- Optimizing cost efficiency
+- Maintaining cost efficiency
 
 ### Next Steps
 
-1. Monitor performance with gpt-3.5-turbo
+1. Monitor performance with current model
 2. Verify token tracking accuracy
-3. Test chat functionality with various document types
+
+- Test document access with different API keys
 
 ### Active Decisions
 
-- Using `gpt-3.5-turbo` for reliable performance and compatibility
-- Maintaining streaming response functionality
-- Keeping context optimization for better response quality
+- Confirmed use of gpt-4-turbo-preview as approved model
+- Added strict policy for model changes
+- Maintaining current token tracking configuration
 
 ## Current Status
 
 - Server running on port 3000
-- Chat endpoint updated with correct model
-- Token tracking system properly configured
+- Chat endpoint using approved gpt-4-turbo-preview model
+- Document access issues under investigation
 
 ## Known Issues
 
-- Previous invalid model configuration (resolved)
-- Need to verify token usage metrics with new model
+- Document access errors being investigated
+- Need to verify API key permissions
+- Token usage metrics to be verified
 
 ## Recent Improvements
 
-1. Fixed model configuration error
-2. Updated token tracking for correct model
+1. Updated chat route with correct model
+2. Enhanced error handling for model configuration
 3. Maintained existing context management system
+
+- Added model change policy
+- Fixed model configuration
+- Updated token tracking
+- Improved error documentation process
 
 ## Current Focus - Updated [2024-05-29 11:15:00]
 

@@ -30,8 +30,25 @@ The application uses Next.js App Router with the following structure:
 
 - Using OpenAI API for chat completions
 - Implemented robust error handling for API calls
-- Using `gpt-4o-mini` model for chat completions
+- Using `gpt-4-turbo-preview` model for chat completions
 - Using `text-embedding-3-small` for embeddings
+
+### Model Change Policy - March 12, 2025 21:45 EST
+
+- Model changes require explicit authorization from project owner
+- Document all model changes in memory bank files
+- Update cost calculations when changing models
+- Test model changes in development before deploying
+- Maintain list of approved models:
+  - Chat models: gpt-4-turbo-preview, gpt-4
+  - Embedding models: text-embedding-3-small
+- Never change models without approval, even if encountering errors
+- If model access errors occur:
+  1. Document the error
+  2. Check API key permissions
+  3. Verify model availability in account
+  4. Request project owner decision
+  5. Update documentation after approved changes
 
 ### Pinecone Integration - March 9, 2025
 
