@@ -71,6 +71,25 @@ Currently in Phase 2 of the cost optimization plan:
 
 ## Recent Changes
 
+### UI Improvements - Updated [2024-05-30 12:45:00]
+
+1. Navigation Bar Enhancement:
+
+   - Added proper padding to fix spacing issues near window border
+   - Improved visual consistency
+
+2. Suggested Prompts Optimization:
+
+   - Removed duplicate "Document Summary" prompts
+   - Removed "Ask a Question" prompt
+   - Improved visual clarity by removing redundant filter tabs (All/General)
+   - Enhanced prompt organization
+
+3. File Upload Relocation:
+   - Moved file upload component from bottom panel to left sidebar
+   - Improved user workflow by centralizing document management
+   - Enhanced UI organization and clarity
+
 ### Text Splitter Implementation
 
 1. Created TextSplitter class with:
@@ -265,6 +284,7 @@ Currently in Phase 2 of the cost optimization plan:
 ### Recent Fixes
 
 - Fixed import path issues in the chat API route
+
   - Updated import paths for ContextManager, ResponseOptimizer, and TokenUsageTracker
   - Added missing getContext method to ContextManager class
   - Fixed type issues in the route.ts file

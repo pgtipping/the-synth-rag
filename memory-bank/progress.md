@@ -18,6 +18,7 @@
 - ✅ Fixed database connection issue with special characters in password
 - ✅ Fixed import path issues in chat API route
 - ✅ Fixed TokenUsageTracker implementation with simplified version
+- ✅ Fixed database column mapping in chat route for document chunks
 
 ### UI Components
 
@@ -33,6 +34,9 @@
 - ✅ General chat page for selecting any use case
 - ✅ "Try in Chat" button on prompt cards
 - ✅ Shadcn Textarea component for improved text input
+- ✅ Improved navigation bar with proper spacing
+- ✅ Enhanced suggested prompts with removal of duplicates and better organization
+- ✅ Optimized file upload placement in sidebar for better workflow
 - ✅ Progress component with accessibility features
   - ARIA attributes for screen reader support
   - Customizable sizes and status colors
