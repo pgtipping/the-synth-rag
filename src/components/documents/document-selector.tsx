@@ -8,11 +8,12 @@ import {
   DialogTrigger,
 } from "../../components/ui/dialog";
 import { Button } from "../../components/ui/button";
-import { Loader2, FileText } from "lucide-react";
+import { Loader2, FileText, AlertCircle } from "lucide-react";
 import { useToast } from "../../components/ui/use-toast";
 import { Badge } from "../../components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { DocumentReprocessor } from "./document-reprocessor";
+import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert";
 
 interface Document {
   id: number;
@@ -157,19 +158,39 @@ export function DocumentSelector({
   const getStatusBadge = (status: Document["status"]) => {
     switch (status) {
       case "indexed":
-        return <Badge variant="success">Indexed</Badge>;
+        return (
+          <Badge className="bg-green-500 hover:bg-green-600">Indexed</Badge>
+        );
       case "processing":
-        return <Badge variant="secondary">Processing</Badge>;
+        return (
+          <Badge className="bg-blue-500 hover:bg-blue-600">Processing</Badge>
+        );
       case "failed":
-        return <Badge variant="destructive">Failed</Badge>;
+        return <Badge className="bg-red-500 hover:bg-red-600">Failed</Badge>;
       default:
-        return <Badge variant="outline">Uploaded</Badge>;
+        return (
+          <Badge variant="outline" className="text-gray-500">
+            Uploaded
+          </Badge>
+        );
     }
   };
 
   const needsReprocessing = (doc: Document) => {
     return doc.status === "uploaded" || doc.status === "failed";
   };
+
+  // Count documents by status
+  const statusCounts = documents.reduce((acc, doc) => {
+    acc[doc.status] = (acc[doc.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Check if any selected documents are not indexed
+  const hasNonIndexedSelected = selectedIds.some((id) => {
+    const doc = documents.find((d) => d.id === id);
+    return doc && doc.status !== "indexed";
+  });
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -187,6 +208,48 @@ export function DocumentSelector({
           </DialogDescription>
         </DialogHeader>
 
+        {/* Document Status Guide */}
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-700 mb-4">
+          <p className="font-medium mb-1">Document Status Guide:</p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>
+              <span className="font-medium">Indexed</span>: Document is
+              processed and ready to use
+            </li>
+            <li>
+              <span className="font-medium">Processing</span>: Document is being
+              processed, please wait
+            </li>
+            <li>
+              <span className="font-medium">Failed</span>: Processing failed,
+              click "Fix Document" to retry
+            </li>
+            <li>
+              <span className="font-medium">Uploaded</span>: Document needs
+              processing, click "Process" to start
+            </li>
+          </ul>
+          <p className="mt-2">Only indexed documents can be used for chat.</p>
+        </div>
+
+        {/* Status Summary */}
+        {!loading && documents.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Badge className="bg-green-500">
+              Indexed: {statusCounts.indexed || 0}
+            </Badge>
+            <Badge className="bg-blue-500">
+              Processing: {statusCounts.processing || 0}
+            </Badge>
+            <Badge className="bg-red-500">
+              Failed: {statusCounts.failed || 0}
+            </Badge>
+            <Badge variant="outline" className="text-gray-500">
+              Uploaded: {statusCounts.uploaded || 0}
+            </Badge>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
@@ -197,39 +260,15 @@ export function DocumentSelector({
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-700 mb-4">
-              <p className="font-medium mb-1">Document Status Guide:</p>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>
-                  <span className="font-medium">Indexed</span>: Document is
-                  processed and ready to use
-                </li>
-                <li>
-                  <span className="font-medium">Processing</span>: Document is
-                  being processed, please wait
-                </li>
-                <li>
-                  <span className="font-medium">Failed</span>: Processing
-                  failed, click "Fix Document" to retry
-                </li>
-                <li>
-                  <span className="font-medium">Uploaded</span>: Document needs
-                  processing, click "Reprocess" to start
-                </li>
-              </ul>
-              <p className="mt-2">
-                Only indexed documents can be used for chat.
-              </p>
-            </div>
             <div className="grid gap-4">
               {documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                  className={`p-4 border rounded-lg transition-colors ${
                     selectedIds.includes(doc.id)
                       ? "border-primary bg-primary/5"
                       : "hover:bg-gray-50"
-                  } ${doc.status !== "indexed" ? "opacity-70" : ""}`}
+                  } ${doc.status !== "indexed" ? "opacity-80" : ""}`}
                   onClick={() =>
                     doc.status === "indexed"
                       ? toggleDocumentSelection(doc.id)
@@ -279,6 +318,18 @@ export function DocumentSelector({
                 </div>
               ))}
             </div>
+
+            {/* Warning for non-indexed selected documents */}
+            {hasNonIndexedSelected && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Warning</AlertTitle>
+                <AlertDescription>
+                  You've selected documents that aren't properly processed. Only
+                  indexed documents can be used for chat.
+                </AlertDescription>
+              </Alert>
+            )}
 
             <div className="flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={() => setOpen(false)}>

@@ -2,7 +2,7 @@
 
 ## Recent Changes
 
-### Document Status UI Improvements - June 5, 2024
+### Document Status UI Improvements - March 12, 2025
 
 - Enhanced document selector to show all documents with their processing status
 - Added clear status badges (Indexed, Processing, Failed, Uploaded)
@@ -10,13 +10,16 @@
 - Added warning alert when unprocessed documents are selected
 - Improved error messaging for failed document processing
 - Made document selection more intuitive by disabling selection of unprocessed documents
+- Added status summary showing counts of documents in each state
+- Added visual indicators for non-indexed documents in the selected documents list
 
-### Document Reprocessing Fix - June 5, 2024
+### Document Reprocessing Implementation - March 12, 2025
 
 - Added document reprocessing functionality to fix documents that weren't properly processed
 - Created a new API endpoint at `/api/documents/reprocess` to reprocess documents
 - Added a UI component to allow users to reprocess documents from the document selector
 - Fixed issue where document content wasn't being retrieved from Pinecone due to missing document chunks
+- Implemented proper error handling for document processing failures
 
 ### Document Retrieval Fix - June 5, 2024
 

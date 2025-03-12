@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { DocumentService } from "../../../../lib/services/document-service";
-import pool from "../../../../lib/db";
-import { processFile } from "@/src/lib/file-processor";
-import { indexDocument } from "@/src/lib/pinecone-index";
-import { storage } from "@/src/lib/storage";
+import db from "../../../../lib/db";
+import { processFile } from "../../../../lib/file-processor";
+import { storage } from "../../../../lib/storage";
+import { indexDocument } from "../../../../lib/pinecone-index";
 
 // 30 minutes timeout for large files
 export const maxDuration = 1800;
@@ -15,11 +14,9 @@ export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
-export async function POST(request: NextRequest) {
-  const documentService = new DocumentService(pool);
-
+export async function POST(req: NextRequest) {
   try {
-    const { documentId } = await request.json();
+    const { documentId } = await req.json();
 
     if (!documentId) {
       return NextResponse.json(
@@ -28,22 +25,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`Reprocessing document with ID: ${documentId}`);
+    // Get the document from the database
+    const document = await db.query(`SELECT * FROM documents WHERE id = $1`, [
+      documentId,
+    ]);
 
-    // Get the document
-    const document = await documentService.getDocument(documentId);
-    if (!document) {
+    if (!document.rows.length) {
       return NextResponse.json(
         { error: "Document not found" },
         { status: 404 }
       );
     }
 
-    // Update status to processing
-    await documentService.updateDocumentStatus(document.id, "processing");
+    const doc = document.rows[0];
 
+    // Update document status to processing
+    await db.query(
+      `UPDATE documents SET status = 'processing', error_message = NULL WHERE id = $1`,
+      [documentId]
+    );
+
+    // Start processing the document asynchronously
+    // We don't await this to allow the API to return immediately
+    processDocumentAsync(doc).catch(async (error: Error) => {
+      console.error(`Error processing document ${documentId}:`, error);
+
+      // Update document status to failed
+      await db.query(
+        `UPDATE documents SET status = 'failed', error_message = $1 WHERE id = $2`,
+        [error.message || "Unknown error", documentId]
+      );
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error reprocessing document:", error);
+    return NextResponse.json(
+      { error: "Failed to reprocess document" },
+      { status: 500 }
+    );
+  }
+}
+
+// Helper function to process a document asynchronously
+async function processDocumentAsync(doc: any): Promise<void> {
+  try {
     // Get the file from storage
-    const fileBuffer = await storage.retrieve(document.filename);
+    const fileBuffer = await storage.retrieve(doc.filename);
 
     // Ensure we have a Buffer
     const buffer = Buffer.isBuffer(fileBuffer)
@@ -53,8 +81,8 @@ export async function POST(request: NextRequest) {
         );
 
     // Create a File object from the buffer
-    const file = new File([buffer], document.originalName, {
-      type: document.contentType,
+    const file = new File([buffer], doc.original_name || doc.originalName, {
+      type: doc.content_type || doc.contentType,
     });
 
     // Process the file to extract text
@@ -66,50 +94,42 @@ export async function POST(request: NextRequest) {
       const chunk = processedContent.chunks[i];
 
       // Save chunk to database
-      await documentService.saveDocumentChunks(document.id, [
-        {
-          text: chunk.text,
-          index: i,
-          tokens: chunk.tokens,
-        },
-      ]);
+      await db.query(
+        `INSERT INTO document_chunks (document_id, text, chunk_index, tokens)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (document_id, chunk_index)
+         DO UPDATE SET text = $2, tokens = $4`,
+        [doc.id, chunk.text, i, chunk.tokens]
+      );
 
       // Index in Pinecone
       const vectorId = await indexDocument(chunk.text, {
-        documentId: document.id,
+        documentId: doc.id,
         chunkIndex: i,
-        originalName: document.originalName,
-        mimeType: document.contentType,
+        originalName: doc.original_name || doc.originalName,
+        mimeType: doc.content_type || doc.contentType,
         processedAt: new Date().toISOString(),
         text: chunk.text,
       });
 
       // Update vector ID in database
-      await documentService.updateChunkVectorId(document.id, i, vectorId);
+      await db.query(
+        `UPDATE document_chunks SET vector_id = $1
+         WHERE document_id = $2 AND chunk_index = $3`,
+        [vectorId, doc.id, i]
+      );
 
       vectorIds.push(vectorId);
     }
 
     // Update status to indexed
-    await documentService.updateDocumentStatus(document.id, "indexed");
+    await db.query(`UPDATE documents SET status = 'indexed' WHERE id = $1`, [
+      doc.id,
+    ]);
 
-    return NextResponse.json({
-      success: true,
-      document: {
-        ...document,
-        status: "indexed",
-        vectorIds,
-      },
-    });
+    console.log(`Document ${doc.id} successfully processed and indexed`);
   } catch (error) {
-    console.error("Reprocessing error:", error);
-
-    return NextResponse.json(
-      {
-        error: "Reprocessing failed",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    console.error(`Error processing document ${doc.id}:`, error);
+    throw error;
   }
 }

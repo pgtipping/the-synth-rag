@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Button } from "../../components/ui/button";
-import { Loader2, RefreshCw, AlertCircle } from "lucide-react";
-import { useToast } from "../../components/ui/use-toast";
+import { Button } from "../ui/button";
+import { Loader2 } from "lucide-react";
+import { useToast } from "../ui/use-toast";
 
 interface DocumentReprocessorProps {
   documentId: number;
-  onSuccess?: () => void;
-  errorMessage?: string | null;
+  onSuccess: () => void;
+  errorMessage: string | null;
 }
 
 export function DocumentReprocessor({
@@ -20,8 +20,7 @@ export function DocumentReprocessor({
   const handleReprocess = async () => {
     try {
       setIsProcessing(true);
-
-      const response = await fetch("/api/documents/reprocess", {
+      const response = await fetch(`/api/documents/reprocess`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,14 +34,13 @@ export function DocumentReprocessor({
       }
 
       toast({
-        title: "Document reprocessed",
+        title: "Document processing started",
         description:
-          "The document has been successfully reprocessed and indexed.",
+          "Your document is being processed. This may take a moment.",
       });
 
-      if (onSuccess) {
-        onSuccess();
-      }
+      // Call the onSuccess callback to refresh the document list
+      onSuccess();
     } catch (error) {
       console.error("Error reprocessing document:", error);
       toast({
@@ -59,37 +57,23 @@ export function DocumentReprocessor({
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      {errorMessage && (
-        <div className="text-xs text-red-500 flex items-center gap-1">
-          <AlertCircle className="h-3 w-3" />
-          <span>Processing failed: {errorMessage}</span>
-        </div>
+    <Button
+      variant={errorMessage ? "destructive" : "secondary"}
+      size="sm"
+      onClick={handleReprocess}
+      disabled={isProcessing}
+      className="text-xs"
+    >
+      {isProcessing ? (
+        <>
+          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+          Processing...
+        </>
+      ) : errorMessage ? (
+        "Fix Document"
+      ) : (
+        "Process Document"
       )}
-      <Button
-        variant={errorMessage ? "destructive" : "outline"}
-        size="sm"
-        onClick={handleReprocess}
-        disabled={isProcessing}
-        className="gap-2"
-      >
-        {isProcessing ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Reprocessing...
-          </>
-        ) : errorMessage ? (
-          <>
-            <RefreshCw className="h-4 w-4" />
-            Fix Document
-          </>
-        ) : (
-          <>
-            <RefreshCw className="h-4 w-4" />
-            Reprocess
-          </>
-        )}
-      </Button>
-    </div>
+    </Button>
   );
 }

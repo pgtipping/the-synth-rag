@@ -23,6 +23,7 @@
 - ✅ Implemented parameterized SQL queries for security
 - ✅ Added document reprocessing functionality for documents that weren't properly processed
 - ✅ Enhanced document selector UI with clear status indicators and helpful explanations
+- ✅ Added document status summary and visual indicators for non-indexed documents
 
 ### UI Components
 

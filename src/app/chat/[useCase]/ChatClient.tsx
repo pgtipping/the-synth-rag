@@ -95,6 +95,11 @@ export default function ChatClient({ useCase }: { useCase: string }) {
     }
   };
 
+  // Check if any selected documents are not properly indexed
+  const hasNonIndexedDocuments = selectedDocuments.some(
+    (doc) => doc.status !== "indexed"
+  );
+
   return (
     <div className="flex h-screen flex-col">
       <div className="flex flex-1 overflow-hidden">
@@ -150,14 +155,19 @@ export default function ChatClient({ useCase }: { useCase: string }) {
                           className="text-sm text-muted-foreground"
                         >
                           {doc.originalName}
+                          {doc.status !== "indexed" && (
+                            <span className="ml-2 text-red-500 text-xs">
+                              (Not indexed)
+                            </span>
+                          )}
                         </li>
                       ))}
                     </ul>
                   </div>
                 )}
 
-                {/* Add notification for unprocessed documents */}
-                {selectedDocuments.some((doc) => doc.status !== "indexed") && (
+                {/* Warning alert for unprocessed documents */}
+                {hasNonIndexedDocuments && (
                   <Alert variant="destructive" className="mt-2">
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Warning</AlertTitle>
