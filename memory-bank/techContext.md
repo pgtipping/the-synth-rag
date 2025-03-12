@@ -1,134 +1,110 @@
-# Technical Context - Updated on May 28, 2024 15:45 EST
+# Technical Context - Updated [2024-03-11 07:17:00]
 
-## Technologies Used
+## Current Technical Stack
 
-### Frontend
+### AI and Machine Learning
 
-- **Next.js 15.2.1**: React framework with server components and app router
-- **React 19**: UI library for component-based development
-- **Tailwind CSS**: Utility-first CSS framework
-- **Shadcn/ui**: Accessible and customizable component library
-  - Added Textarea component for improved text input
-- **Framer Motion**: Animation library for smooth transitions
-- **Vercel AI SDK**: Utilities for AI chat interfaces and streaming
-- **React Dropzone**: File upload component
-- **TypeScript**: Strongly typed JavaScript
+- OpenAI GPT-4 for chat completions
+- text-embedding-3-small for embeddings (cost-optimized)
+- Pinecone for vector storage
+- Custom context optimization system
 
-### Backend
+### Backend Services
 
-- **Next.js API Routes**: Serverless backend functions
-- **Node.js**: JavaScript runtime
-- **Vercel Blob**: File storage solution
-- **Pinecone**: Vector database for similarity search
-- **OpenAI API**: Large language model provider
-- **PostgreSQL**: Database for storing document metadata and example prompts
+- Edge Runtime for API routes
+- Redis for multi-level caching
+- Upstash for rate limiting
+- Custom token tracking middleware
 
-### Document Processing
+### Cost Optimization Components
 
-- **pdf-parse**: PDF parsing library
-- **mammoth.js**: DOCX parsing library
-- **PapaParse**: CSV parsing library
-- **@langchain/core**: Core utilities for LangChain
-- **@langchain/openai**: OpenAI integration for LangChain
+- ContextManager for smart context pruning
+- Embedding cache with Redis
+- Chat response cache
+- Token usage tracking
+- Hybrid search optimization
 
-### State Management
+### Development Tools
 
-- **Zustand**: Lightweight state management library
-- **React Context API**: For component state sharing
+- TypeScript for type safety
+- Jest for testing
+- ESLint for code quality
+- Prettier for formatting
 
-### Testing
+## Technical Decisions
 
-- **Vitest**: Testing framework
-- **React Testing Library**: Component testing utilities
-- **MSW**: Mock Service Worker for API mocking
+### Cost Optimization Strategy
 
-### Build Tools
+1. Use text-embedding-3-small for better cost efficiency
+2. Implement multi-level caching to reduce API calls
+3. Smart context pruning to optimize token usage
+4. Response streaming for better UX
+5. Hybrid search with configurable weights
 
-- **ESLint**: Code linting
-- **Prettier**: Code formatting
-- **PostCSS**: CSS processing
-- **Vercel**: Deployment platform
+### Performance Optimization
+
+1. Edge runtime for faster response times
+2. Redis caching for quick retrievals
+3. Efficient chunk merging algorithms
+4. Smart deduplication strategies
+
+## Current Technology Stack
+
+### Core Technologies
+
+- Next.js for frontend and API routes
+- TypeScript for type safety
+- Pinecone for vector storage
+- Redis for caching
+- PostgreSQL for relational data
+
+### Text Processing
+
+- gpt-tokenizer for token counting
+- TextSplitter class for semantic chunking
+- Document processing pipeline for multiple file types
+
+### Cost Optimization
+
+- Token usage monitoring
+- Semantic chunking
+- Caching system with TTL
+- Context pruning (in progress)
 
 ## Development Setup
 
-### Prerequisites
+### Required Environment Variables
 
-- Node.js 18+ installed
-- npm or yarn package manager
-- Git for version control
-- OpenAI API key
-- Pinecone API key
-- Firebase project (optional)
-
-### Environment Variables
-
-```
-# OpenAI
-OPENAI_API_KEY=your_openai_api_key
-
-# Pinecone
-PINECONE_API_KEY=your_pinecone_api_key
-PINECONE_ENVIRONMENT=your_pinecone_environment
-PINECONE_INDEX=your_pinecone_index
-
-# Firebase (optional)
-FIREBASE_API_KEY=your_firebase_api_key
-FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
-FIREBASE_PROJECT_ID=your_firebase_project_id
-FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
-FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
-FIREBASE_APP_ID=your_firebase_app_id
-
-# File Storage
-BLOB_READ_WRITE_TOKEN=your_vercel_blob_token
-
-# App Config
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+```bash
+OPENAI_API_KEY=sk-...
+PINECONE_API_KEY=...
+PINECONE_ENVIRONMENT=...
+REDIS_URL=...
+DATABASE_URL=...
 ```
 
-### Local Development
+### Development Tools
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Set up environment variables in `.env.local`
-4. Run the development server: `npm run dev`
-5. Access the application at `http://localhost:3000`
-
-### Build and Deployment
-
-1. Build the application: `npm run build`
-2. Deploy to Vercel: `vercel deploy` or connect to GitHub for CI/CD
+- VS Code with TypeScript
+- Jest for testing
+- ESLint for code quality
+- Prettier for formatting
 
 ## Technical Constraints
 
-### Performance
+### Performance Requirements
 
-- Initial page load: < 2 seconds
-- Time to interactive: < 3 seconds
-- Chat response time: < 5 seconds
-- Maximum file size: 10MB per file, 50MB total per session
+- Maximum chunk size: 500 tokens
+- Chunk overlap: 50 tokens
+- File size limit: 100MB
+- Processing timeout: 30s
 
-### Security
+### Security Requirements
 
-- All user data must be encrypted at rest and in transit
-- No PII should be stored permanently
-- File uploads must be validated and sanitized
-- API keys must be stored securely as environment variables
-- Rate limiting for API endpoints
-
-### Compatibility
-
-- Browser support: Latest 2 versions of Chrome, Firefox, Safari, Edge
-- Mobile support: iOS 14+, Android 10+
-- Responsive design: 320px to 2560px viewport widths
-
-### Accessibility
-
-- WCAG 2.1 AA compliance
-- Keyboard navigation support
-- Screen reader compatibility
-- Sufficient color contrast
-- Focus management
+- File type validation
+- Size limit enforcement
+- PII detection (planned)
+- Malware scanning (planned)
 
 ## Dependencies
 
@@ -136,25 +112,11 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ```json
 {
-  "dependencies": {
-    "@ai-sdk/openai": "^1.1.2",
-    "@langchain/core": "^0.3.42",
-    "@langchain/openai": "^0.4.4",
-    "@pinecone-database/pinecone": "^4.1.0",
-    "@vercel/blob": "^0.27.1",
-    "ai": "^4.1.16",
-    "framer-motion": "^12.0.5",
-    "mammoth": "^1.9.0",
-    "next": "^15.2.1",
-    "openai": "^4.82.0",
-    "pdf-parse": "^1.1.1",
-    "pg": "^8.13.1",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-dropzone": "^14.3.5",
-    "tailwindcss": "^3.3.0",
-    "zustand": "^5.0.3"
-  }
+  "gpt-tokenizer": "^2.1.1",
+  "next": "^14.0.0",
+  "react": "^18.2.0",
+  "typescript": "^5.0.0",
+  "@pinecone-database/pinecone": "^1.1.0"
 }
 ```
 
@@ -162,149 +124,85 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ```json
 {
-  "devDependencies": {
-    "@testing-library/react": "^14.0.0",
-    "@types/node": "^20.0.0",
-    "@types/react": "^18.2.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "autoprefixer": "^10.4.0",
-    "eslint": "^8.0.0",
-    "eslint-config-next": "^14.0.0",
-    "msw": "^1.3.0",
-    "postcss": "^8.4.0",
-    "prettier": "^3.0.0",
-    "typescript": "^5.0.0",
-    "vitest": "^0.34.0"
-  }
+  "@types/jest": "^29.5.0",
+  "jest": "^29.5.0",
+  "ts-jest": "^29.1.0",
+  "eslint": "^8.0.0"
 }
 ```
 
-## Integration Points
+## Implementation Details
 
-### OpenAI API
+### Text Chunking
 
-- Used for generating chat responses
-- Embedding documents for vector search
-- Rate limits and token usage must be monitored
+```typescript
+interface TextChunk {
+  text: string;
+  tokens: number;
+}
 
-### Pinecone
-
-- Stores document embeddings
-- Used for similarity search during chat
-- Namespace management for different use cases
-
-### Firebase/Vercel Blob
-
-- Stores uploaded documents temporarily
-- Handles file access control
-- Manages file expiration
-
-### Authentication (Optional)
-
-- Firebase Auth for user management
-- Anonymous sessions for demo users
-- Email/password for registered users
-
-## Text Processing Pipeline
+class TextSplitter {
+  private chunkSize: number;
+  private chunkOverlap: number;
+  private separators: string[];
+}
+```
 
 ### Document Processing
 
-1. File upload and virus scanning
-2. Text extraction based on file type
-3. PII scrubbing and sanitization
-4. Semantic text chunking
-5. Token counting and metadata generation
-6. Vector embedding generation
-7. Storage and indexing
+- File type detection
+- Text extraction
+- Metadata handling
+- Chunk generation
 
-### Text Chunking Strategy
+## Current Limitations
 
-The system uses a semantic text chunking approach:
+### Known Technical Limitations
 
-1. **Chunk Creation**
+1. No malware scanning
+2. Limited file type support
+3. Processing timeouts for large files
+4. Basic error recovery
 
-   - Uses natural text boundaries (paragraphs, sentences)
-   - Configurable chunk size (default: 1000 tokens)
-   - Configurable overlap (default: 200 tokens)
-   - Preserves semantic context between chunks
+### Performance Limitations
 
-2. **Boundary Detection**
+1. Context retrieval speed
+2. Large file processing
+3. Concurrent upload handling
+4. Memory usage during processing
 
-   ```
-   Priority order:
-   1. Triple line breaks (major sections)
-   2. Double line breaks (paragraphs)
-   3. Single line breaks
-   4. Sentences (period + space)
-   5. Colons
-   6. Semicolons
-   7. Commas
-   8. Words
-   9. Characters
-   ```
+## Monitoring and Logging
 
-3. **Token Management**
+### Logging Implementation
 
-   - Uses GPT tokenizer for accurate token counting
-   - Stores token count per chunk in database
-   - Indexes token counts for query optimization
-
-4. **Performance Optimizations**
-   - Transaction-based chunk insertion
-   - Indexed token counts
-   - Efficient text boundary detection
-   - Memory-efficient processing
-
-## Database Schema
-
-### Document Chunks
-
-```sql
-CREATE TABLE document_chunks (
-    id SERIAL PRIMARY KEY,
-    document_id INTEGER REFERENCES documents(id),
-    chunk_index INTEGER NOT NULL,
-    text_content TEXT NOT NULL,
-    token_count INTEGER NOT NULL DEFAULT 0,
-    vector_id TEXT,
-    created_at TIMESTAMP WITH TIME ZONE,
-    UNIQUE(document_id, chunk_index)
-);
+```typescript
+logger.info("Processing document", {
+  documentId,
+  size,
+  type,
+  timestamp: new Date().toISOString(),
+});
 ```
 
-### Indexes
+### Metrics Collection
 
-```sql
-CREATE INDEX idx_document_chunks_token_count
-ON document_chunks(token_count);
-```
+- Processing times
+- Error rates
+- Resource usage
+- Cache hit rates
 
-## Dependencies
+## Future Technical Improvements
 
-### Text Processing
+### Short Term
 
-- `gpt-tokenizer`: Token counting
-- Custom `TextSplitter` utility
-- File type-specific processors (PDF, DOCX, CSV)
+1. Implement virus scanning
+2. Add file processing timeout handling
+3. Improve context relevance
+4. Optimize queue system
 
-### Database
+### Long Term
 
-- PostgreSQL for document and chunk storage
-- Pinecone for vector storage
-- Redis for progress tracking
-
-## Error Handling
-
-### Chunk Processing
-
-1. Invalid chunk boundaries
-2. Token count mismatches
-3. Transaction failures
-4. Memory constraints
-
-### Recovery Strategies
-
-1. Automatic retry with different boundaries
-2. Fallback to smaller chunks
-3. Transaction rollback and retry
-4. Streaming processing for large files
+1. Advanced malware detection
+2. Enhanced PII handling
+3. Improved vector search
+4. Better error recovery

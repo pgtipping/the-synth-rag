@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Email management models
+model InboundEmail {
+  id          String   @id @default(cuid())
+  from        String
+  to          String
+  subject     String
+  textContent String   @db.Text
+  htmlContent String?  @db.Text
+  receivedAt  DateTime
+  status      String   // UNREAD, READ, REPLIED, ARCHIVED
+  
+  // For threading
+  threadId    String?
+  
+  // Relationships
+  replies     OutboundEmail[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model OutboundEmail {
+  id          String   @id @default(cuid())
+  to          String
+  from        String
+  subject     String
+  textContent String   @db.Text
+  htmlContent String?  @db.Text
+  sentAt      DateTime
+  status      String   // DRAFT, SENT, FAILED
+  
+  // For threading
+  inReplyTo   String?
+  inboundEmail InboundEmail? @relation(fields: [inReplyTo], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+} 

@@ -558,3 +558,29 @@ addColumn().catch(console.error);
 - Connection issues: Ensure database credentials are correct in .env file
 - Permission issues: Ensure the database user has ALTER TABLE permissions
 - Default values: Always provide default values for NOT NULL columns to handle existing rows
+
+# Cost Optimization Patterns [2024-03-11 07:19:00]
+
+## Context Management
+- Use ContextManager for optimizing search results
+- Configure thresholds based on use case
+- Monitor token usage with middleware
+- Implement multi-level caching
+
+## Embedding Strategy
+- Use text-embedding-3-small for cost efficiency
+- Cache embeddings in Redis
+- Implement smart invalidation
+- Track embedding API usage
+
+## Search Optimization
+- Use hybrid search with configurable weights
+- Adjust score thresholds based on results
+- Implement smart deduplication
+- Monitor search performance
+
+## Caching Rules
+- Cache chat responses for frequent queries
+- Cache embeddings for reuse
+- Implement TTL based on content type
+- Monitor cache hit rates

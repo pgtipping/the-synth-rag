@@ -1,17 +1,18 @@
-import { Pool } from "pg";
+import { PrismaClient } from "@prisma/client";
 
-// Create a pool based on environment
-const pool = new Pool({
-  // Use environment variables or default values
-  user: process.env.PGUSER,
-  host: process.env.PGHOST,
-  database: process.env.PGDATABASE,
-  password: process.env.PGPASSWORD,
-  port: process.env.PGPORT ? parseInt(process.env.PGPORT, 10) : 5432,
-  // Disable SSL for local development
-  ssl: false,
-  // Use pure JavaScript implementation
-  native: false,
-});
+// PrismaClient is attached to the `global` object in development to prevent
+// exhausting your database connection limit.
+// Learn more: https://pris.ly/d/help/next-js-best-practices
 
-export default pool;
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+
+export const prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    log:
+      process.env.NODE_ENV === "development"
+        ? ["query", "error", "warn"]
+        : ["error"],
+  });
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

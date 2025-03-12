@@ -1,242 +1,325 @@
-# System Patterns - Created on March 8, 2023
+# System Patterns - Updated [2024-03-11 09:00:00]
 
-## System Architecture
+## Architecture Patterns
 
-The RAG chatbot demo follows a modern web application architecture with the following key components:
+### Context Management
 
-### Frontend Architecture
+- **Enhanced ContextManager Pattern**
+  - Adaptive thresholding for relevance
+  - Smart chunk compression
+  - Hybrid scoring (semantic + keyword)
+  - Configurable optimization parameters
+  - Detailed optimization metrics
 
-- **Next.js Application**: Server-side rendered React application
-- **Single Page Application**: With dynamic routing for different use cases
-- **Component-Based Structure**: Reusable UI components organized by functionality
-- **Responsive Design**: Mobile-first approach using Tailwind CSS
+### Response Optimization
 
-### Backend Architecture
+- **Template System**
 
-- **API Routes**: Next.js API routes for serverless backend functionality
-- **Serverless Functions**: For document processing and chat functionality
-- **Vector Database**: Pinecone for storing and retrieving document embeddings
-- **File Storage**: Firebase Storage/Vercel Blob for temporary document storage
+  ```typescript
+  interface ResponseTemplate {
+    name: string;
+    template: string;
+    useCase: string;
+    maxTokens: number;
+  }
 
-### Data Flow Architecture
+  class ResponseOptimizer {
+    private templates: Map<string, ResponseTemplate>;
+    public optimizeResponse(
+      content: string,
+      context: Context
+    ): Promise<Response>;
+  }
+  ```
 
-1. **Document Processing Pipeline**:
-   - Upload → Parse → Chunk → Embed → Store
-2. **Query Processing Pipeline**:
-   - Query → Embed → Retrieve → Generate → Stream
+  - Template-based formatting
+  - Smart length optimization
+  - Citation management
+  - Compression tracking
 
-## Key Technical Decisions
+### Analytics System
 
-1. **Next.js + React**:
+- **Token Usage Tracking**
 
-   - Provides server-side rendering for better SEO and initial load performance
-   - Enables API routes for serverless backend functionality
-   - Supports React Server Components for improved performance
+  ```typescript
+  interface TokenUsageEvent {
+    model: string;
+    feature: string;
+    inputTokens: number;
+    outputTokens: number;
+    estimatedCostUsd: number;
+  }
 
-2. **Vercel AI SDK**:
+  class TokenUsageTracker {
+    public trackUsage(event: TokenUsageEvent): Promise<void>;
+    public getUsageMetrics(filters: Filters): Promise<Metrics>;
+  }
+  ```
 
-   - Simplifies streaming responses from LLMs
-   - Provides utilities for handling chat history and message formatting
+  - Per-request tracking
+  - Cost calculation
+  - Usage analytics
+  - Alert system
 
-3. **Pinecone Vector Database**:
+### Database Schema
 
-   - Serverless vector database for efficient similarity search
-   - Scales automatically based on usage
-   - Provides low-latency retrieval for RAG applications
+- **Token Usage Table**
 
-4. **Firebase/Vercel Blob for Storage**:
+  ```sql
+  CREATE TABLE token_usage (
+    id SERIAL PRIMARY KEY,
+    model VARCHAR(50) NOT NULL,
+    feature VARCHAR(50) NOT NULL,
+    input_tokens INTEGER NOT NULL,
+    output_tokens INTEGER NOT NULL,
+    estimated_cost_usd DECIMAL(10, 6) NOT NULL
+  );
+  ```
 
-   - Secure, scalable storage for user-uploaded documents
-   - Built-in encryption and access controls
-   - Automatic expiration for temporary storage
+- **Response Templates Table**
+  ```sql
+  CREATE TABLE response_templates (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    template TEXT NOT NULL,
+    use_case VARCHAR(50) NOT NULL,
+    max_tokens INTEGER NOT NULL
+  );
+  ```
 
-5. **Shadcn/ui + Tailwind CSS**:
+### Migration System
 
-   - Consistent, accessible UI components
-   - Highly customizable design system
-   - Efficient styling with utility classes
-
-6. **Zustand/React Context for State Management**:
-   - Lightweight state management for tracking use cases and files
-   - Avoids unnecessary re-renders
-   - Simplifies state sharing across components
-
-## Design Patterns in Use
-
-1. **Component Composition Pattern**:
-
-   - Building complex UI from smaller, reusable components
-   - Example: Chat interface composed of message list, input, and controls
-
-2. **Container/Presenter Pattern**:
-
-   - Separating logic (containers) from presentation (presenters)
-   - Example: ChatContainer handles state and API calls, ChatUI handles rendering
-
-3. **Custom Hook Pattern**:
-
-   - Encapsulating reusable logic in custom hooks
-   - Example: `useChat`, `useFileUpload`, `useVectorStore`
-
-4. **Context Provider Pattern**:
-
-   - Providing global state through React Context
-   - Example: `ChatProvider`, `FileUploadProvider`
-
-5. **Streaming Pattern**:
-
-   - Streaming responses from LLM to improve perceived performance
-   - Implemented using Server-Sent Events or similar technology
-
-6. **Repository Pattern**:
-
-   - Abstracting data access behind interfaces
-   - Example: `VectorStoreRepository`, `FileStorageRepository`
-
-7. **Factory Pattern**:
-   - Creating objects based on configuration
-   - Example: Document parser factory for different file types
-
-## Component Relationships
-
-### UI Component Hierarchy
-
-```
-App
-├── Layout
-│   ├── Header
-│   ├── Navigation
-│   └── Footer
-├── UseCaseSelector
-├── UseCasePage
-│   ├── FileUploadZone
-│   │   └── FileItem
-│   └── ChatInterface
-│       ├── MessageList
-│       │   └── Message
-│       ├── InputArea
-│       └── ControlPanel
-└── CTASection
+```typescript
+async function runMigrations() {
+  const files = await getMigrationFiles();
+  for (const file of files) {
+    if (!isExecuted(file)) {
+      await executeMigration(file);
+    }
+  }
+}
 ```
 
-### Service Dependencies
+- Version tracking
+- Rollback support
+- Transaction safety
+- Error handling
 
-```
-ChatService
-├── depends on → VectorStoreService
-├── depends on → LLMService
-└── depends on → FileProcessingService
-    └── depends on → FileStorageService
-```
+### Performance Monitoring
 
-### Data Flow Relationships
+- **Context optimization metrics**
+- **Response quality tracking**
+- **Cache hit rates**
+- **API usage statistics**
 
-```
-User → FileUploadZone → FileProcessingService → VectorStoreService
-User → ChatInterface → ChatService → VectorStoreService + LLMService → User
-```
+### Caching Strategy
 
-## Architectural Constraints
+- **Multi-level Caching**
+  - Chat response caching
+  - Embedding caching
+  - Hybrid search result caching
+  - Cache invalidation based on content updates
 
-1. **Serverless Architecture**: All components must be deployable to serverless environments
-2. **Stateless Backend**: No server-side session state
-3. **Security First**: All user data must be encrypted and properly secured
-4. **Performance Budget**: Initial load under 2 seconds, chat responses under 5 seconds
-5. **Accessibility Compliance**: WCAG 2.1 AA compliance required
+### Cost Optimization
 
-## Progress Tracking Architecture
+- **Token Management**
+  - Dynamic token budgeting
+  - Context pruning based on relevance
+  - Efficient embedding model selection
+  - Response streaming for better UX
 
-### Component Structure
+### Search Optimization
 
-1. Database Layer
+- **Hybrid Search Enhancement**
+  - Configurable vector and keyword weights
+  - Adjustable score thresholds
+  - Larger candidate pool for optimization
+  - Smart result filtering
 
-   - Progress sessions table for overall tracking
-   - Steps table for granular progress
-   - Metrics table for performance data
-   - Optimized queries and proper indexing
+## Core Architecture Patterns
 
-2. Service Layer
+### Text Processing Pipeline
 
-   - ProgressService for database operations
-   - Metrics aggregation and calculations
-   - Health monitoring functions
-   - Error handling and validation
+1. **Text Chunking Pattern**
 
-3. API Layer
+   ```typescript
+   interface TextChunk {
+     text: string;
+     tokens: number;
+   }
 
-   - Admin-only endpoints
-   - Rate limiting middleware
-   - Authentication checks
-   - Error handling middleware
+   class TextSplitter {
+     private chunkSize: number;
+     private chunkOverlap: number;
+     private separators: string[];
 
-4. Admin Dashboard
-   - Real-time metrics display
-   - System health monitoring
-   - Session tracking and debugging
-   - Error state handling
-
-### Data Flow
-
-1. Session Tracking
-
-   ```mermaid
-   flowchart TD
-       A[User Action] --> B[Progress Service]
-       B --> C[Database]
-       C --> D[Admin Dashboard]
-       D --> E[Metrics Display]
+     public splitBySemanticBoundaries(text: string): TextChunk[];
+   }
    ```
 
-2. Health Monitoring
-   ```mermaid
-   flowchart TD
-       A[System Events] --> B[Health Service]
-       B --> C[Metrics Collection]
-       C --> D[Admin Dashboard]
-       D --> E[Health Display]
-   ```
+   - Semantic boundary detection
+   - Token-based size limits
+   - Configurable overlap
+   - Error handling
 
-### Security Pattern
+2. **Document Processing Pattern**
+   - File type validation
+   - Text extraction
+   - Metadata handling
+   - Error recovery
 
-1. Admin Access
+## Implementation Patterns
 
-   - Middleware protection for /admin routes
-   - Session-based authentication
-   - Rate limiting for API endpoints
-   - Security headers
+### Error Handling
 
-2. Data Protection
-   - Sanitized inputs
-   - Validated outputs
-   - Error masking
-   - Rate limiting
+```typescript
+try {
+  // Operation
+} catch (error) {
+  if (error instanceof ValidationError) {
+    // Handle validation errors
+  } else if (error instanceof ProcessingError) {
+    // Handle processing errors
+  } else {
+    // Log and rethrow unknown errors
+    logger.error("Unexpected error", { error });
+    throw error;
+  }
+}
+```
 
-### Monitoring Pattern
+### State Management
 
-1. System Metrics
+1. **Upload State**
 
-   - Active sessions count
-   - Error rates
-   - Response times
-   - Memory usage
+   - Progress tracking
+   - Error handling
+   - Status updates
+   - Cleanup
 
-2. Database Metrics
-   - Connection status
-   - Query latency
-   - Active/failed sessions
-   - Hourly statistics
+2. **Processing State**
+   - Queue management
+   - Status tracking
+   - Error recovery
+   - Resource cleanup
 
-### Error Handling Pattern
+## Testing Patterns
 
-1. API Errors
+### Unit Testing
 
-   - 401: Authentication
-   - 429: Rate limiting
-   - 500: Server errors
-   - Network issues
+```typescript
+describe("TextSplitter", () => {
+  const splitter = new TextSplitter({
+    chunkSize: 50,
+    chunkOverlap: 10,
+  });
 
-2. UI Error States
-   - Visual indicators
-   - Recovery actions
-   - Graceful degradation
-   - Auto-retry logic
+  test("handles simple paragraphs", () => {
+    const chunks = splitter.splitBySemanticBoundaries(text);
+    expect(chunks).toHaveLength(expected);
+  });
+});
+```
+
+### Integration Testing
+
+- End-to-end flows
+- Error scenarios
+- Performance testing
+- Concurrent operations
+
+## Security Patterns
+
+### File Validation
+
+1. **Type Checking**
+
+   - MIME type validation
+   - Extension verification
+   - Content analysis
+
+2. **Size Limits**
+   - Maximum file size
+   - Chunk size limits
+   - Total upload limits
+
+### Processing Security
+
+1. **Malware Scanning**
+
+   - Virus detection
+   - Content validation
+   - Quarantine system
+
+2. **PII Detection**
+   - Pattern matching
+   - Content analysis
+   - Data masking
+
+## Performance Patterns
+
+### Chunking Optimization
+
+- Semantic boundaries
+- Token awareness
+- Overlap management
+- Size optimization
+
+### Resource Management
+
+- Memory usage control
+- Processing timeouts
+- Queue management
+- Cleanup procedures
+
+## UI/UX Patterns
+
+### Progress Indication
+
+- Upload progress
+- Processing status
+- Error feedback
+- Success confirmation
+
+### Animation Patterns
+
+- Loading states
+- Transitions
+- Error states
+- Success feedback
+
+## Monitoring Patterns
+
+### Logging
+
+```typescript
+logger.info("Processing document", {
+  documentId,
+  size,
+  type,
+  timestamp: new Date().toISOString(),
+});
+```
+
+### Metrics
+
+- Processing times
+- Error rates
+- Resource usage
+- User interactions
+
+## Future Patterns (Planned)
+
+### Context Management
+
+- Pruning strategies
+- Prioritization algorithms
+- Compression techniques
+- Adaptive sizing
+
+### Enhanced Security
+
+- Advanced malware detection
+- Improved PII handling
+- Content validation
+- Access control
