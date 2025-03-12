@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { TypingIndicator } from "./TypingIndicator";
 import { LoadingState } from "./LoadingState";
 import { Message } from "@/src/types/chat";
@@ -16,6 +16,14 @@ interface ChatStreamProps {
 
 export function ChatStream({ messages, isTyping, isLoading }: ChatStreamProps) {
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Store the result of matchMedia in a memoized value to avoid recreating it on each render
+  const prefersReducedMotion = useMemo(() => {
+    if (typeof window !== "undefined") {
+      return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+    return false;
+  }, []);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -32,16 +40,10 @@ export function ChatStream({ messages, isTyping, isLoading }: ChatStreamProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{
-              type: window.matchMedia("(prefers-reduced-motion: reduce)")
-                .matches
-                ? "tween"
-                : "spring",
+              type: prefersReducedMotion ? "tween" : "spring",
               stiffness: 300,
               damping: 20,
-              delay: window.matchMedia("(prefers-reduced-motion: reduce)")
-                .matches
-                ? 0
-                : 0.1 * index,
+              delay: prefersReducedMotion ? 0 : 0.1 * index,
             }}
           >
             <div

@@ -69,12 +69,13 @@ export default function ChatClient({ useCase }: { useCase: string }) {
 
     // If it doesn't need customization, automatically send it
     if (!needsCustomization) {
-      setTimeout(() => {
+      // Use requestAnimationFrame instead of setTimeout to avoid potential issues
+      requestAnimationFrame(() => {
         sendChatMessage(
           promptText,
           selectedDocuments.map((doc) => doc.id)
         );
-      }, 100);
+      });
     }
   };
 

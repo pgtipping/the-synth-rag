@@ -1,4 +1,47 @@
-# Active Context - Updated [2024-05-29 11:15:00]
+# Active Context [2024-03-21 14:45:00]
+
+## Recent Changes
+
+### Model Configuration Update
+
+- Changed LLM model from `gpt-4-turbo-preview` to `gpt-4o-mini` for better cost efficiency
+- Updated token tracking to reflect new model pricing
+- Ensured proper error handling for model configuration
+
+### Current Focus
+
+- Optimizing chat functionality
+- Ensuring proper model configuration
+- Maintaining cost efficiency
+
+### Next Steps
+
+1. Monitor performance with new model
+2. Verify token tracking accuracy
+3. Test chat functionality with various document types
+
+### Active Decisions
+
+- Using `gpt-4o-mini` for better cost-performance ratio
+- Maintaining streaming response functionality
+- Keeping context optimization for better response quality
+
+## Current Status
+
+- Server running on port 3000
+- Chat endpoint updated with new model
+- Token tracking system properly configured for new model
+
+## Known Issues
+
+- Previous model configuration causing API errors (resolved)
+- Need to verify token usage metrics with new model
+
+## Recent Improvements
+
+1. Updated chat route with correct model
+2. Enhanced error handling for model configuration
+3. Maintained existing context management system
 
 ## Current Focus - Updated [2024-05-29 11:15:00]
 
@@ -68,106 +111,6 @@ Currently in Phase 2 of the cost optimization plan:
   - response_templates for managing response formats
   - Daily and user-based aggregation views
   - Proper indexing for performance
-
-## Recent Changes
-
-### UI Improvements - Updated [2024-05-30 12:45:00]
-
-1. Navigation Bar Enhancement:
-
-   - Added proper padding to fix spacing issues near window border
-   - Improved visual consistency
-
-2. Suggested Prompts Optimization:
-
-   - Removed duplicate "Document Summary" prompts
-   - Removed "Ask a Question" prompt
-   - Improved visual clarity by removing redundant filter tabs (All/General)
-   - Enhanced prompt organization
-
-3. File Upload Relocation:
-   - Moved file upload component from bottom panel to left sidebar
-   - Improved user workflow by centralizing document management
-   - Enhanced UI organization and clarity
-
-### Text Splitter Implementation
-
-1. Created TextSplitter class with:
-
-   - Configurable chunk size and overlap
-   - Semantic boundary detection
-   - Token-based size limits
-   - Proper error handling
-
-2. Added comprehensive test cases:
-   - Simple paragraphs
-   - Technical content
-   - Mixed separators
-   - Long sentences
-   - Small chunks with overlap
-
-### Infrastructure Updates
-
-- Updated server external packages configuration
-- Added proper handling for document processing libraries
-- Improved client-side fallbacks
-- Enhanced test file exclusion
-
-### Cost Optimization Features
-
-- Implemented ContextManager for optimizing search results
-- Added embedding caching to reduce API calls
-- Enhanced hybrid search with configurable weights
-- Integrated token tracking middleware
-
-### Context Management Enhancements
-
-1. ContextManager Improvements:
-
-   - Added adaptive thresholding
-   - Implemented chunk compression
-   - Enhanced relevance scoring
-   - Improved deduplication
-   - Added detailed logging
-
-2. Chat Route Optimization:
-   - Enhanced context processing
-   - Improved token counting
-   - Added compression tracking
-   - Enhanced system messages
-   - Improved caching
-
-### Response Optimization Features
-
-1. ResponseOptimizer Implementation:
-
-   - Template management system
-   - Smart content truncation
-   - Citation formatting
-   - Compression tracking
-   - Use case optimization
-
-2. Response Templates:
-   - Added default templates for different use cases
-   - Configurable max tokens
-   - Citation formatting options
-   - Template metadata support
-
-### Analytics Enhancement
-
-1. Token Usage Tracking:
-
-   - Per-request token counting
-   - Cost calculation by model
-   - Usage aggregation
-   - Alert system
-   - Detailed metrics
-
-2. Database Infrastructure:
-   - Created migration system
-   - Added token usage tracking
-   - Implemented response templates
-   - Added aggregation views
 
 ## Active Decisions
 

@@ -1,7 +1,7 @@
 import { useChatStore } from "../../lib/stores/chat";
 import { analytics } from "../../lib/analytics";
 
-export async function sendChatMessage(message: string) {
+export async function sendChatMessage(message: string, documentIds?: number[]) {
   const store = useChatStore.getState();
 
   // Validate message
@@ -33,7 +33,7 @@ export async function sendChatMessage(message: string) {
   try {
     store.setIsTyping(true);
 
-    const response = await fetch("/api/chat", {
+    const response = await fetch("http://localhost:3000/api/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -43,6 +43,7 @@ export async function sendChatMessage(message: string) {
           role,
           content,
         })),
+        documentIds: documentIds || [],
       }),
     });
 

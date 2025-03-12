@@ -66,6 +66,7 @@ export function DocumentList() {
   const [loading, setLoading] = useState(true);
   const [selectedUseCase, setSelectedUseCase] = useState<string>("all");
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [updatingUseCase, setUpdatingUseCase] = useState<number | null>(null);
   const { toast } = useToast();
 
   const fetchDocuments = useCallback(async () => {
@@ -138,6 +139,42 @@ export function DocumentList() {
       });
     } finally {
       setDeleting(null);
+    }
+  };
+
+  const updateDocumentUseCase = async (id: number, newUseCase: string) => {
+    try {
+      setUpdatingUseCase(id);
+      const response = await fetch(`/api/documents/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ useCase: newUseCase }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update document use case");
+
+      // Update the document in the local state
+      setDocuments((prev) =>
+        prev.map((doc) =>
+          doc.id === id ? { ...doc, useCase: newUseCase } : doc
+        )
+      );
+
+      toast({
+        title: "Success",
+        description: "Document use case updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating document use case:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update document use case",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingUseCase(null);
     }
   };
 
@@ -256,12 +293,12 @@ export function DocumentList() {
           <Table>
             <TableHeader>
               <TableRow className="bg-gray-50">
-                <TableHead className="w-[30%]">Name</TableHead>
+                <TableHead className="w-[25%]">Name</TableHead>
                 <TableHead className="w-[20%]">Use Case</TableHead>
                 <TableHead className="w-[15%]">Status</TableHead>
                 <TableHead className="w-[10%]">Size</TableHead>
                 <TableHead className="w-[15%]">Uploaded</TableHead>
-                <TableHead className="w-[10%] text-right">Actions</TableHead>
+                <TableHead className="w-[15%] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -271,27 +308,59 @@ export function DocumentList() {
                     {doc.originalName}
                   </TableCell>
                   <TableCell>
-                    {USE_CASES.find((uc) => uc.value === doc.useCase)?.label ||
-                      doc.useCase ||
-                      "General"}
+                    {updatingUseCase === doc.id ? (
+                      <div className="flex items-center">
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        <span>Updating...</span>
+                      </div>
+                    ) : (
+                      <Select
+                        value={doc.useCase}
+                        onValueChange={(value) =>
+                          updateDocumentUseCase(doc.id, value)
+                        }
+                        disabled={doc.status !== "indexed"}
+                      >
+                        <SelectTrigger className="w-full h-8 text-sm">
+                          <SelectValue>
+                            {USE_CASES.find((uc) => uc.value === doc.useCase)
+                              ?.label ||
+                              doc.useCase ||
+                              "General"}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {USE_CASES.map((useCase) => (
+                            <SelectItem
+                              key={useCase.value}
+                              value={useCase.value}
+                            >
+                              {useCase.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </TableCell>
                   <TableCell>{getStatusBadge(doc.status)}</TableCell>
                   <TableCell>{formatFileSize(doc.sizeBytes)}</TableCell>
                   <TableCell>{formatDate(doc.createdAt)}</TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => deleteDocument(doc.id)}
-                      disabled={deleting === doc.id}
-                      className="h-8 w-8"
-                    >
-                      {deleting === doc.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700" />
-                      )}
-                    </Button>
+                    <div className="flex justify-end space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteDocument(doc.id)}
+                        disabled={deleting === doc.id}
+                        className="h-8 w-8"
+                      >
+                        {deleting === doc.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700" />
+                        )}
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

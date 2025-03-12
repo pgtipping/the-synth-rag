@@ -24,18 +24,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authInstance, setAuthInstance] = useState<Auth | null>(null);
 
   useEffect(() => {
+    let unsubscribe: () => void = () => {};
+
     const initializeAuth = async () => {
       try {
         const { auth } = await getFirebase();
         setAuthInstance(auth);
 
         const { onAuthStateChanged } = await import("firebase/auth");
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        unsubscribe = onAuthStateChanged(auth, (user) => {
           setUser(user);
           setLoading(false);
         });
-
-        return () => unsubscribe();
       } catch (error) {
         console.error("Error initializing auth:", error);
         setLoading(false);
@@ -43,6 +43,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initializeAuth();
+
+    // Return the unsubscribe function directly
+    return () => unsubscribe();
   }, []);
 
   const signIn = async () => {
