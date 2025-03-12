@@ -41,6 +41,10 @@ interface ChunkData {
 export async function POST(req: Request) {
   try {
     const { messages, useCase, documentIds = [] } = await req.json();
+
+    // Add debug logging
+    console.log("Chat request received:", { useCase, documentIds });
+
     const lastMessage = messages[messages.length - 1];
 
     // Get context based on document IDs or query
@@ -48,10 +52,15 @@ export async function POST(req: Request) {
     let relevanceScores: number[] = [];
 
     if (documentIds && documentIds.length > 0) {
+      // Add debug logging
+      console.log("Processing document IDs:", documentIds);
+
       // Get context from specific documents
       const client = await pool.connect();
       try {
         // Get vector IDs for the specified documents
+        console.log("Querying document_chunks for vector IDs...");
+
         const vectorResult = await client.query<DocumentChunk>(
           `SELECT vector_id 
            FROM document_chunks 
@@ -62,15 +71,24 @@ export async function POST(req: Request) {
           documentIds
         );
 
+        console.log(`Found ${vectorResult.rows.length} vector IDs`);
+
         if (vectorResult.rows.length > 0) {
           // Get the Pinecone index
+          console.log("Getting Pinecone index...");
           const index = pinecone.index(process.env.PINECONE_INDEX!);
 
           // Get vector IDs
           const vectorIds = vectorResult.rows.map((row) => row.vector_id);
+          console.log("Vector IDs:", vectorIds);
 
           // Fetch vectors from Pinecone
+          console.log("Fetching vectors from Pinecone...");
           const fetchResponse = await index.fetch(vectorIds);
+          console.log(
+            "Pinecone fetch response:",
+            Object.keys(fetchResponse.records || {})
+          );
 
           // Format chunks from Pinecone
           chunks = Object.entries(fetchResponse.records || {}).map(
@@ -82,9 +100,15 @@ export async function POST(req: Request) {
             })
           );
 
+          console.log(`Processed ${chunks.length} chunks from Pinecone`);
+
           // Create scores array
           relevanceScores = chunks.map(() => 1.0);
+        } else {
+          console.log("No vector IDs found for the specified document IDs");
         }
+      } catch (error) {
+        console.error("Error retrieving document chunks:", error);
       } finally {
         client.release();
       }
@@ -104,6 +128,15 @@ export async function POST(req: Request) {
 
       // Use the scores array directly from contextResult
       relevanceScores = contextResult.scores;
+    }
+
+    // Log context information
+    console.log(`Using ${chunks.length} chunks for context`);
+    if (chunks.length > 0) {
+      console.log(
+        "First chunk sample:",
+        chunks[0].text.substring(0, 100) + "..."
+      );
     }
 
     // Prepare system message with context

@@ -12,6 +12,7 @@ import { Loader2, FileText } from "lucide-react";
 import { useToast } from "../../components/ui/use-toast";
 import { Badge } from "../../components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
+import { DocumentReprocessor } from "./document-reprocessor";
 
 interface Document {
   id: number;
@@ -208,6 +209,16 @@ export function DocumentSelector({
                     >
                       {selectedIds.includes(doc.id) ? "Selected" : "Select"}
                     </Badge>
+                  </div>
+
+                  <div
+                    className="mt-2 flex justify-end"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <DocumentReprocessor
+                      documentId={doc.id}
+                      onSuccess={() => fetchDocuments()}
+                    />
                   </div>
                 </div>
               ))}

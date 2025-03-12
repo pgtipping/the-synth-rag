@@ -1,4 +1,4 @@
-# Progress - Updated on June 5, 2024 14:30 EST
+# Progress - Updated on June 5, 2024 15:30 EST
 
 ## What Works
 
@@ -21,6 +21,7 @@
 - ✅ Fixed database column mapping in chat route for document chunks
 - ✅ Fixed document retrieval to properly fetch content from Pinecone
 - ✅ Implemented parameterized SQL queries for security
+- ✅ Added document reprocessing functionality for documents that weren't properly processed
 
 ### UI Components
 

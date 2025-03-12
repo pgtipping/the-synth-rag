@@ -1,6 +1,13 @@
-# Active Context - Updated June 5, 2024 14:30 EST
+# Active Context - Updated June 5, 2024 15:30 EST
 
 ## Recent Changes
+
+### Document Reprocessing Fix - June 5, 2024
+
+- Added document reprocessing functionality to fix documents that weren't properly processed
+- Created a new API endpoint at `/api/documents/reprocess` to reprocess documents
+- Added a UI component to allow users to reprocess documents from the document selector
+- Fixed issue where document content wasn't being retrieved from Pinecone due to missing document chunks
 
 ### Document Retrieval Fix - June 5, 2024
 
