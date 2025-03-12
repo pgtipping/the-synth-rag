@@ -1,6 +1,14 @@
-# Active Context - Updated March 12, 2025 21:56 EST
+# Active Context - Updated June 5, 2024 14:30 EST
 
 ## Recent Changes
+
+### Document Retrieval Fix - June 5, 2024
+
+- Fixed document retrieval issue in chat route
+- Updated SQL query to use parameterized queries for security
+- Implemented proper Pinecone integration to fetch document content
+- Added error handling for document retrieval process
+- Fixed issue where document content wasn't being retrieved from Pinecone
 
 ### Model Configuration Update
 
@@ -43,23 +51,26 @@
 - Chat endpoint updated with new model
 - Token tracking system properly configured for new model
 - Chat endpoint using approved gpt-4o-mini model
-- Document access issues under investigation
+- Document retrieval fixed to properly access content from Pinecone
 
 ## Known Issues
 
 - Previous model configuration causing API errors (resolved)
 - Need to verify token usage metrics with new model
-- Document access errors being investigated
+- Document access errors (resolved on June 5, 2024)
 - Need to verify API key permissions
 
 ## Recent Improvements
 
-1. Updated chat route with correct model
-2. Enhanced error handling for model configuration
-3. Maintained existing context management system
-4. Added strict model change policy
-5. Enhanced error documentation process
-6. Improved API key permission checking
+1. Fixed document retrieval to properly fetch content from Pinecone
+2. Implemented parameterized SQL queries for security
+3. Enhanced error handling for document retrieval
+4. Updated chat route with correct model
+5. Enhanced error handling for model configuration
+6. Maintained existing context management system
+7. Added strict model change policy
+8. Enhanced error documentation process
+9. Improved API key permission checking
 
 ## Current Focus - Updated [2024-05-29 11:15:00]
 
@@ -241,19 +252,14 @@ Currently in Phase 2 of the cost optimization plan:
 11. Alert thresholds need tuning
 12. Analytics UI needs enhancement
 13. ✅ Fixed: Database connection issue with special characters in password (resolved on May 29, 2024)
+14. ✅ Fixed: Document content not being retrieved from Pinecone (resolved on June 5, 2024)
 
 ### Recent Fixes
 
+- Fixed document retrieval in chat route
+  - Updated SQL query to use parameterized queries
+  - Implemented proper Pinecone integration to fetch document content
+  - Added error handling for document retrieval process
 - Fixed import path issues in the chat API route
-
   - Updated import paths for ContextManager, ResponseOptimizer, and TokenUsageTracker
   - Added missing getContext method to ContextManager class
-  - Fixed type issues in the route.ts file
-  - Server now runs without module not found errors
-
-- Fixed TokenUsageTracker implementation
-  - Created a simplified version that doesn't depend on the db module
-  - Removed database queries and replaced with console logging
-  - Updated model cost calculations with latest pricing
-  - Added support for newer models like gpt-4o and gpt-4o-mini
-  - Server now runs without db import errors

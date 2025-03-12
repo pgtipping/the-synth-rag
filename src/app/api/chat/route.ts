@@ -6,6 +6,7 @@ import { ResponseOptimizer } from "../../../lib/response/ResponseOptimizer";
 import { TokenUsageTracker } from "../../../lib/analytics/TokenUsageTracker";
 import { encode } from "gpt-tokenizer";
 import pool from "../../../lib/db";
+import { Pinecone } from "@pinecone-database/pinecone";
 
 // Initialize OpenAI configuration
 const config = new Configuration({
@@ -18,9 +19,14 @@ const contextManager = new ContextManager();
 const responseOptimizer = new ResponseOptimizer();
 const tokenTracker = TokenUsageTracker.getInstance();
 
+// Initialize Pinecone client
+const pinecone = new Pinecone({
+  apiKey: process.env.PINECONE_API_KEY as string,
+});
+
 interface DocumentChunk {
   vector_id: string;
-  text: string;
+  text?: string;
   metadata?: Record<string, unknown>;
   chunk_index?: number;
 }
@@ -47,22 +53,38 @@ export async function POST(req: Request) {
       try {
         // Get vector IDs for the specified documents
         const vectorResult = await client.query<DocumentChunk>(
-          `SELECT vector_id, text_content as text, '{}'::jsonb as metadata 
+          `SELECT vector_id 
            FROM document_chunks 
-           WHERE document_id IN (${documentIds.join(",")})
-           ORDER BY document_id, chunk_index`
+           WHERE document_id IN (${documentIds
+             .map((id: number) => `$${documentIds.indexOf(id) + 1}`)
+             .join(",")})
+           ORDER BY document_id, chunk_index`,
+          documentIds
         );
 
-        // Format chunks from the database
-        chunks = vectorResult.rows.map((row) => ({
-          id: row.vector_id,
-          text: row.text,
-          metadata: row.metadata || {},
-          relevanceScore: 1.0, // All chunks from selected documents are considered relevant
-        }));
+        if (vectorResult.rows.length > 0) {
+          // Get the Pinecone index
+          const index = pinecone.index(process.env.PINECONE_INDEX!);
 
-        // Create scores array
-        relevanceScores = chunks.map(() => 1.0);
+          // Get vector IDs
+          const vectorIds = vectorResult.rows.map((row) => row.vector_id);
+
+          // Fetch vectors from Pinecone
+          const fetchResponse = await index.fetch(vectorIds);
+
+          // Format chunks from Pinecone
+          chunks = Object.entries(fetchResponse.records || {}).map(
+            ([id, vector]) => ({
+              id,
+              text: (vector.metadata?.text as string) || "No content available",
+              metadata: vector.metadata || {},
+              relevanceScore: 1.0, // All chunks from selected documents are considered relevant
+            })
+          );
+
+          // Create scores array
+          relevanceScores = chunks.map(() => 1.0);
+        }
       } finally {
         client.release();
       }
@@ -149,7 +171,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error in chat route:", error);
     return NextResponse.json(
-      { error: "Failed to process chat request" },
+      { error: "An error occurred during the chat request" },
       { status: 500 }
     );
   }
