@@ -1,6 +1,14 @@
 # Project Plan
 
-Build a single RAG chatbot demo showcasing multiple use cases (Onboarding Assistant, Knowledge Hub, etc.)
+Build a single RAG chatbot demo showcasing multiple use cases (Onboarding Assistant, Knowledge Hub, Sales Assistant, customer support assistant, lead generation assistant, etc.)
+
+I want users to be able to upload files, and add more context via multiple channels (cdn, s3, website, etc.) and then chat with the chatbot.
+
+I want to be able to add more use cases as needed.
+
+I want users to be able to create custom use cases as needed with proper guidance in the UI.
+
+i want users to be able to export the chatbot and use it in other apps or websites as needed.
 
 ## **Revisions (Latest: [1/25])**
 
