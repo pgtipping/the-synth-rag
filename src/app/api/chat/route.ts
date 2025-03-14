@@ -61,12 +61,13 @@ export async function POST(req: Request) {
         // Get vector IDs for the specified documents
         console.log("Querying document_chunks for vector IDs...");
 
+        const placeholders = documentIds
+          .map((_: number, i: number) => `$${i + 1}`)
+          .join(",");
         const vectorResult = await client.query<DocumentChunk>(
           `SELECT vector_id 
            FROM document_chunks 
-           WHERE document_id IN (${documentIds
-             .map((id: number) => `$${documentIds.indexOf(id) + 1}`)
-             .join(",")})
+           WHERE document_id IN (${placeholders})
            ORDER BY document_id, chunk_index`,
           documentIds
         );
@@ -82,28 +83,50 @@ export async function POST(req: Request) {
           const vectorIds = vectorResult.rows.map((row) => row.vector_id);
           console.log("Vector IDs:", vectorIds);
 
-          // Fetch vectors from Pinecone
-          console.log("Fetching vectors from Pinecone...");
-          const fetchResponse = await index.fetch(vectorIds);
-          console.log(
-            "Pinecone fetch response:",
-            Object.keys(fetchResponse.records || {})
-          );
+          try {
+            // Fetch vectors from Pinecone
+            console.log("Fetching vectors from Pinecone...");
+            const fetchResponse = await index.fetch(vectorIds);
+            console.log(
+              "Pinecone fetch response:",
+              Object.keys(fetchResponse.records || {})
+            );
 
-          // Format chunks from Pinecone
-          chunks = Object.entries(fetchResponse.records || {}).map(
-            ([id, vector]) => ({
-              id,
-              text: (vector.metadata?.text as string) || "No content available",
-              metadata: vector.metadata || {},
-              relevanceScore: 1.0, // All chunks from selected documents are considered relevant
-            })
-          );
+            // Check if we got all the vectors we requested
+            const missingVectors = vectorIds.filter(
+              (id) => !fetchResponse.records || !fetchResponse.records[id]
+            );
 
-          console.log(`Processed ${chunks.length} chunks from Pinecone`);
+            if (missingVectors.length > 0) {
+              console.warn(
+                `Missing ${missingVectors.length} vectors from Pinecone:`,
+                missingVectors
+              );
+            }
 
-          // Create scores array
-          relevanceScores = chunks.map(() => 1.0);
+            // Format chunks from Pinecone
+            chunks = Object.entries(fetchResponse.records || {}).map(
+              ([id, vector]) => ({
+                id,
+                text:
+                  (vector.metadata?.text as string) || "No content available",
+                metadata: vector.metadata || {},
+                relevanceScore: 1.0, // All chunks from selected documents are considered relevant
+              })
+            );
+
+            console.log(`Processed ${chunks.length} chunks from Pinecone`);
+
+            // Create scores array
+            relevanceScores = chunks.map(() => 1.0);
+          } catch (error) {
+            console.error("Error fetching vectors from Pinecone:", error);
+            throw new Error(
+              `Failed to retrieve document content: ${
+                error instanceof Error ? error.message : "Unknown error"
+              }`
+            );
+          }
         } else {
           console.log("No vector IDs found for the specified document IDs");
         }

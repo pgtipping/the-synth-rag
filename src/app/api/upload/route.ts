@@ -101,6 +101,16 @@ export async function POST(request: NextRequest) {
     // Process the file to extract text
     const processedContent = await processFile(file, buffer);
 
+    // Save document chunks to database
+    await documentService.saveDocumentChunks(
+      document.id,
+      processedContent.chunks.map((chunk, index) => ({
+        text: chunk.text,
+        index,
+        tokens: chunk.tokens,
+      }))
+    );
+
     // Index all document chunks in Pinecone
     const vectorIds = [];
     for (let i = 0; i < processedContent.chunks.length; i++) {
@@ -113,6 +123,10 @@ export async function POST(request: NextRequest) {
         processedAt: new Date().toISOString(),
         text: chunk.text,
       });
+
+      // Update vector ID in database
+      await documentService.updateChunkVectorId(document.id, i, vectorId);
+
       vectorIds.push(vectorId);
     }
 

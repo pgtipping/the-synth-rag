@@ -21,6 +21,7 @@ import { Badge } from "../../components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { Loader2, Trash2 } from "lucide-react";
 import { useToast } from "../../components/ui/use-toast";
+import { DocumentHealthCheck } from "./document-health-check";
 
 interface ApiDocument {
   id: number;
@@ -347,19 +348,22 @@ export function DocumentList() {
                   <TableCell>{formatDate(doc.createdAt)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteDocument(doc.id)}
-                        disabled={deleting === doc.id}
-                        className="h-8 w-8"
-                      >
-                        {deleting === doc.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700" />
-                        )}
-                      </Button>
+                      <div className="flex items-center space-x-2">
+                        <DocumentHealthCheck documentId={doc.id} />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteDocument(doc.id)}
+                          disabled={deleting === doc.id}
+                          className="h-8 w-8 p-0 text-red-500"
+                        >
+                          {deleting === doc.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>

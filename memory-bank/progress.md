@@ -1,4 +1,4 @@
-# Progress - Updated on June 5, 2024 16:00 EST
+# Progress - Updated on March 15, 2025 00:20:00 EST
 
 ## What Works
 
@@ -24,6 +24,13 @@
 - ✅ Added document reprocessing functionality for documents that weren't properly processed
 - ✅ Enhanced document selector UI with clear status indicators and helpful explanations
 - ✅ Added document status summary and visual indicators for non-indexed documents
+- ✅ Fixed database schema mismatch in document reprocessing route
+- ✅ Enhanced error handling for document retrieval from Pinecone
+- ✅ Updated upload route to use document service for saving chunks
+- ✅ Created document health check endpoint for diagnosing document issues
+- ✅ Implemented document reconciliation endpoint for fixing missing vectors
+- ✅ Added DocumentHealthCheck component for the UI
+- ✅ Integrated health check component into the document list
 
 ### UI Components
 

@@ -37,7 +37,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const doc = document.rows[0];
+    const doc = document.rows[0] as {
+      id: number;
+      filename: string;
+      original_name: string;
+      content_type: string;
+    };
 
     // Update document status to processing
     await db.query(
@@ -68,7 +73,12 @@ export async function POST(req: NextRequest) {
 }
 
 // Helper function to process a document asynchronously
-async function processDocumentAsync(doc: any): Promise<void> {
+async function processDocumentAsync(doc: {
+  id: number;
+  filename: string;
+  original_name: string;
+  content_type: string;
+}): Promise<void> {
   try {
     // Get the file from storage
     const fileBuffer = await storage.retrieve(doc.filename);
@@ -81,8 +91,8 @@ async function processDocumentAsync(doc: any): Promise<void> {
         );
 
     // Create a File object from the buffer
-    const file = new File([buffer], doc.original_name || doc.originalName, {
-      type: doc.content_type || doc.contentType,
+    const file = new File([buffer], doc.original_name || "unknown_file", {
+      type: doc.content_type || "application/octet-stream",
     });
 
     // Process the file to extract text
@@ -95,10 +105,10 @@ async function processDocumentAsync(doc: any): Promise<void> {
 
       // Save chunk to database
       await db.query(
-        `INSERT INTO document_chunks (document_id, text, chunk_index, tokens)
+        `INSERT INTO document_chunks (document_id, text_content, chunk_index, token_count)
          VALUES ($1, $2, $3, $4)
          ON CONFLICT (document_id, chunk_index)
-         DO UPDATE SET text = $2, tokens = $4`,
+         DO UPDATE SET text_content = $2, token_count = $4`,
         [doc.id, chunk.text, i, chunk.tokens]
       );
 
@@ -106,8 +116,8 @@ async function processDocumentAsync(doc: any): Promise<void> {
       const vectorId = await indexDocument(chunk.text, {
         documentId: doc.id,
         chunkIndex: i,
-        originalName: doc.original_name || doc.originalName,
-        mimeType: doc.content_type || doc.contentType,
+        originalName: doc.original_name,
+        mimeType: doc.content_type,
         processedAt: new Date().toISOString(),
         text: chunk.text,
       });

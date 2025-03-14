@@ -1,6 +1,25 @@
-# Active Context - Updated 2025-03-14 19:26:42 EDT
+# Active Context - Updated 2025-03-15 00:15:00 EDT
 
 ## Recent Changes
+
+### Document Health Check Implementation - 2025-03-15 00:15:00 EDT
+
+- Created a document health check endpoint to diagnose document issues
+- Implemented a document reconciliation endpoint to fix missing vectors
+- Added a DocumentHealthCheck component for the UI
+- Integrated the health check component into the document list
+- Enhanced error handling for document retrieval and processing
+- Improved the overall document accessibility and management
+
+### Document Accessibility Fixes - 2025-03-14 23:50:00 EDT
+
+- Fixed database schema mismatch in document reprocessing route
+- Fixed unsafe SQL queries in chat route with proper parameterized queries
+- Enhanced error handling for document retrieval from Pinecone
+- Improved document processing with proper column names and type safety
+- Updated the upload route to use the document service for saving chunks
+- Created a comprehensive implementation plan for document accessibility
+- Plan stored in `/docs/document-accessibility-plan.md`
 
 ### Document Accessibility Implementation Plan - 2025-03-14 19:26:42 EDT
 
