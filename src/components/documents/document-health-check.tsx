@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "../../components/ui/button";
-import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, RefreshCw } from "lucide-react";
 import { useToast } from "../../components/ui/use-toast";
 import {
   Dialog,
@@ -8,10 +8,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "../../components/ui/dialog";
 import { Badge } from "../../components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert";
+import { Progress } from "../../components/ui/progress";
 
 interface DocumentHealthCheckProps {
   documentId: number;
@@ -32,6 +32,19 @@ interface HealthCheckResult {
   };
 }
 
+interface ReconciliationStatus {
+  documentId: number;
+  status: string;
+  errorMessage: string | null;
+  progress: {
+    total: number;
+    reconciled: number;
+    percentage: number;
+  };
+  isComplete: boolean;
+  isFailed: boolean;
+}
+
 export function DocumentHealthCheck({
   documentId,
   onHealthCheck,
@@ -41,7 +54,74 @@ export function DocumentHealthCheck({
     null
   );
   const [isOpen, setIsOpen] = useState(false);
+  const [isReconciling, setIsReconciling] = useState(false);
+  const [reconciliationStatus, setReconciliationStatus] =
+    useState<ReconciliationStatus | null>(null);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(
+    null
+  );
   const { toast } = useToast();
+
+  // Function to check reconciliation status
+  const checkReconciliationStatus = useCallback(async () => {
+    if (!documentId) return;
+
+    try {
+      const response = await fetch(
+        `/api/documents/reconcile?documentId=${documentId}`
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.error || "Failed to check reconciliation status"
+        );
+      }
+
+      const status = await response.json();
+      setReconciliationStatus(status);
+
+      // If reconciliation is complete or failed, stop polling and refresh health check
+      if (status.isComplete || status.isFailed) {
+        if (pollingInterval) {
+          clearInterval(pollingInterval);
+          setPollingInterval(null);
+        }
+
+        setIsReconciling(false);
+
+        // Show appropriate toast
+        if (status.isComplete) {
+          toast({
+            title: "Document reconciliation complete",
+            description: "Your document has been successfully reconciled.",
+            variant: "default",
+          });
+
+          // Refresh health check
+          handleHealthCheck();
+        } else if (status.isFailed) {
+          toast({
+            title: "Document reconciliation failed",
+            description:
+              status.errorMessage || "An error occurred during reconciliation.",
+            variant: "destructive",
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error checking reconciliation status:", error);
+    }
+  }, [documentId, pollingInterval, toast]);
+
+  // Clean up interval on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [pollingInterval]);
 
   const handleHealthCheck = async () => {
     try {
@@ -83,7 +163,7 @@ export function DocumentHealthCheck({
 
   const handleReconcile = async () => {
     try {
-      setIsChecking(true);
+      setIsReconciling(true);
 
       const response = await fetch(`/api/documents/reconcile`, {
         method: "POST",
@@ -98,16 +178,26 @@ export function DocumentHealthCheck({
         throw new Error(errorData.error || "Failed to reconcile document");
       }
 
+      // Successfully started reconciliation
       toast({
         title: "Document reconciliation started",
         description:
           "Your document is being reconciled. This may take a moment.",
       });
 
-      // Close the dialog
-      setIsOpen(false);
+      // Start polling for status updates
+      // Check status immediately
+      await checkReconciliationStatus();
+
+      // Then set up interval for continued polling
+      const interval = setInterval(checkReconciliationStatus, 2000);
+      setPollingInterval(interval);
+
+      // Keep the dialog open to show progress
     } catch (error) {
       console.error("Error reconciling document:", error);
+      setIsReconciling(false);
+
       toast({
         title: "Error",
         description:
@@ -116,8 +206,6 @@ export function DocumentHealthCheck({
             : "Failed to reconcile document",
         variant: "destructive",
       });
-    } finally {
-      setIsChecking(false);
     }
   };
 
@@ -209,14 +297,54 @@ export function DocumentHealthCheck({
                 </ul>
               </div>
 
-              {healthResult.status === "unhealthy" && (
-                <div className="flex justify-end">
+              {/* Reconciliation Status and Progress */}
+              {isReconciling && reconciliationStatus && (
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <h4 className="text-sm font-medium">
+                      Reconciliation Progress
+                    </h4>
+                    <span className="text-xs text-muted-foreground">
+                      {reconciliationStatus.progress.reconciled} /{" "}
+                      {reconciliationStatus.progress.total} chunks
+                    </span>
+                  </div>
+                  <Progress
+                    value={reconciliationStatus.progress.percentage}
+                    className="h-2"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Status: {reconciliationStatus.status}
+                    {reconciliationStatus.errorMessage && (
+                      <span className="text-red-500">
+                        {" "}
+                        - Error: {reconciliationStatus.errorMessage}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2">
+                {/* Refresh button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleHealthCheck}
+                  disabled={isChecking || isReconciling}
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Refresh
+                </Button>
+
+                {/* Reconcile button - only show if unhealthy and not already reconciling */}
+                {healthResult.status === "unhealthy" && !isReconciling && (
                   <Button
                     onClick={handleReconcile}
-                    disabled={isChecking}
+                    disabled={isChecking || isReconciling}
                     size="sm"
                   >
-                    {isChecking ? (
+                    {isReconciling ? (
                       <>
                         <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                         Processing...
@@ -225,8 +353,19 @@ export function DocumentHealthCheck({
                       "Reconcile Document"
                     )}
                   </Button>
-                </div>
-              )}
+                )}
+
+                {/* Cancel button - only show if reconciling */}
+                {isReconciling && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Close
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </DialogContent>

@@ -55,6 +55,20 @@ interface Document {
   errorMessage: string | null;
 }
 
+interface HealthCheckResult {
+  documentId: number;
+  documentName: string;
+  status: "healthy" | "unhealthy";
+  issues: string[];
+  details: {
+    totalChunks: number;
+    chunksWithVectors: number;
+    chunksWithoutVectors: number;
+    vectorsInPinecone: number;
+    missingVectors: string[];
+  };
+}
+
 const USE_CASES = [
   { value: "general", label: "General" },
   { value: "sales_assistant", label: "Sales Assistant" },
@@ -116,6 +130,21 @@ export function DocumentList() {
   useEffect(() => {
     fetchDocuments();
   }, [fetchDocuments]);
+
+  // Handle document health check results
+  const handleHealthCheck = (result: HealthCheckResult) => {
+    // If the document status has changed, refresh the document list
+    const document = documents.find((doc) => doc.id === result.documentId);
+    if (document) {
+      const isStatusChanged =
+        (result.status === "healthy" && document.status !== "indexed") ||
+        (result.status === "unhealthy" && document.status === "indexed");
+
+      if (isStatusChanged) {
+        fetchDocuments();
+      }
+    }
+  };
 
   const deleteDocument = async (id: number) => {
     try {
@@ -270,65 +299,84 @@ export function DocumentList() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold tracking-tight">Documents</h2>
-        <Select value={selectedUseCase} onValueChange={setSelectedUseCase}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Select use case" />
-          </SelectTrigger>
-          <SelectContent className="bg-white border shadow-md">
-            <SelectItem value="all">All Use Cases</SelectItem>
-            {USE_CASES.map((useCase) => (
-              <SelectItem key={useCase.value} value={useCase.value}>
-                {useCase.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center space-x-2">
+          <Select value={selectedUseCase} onValueChange={setSelectedUseCase}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by use case" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Use Cases</SelectItem>
+              {USE_CASES.map((useCase) => (
+                <SelectItem key={useCase.value} value={useCase.value}>
+                  {useCase.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchDocuments()}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              "Refresh"
+            )}
+          </Button>
+        </div>
       </div>
 
-      {documents.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          No documents found
+      {loading ? (
+        <div className="flex justify-center items-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : documents.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          No documents found. Upload a document to get started.
         </div>
       ) : (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="border rounded-md">
           <Table>
             <TableHeader>
-              <TableRow className="bg-gray-50">
-                <TableHead className="w-[25%]">Name</TableHead>
-                <TableHead className="w-[20%]">Use Case</TableHead>
-                <TableHead className="w-[15%]">Status</TableHead>
-                <TableHead className="w-[10%]">Size</TableHead>
-                <TableHead className="w-[15%]">Uploaded</TableHead>
-                <TableHead className="w-[15%] text-right">Actions</TableHead>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Size</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Use Case</TableHead>
+                <TableHead>Uploaded</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {documents.map((doc) => (
-                <TableRow key={doc.id} className="hover:bg-gray-50">
+              {documents.map((document) => (
+                <TableRow key={document.id}>
                   <TableCell className="font-medium">
-                    {doc.originalName}
-                  </TableCell>
-                  <TableCell>
-                    {updatingUseCase === doc.id ? (
-                      <div className="flex items-center">
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        <span>Updating...</span>
+                    {document.originalName}
+                    {document.status === "failed" && document.errorMessage && (
+                      <div className="text-xs text-red-500 mt-1">
+                        Error: {document.errorMessage}
                       </div>
-                    ) : (
+                    )}
+                  </TableCell>
+                  <TableCell>{document.contentType}</TableCell>
+                  <TableCell>{formatFileSize(document.sizeBytes)}</TableCell>
+                  <TableCell>{getStatusBadge(document.status)}</TableCell>
+                  <TableCell>
+                    {updatingUseCase === document.id ? (
                       <Select
-                        value={doc.useCase}
+                        defaultValue={document.useCase}
                         onValueChange={(value) =>
-                          updateDocumentUseCase(doc.id, value)
+                          updateDocumentUseCase(document.id, value)
                         }
-                        disabled={doc.status !== "indexed"}
                       >
-                        <SelectTrigger className="w-full h-8 text-sm">
-                          <SelectValue>
-                            {USE_CASES.find((uc) => uc.value === doc.useCase)
-                              ?.label ||
-                              doc.useCase ||
-                              "General"}
-                          </SelectValue>
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           {USE_CASES.map((useCase) => (
@@ -341,29 +389,36 @@ export function DocumentList() {
                           ))}
                         </SelectContent>
                       </Select>
+                    ) : (
+                      <span
+                        className="cursor-pointer hover:underline"
+                        onClick={() => setUpdatingUseCase(document.id)}
+                      >
+                        {USE_CASES.find((uc) => uc.value === document.useCase)
+                          ?.label || document.useCase}
+                      </span>
                     )}
                   </TableCell>
-                  <TableCell>{getStatusBadge(doc.status)}</TableCell>
-                  <TableCell>{formatFileSize(doc.sizeBytes)}</TableCell>
-                  <TableCell>{formatDate(doc.createdAt)}</TableCell>
+                  <TableCell>{formatDate(document.createdAt)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-2">
-                      <div className="flex items-center space-x-2">
-                        <DocumentHealthCheck documentId={doc.id} />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteDocument(doc.id)}
-                          disabled={deleting === doc.id}
-                          className="h-8 w-8 p-0 text-red-500"
-                        >
-                          {deleting === doc.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
+                      <DocumentHealthCheck
+                        documentId={document.id}
+                        onHealthCheck={handleHealthCheck}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => deleteDocument(document.id)}
+                        disabled={deleting === document.id}
+                        className="text-xs"
+                      >
+                        {deleting === document.id ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-3 w-3" />
+                        )}
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
