@@ -206,3 +206,23 @@ logger.info("Processing document", {
 2. Enhanced PII handling
 3. Improved vector search
 4. Better error recovery
+
+## Database Management
+
+### Database Utility Script [2025-03-15 07:45]
+
+- Location: `scripts/db.sh`
+- Purpose: Simplifies database operations by using environment variables from `.env`
+- Features:
+  - Automatically uses credentials from `.env`
+  - No need for manual password entry
+  - Supports all psql commands and options
+- Usage Examples:
+  ```bash
+  # List tables
+  ./scripts/db.sh -c "\d"
+  # Run queries
+  ./scripts/db.sh -c "SELECT * FROM documents;"
+  # Run migrations
+  ./scripts/db.sh -f migrations/some_migration.sql
+  ```

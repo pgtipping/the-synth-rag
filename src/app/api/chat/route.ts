@@ -25,14 +25,16 @@ const pinecone = new Pinecone({
 });
 
 interface DocumentChunk {
-  vector_id: string;
-  text?: string;
+  id: number;
+  document_id: number;
+  chunk_index: number;
+  text: string; // aliased from text_content in the SQL query
+  vector_id: string | null;
   metadata?: Record<string, unknown>;
-  chunk_index?: number;
 }
 
 interface ChunkData {
-  id: string;
+  id: string | null; // vector_id can be null
   text: string;
   metadata: Record<string, unknown>;
   relevanceScore: number;
@@ -58,80 +60,115 @@ export async function POST(req: Request) {
       // Get context from specific documents
       const client = await pool.connect();
       try {
-        // Get vector IDs for the specified documents
-        console.log("Querying document_chunks for vector IDs...");
+        // Get vector IDs and text for the specified documents
+        console.log("Querying document_chunks for vector IDs and text...");
 
         const placeholders = documentIds
           .map((_: number, i: number) => `$${i + 1}`)
           .join(",");
         const vectorResult = await client.query<DocumentChunk>(
-          `SELECT vector_id 
+          `SELECT 
+            id,
+            document_id,
+            chunk_index,
+            vector_id,
+            text_content as text,
+            metadata::jsonb as metadata
            FROM document_chunks 
            WHERE document_id IN (${placeholders})
            ORDER BY document_id, chunk_index`,
           documentIds
         );
 
-        console.log(`Found ${vectorResult.rows.length} vector IDs`);
+        console.log(`Found ${vectorResult.rows.length} chunks`);
 
         if (vectorResult.rows.length > 0) {
           // Get the Pinecone index
           console.log("Getting Pinecone index...");
           const index = pinecone.index(process.env.PINECONE_INDEX!);
 
-          // Get vector IDs
-          const vectorIds = vectorResult.rows.map((row) => row.vector_id);
+          // Get vector IDs (filter out nulls)
+          const vectorIds = vectorResult.rows
+            .map((row) => row.vector_id)
+            .filter((id): id is string => id !== null);
           console.log("Vector IDs:", vectorIds);
 
           try {
-            // Fetch vectors from Pinecone
-            console.log("Fetching vectors from Pinecone...");
-            const fetchResponse = await index.fetch(vectorIds);
-            console.log(
-              "Pinecone fetch response:",
-              Object.keys(fetchResponse.records || {})
-            );
-
-            // Check if we got all the vectors we requested
-            const missingVectors = vectorIds.filter(
-              (id) => !fetchResponse.records || !fetchResponse.records[id]
-            );
-
-            if (missingVectors.length > 0) {
-              console.warn(
-                `Missing ${missingVectors.length} vectors from Pinecone:`,
-                missingVectors
+            // Only fetch from Pinecone if we have vector IDs
+            if (vectorIds.length > 0) {
+              // Fetch vectors from Pinecone
+              console.log("Fetching vectors from Pinecone...");
+              const fetchResponse = await index.fetch(vectorIds);
+              console.log(
+                "Pinecone fetch response:",
+                Object.keys(fetchResponse.records || {})
               );
+
+              // Check if we got all the vectors we requested
+              const missingVectors = vectorIds.filter(
+                (id) => !fetchResponse.records || !fetchResponse.records[id]
+              );
+
+              if (missingVectors.length > 0) {
+                console.warn(
+                  `Missing ${missingVectors.length} vectors from Pinecone:`,
+                  missingVectors
+                );
+              }
+
+              // Format chunks using both database text and Pinecone data
+              chunks = vectorResult.rows.map((row) => {
+                const pineconeVector = row.vector_id
+                  ? fetchResponse.records?.[row.vector_id]
+                  : null;
+                const text = row.text || pineconeVector?.metadata?.text;
+                return {
+                  id: row.vector_id,
+                  text:
+                    typeof text === "string" ? text : "No content available",
+                  metadata: {
+                    ...row.metadata,
+                    ...pineconeVector?.metadata,
+                    chunk_index: row.chunk_index,
+                  },
+                  relevanceScore: 1.0, // All chunks from selected documents are considered relevant
+                };
+              });
+            } else {
+              // If no vector IDs, just use database text
+              chunks = vectorResult.rows.map((row) => ({
+                id: row.vector_id,
+                text: row.text || "No content available",
+                metadata: row.metadata || {},
+                relevanceScore: 1.0,
+              }));
             }
 
-            // Format chunks from Pinecone
-            chunks = Object.entries(fetchResponse.records || {}).map(
-              ([id, vector]) => ({
-                id,
-                text:
-                  (vector.metadata?.text as string) || "No content available",
-                metadata: vector.metadata || {},
-                relevanceScore: 1.0, // All chunks from selected documents are considered relevant
-              })
-            );
-
-            console.log(`Processed ${chunks.length} chunks from Pinecone`);
+            console.log(`Processed ${chunks.length} chunks`);
 
             // Create scores array
             relevanceScores = chunks.map(() => 1.0);
           } catch (error) {
             console.error("Error fetching vectors from Pinecone:", error);
-            throw new Error(
-              `Failed to retrieve document content: ${
-                error instanceof Error ? error.message : "Unknown error"
-              }`
-            );
+            // Continue with database text if Pinecone fails
+            chunks = vectorResult.rows.map((row) => ({
+              id: row.vector_id,
+              text: row.text || "No content available",
+              metadata: row.metadata || {},
+              relevanceScore: 1.0,
+            }));
+            relevanceScores = chunks.map(() => 1.0);
           }
         } else {
-          console.log("No vector IDs found for the specified document IDs");
+          console.log("No chunks found for the specified document IDs");
+          return NextResponse.json(
+            { error: "No content found in the selected documents" },
+            { status: 404 }
+          );
         }
       } catch (error) {
         console.error("Error retrieving document chunks:", error);
+        throw error;
       } finally {
         client.release();
       }
@@ -143,7 +180,7 @@ export async function POST(req: Request) {
 
       // Convert ContextChunk[] to ChunkData[]
       chunks = contextResult.chunks.map((chunk, index) => ({
-        id: `chunk_${index}`, // Generate an ID since ContextChunk doesn't have vector_id
+        id: `chunk_${index}`,
         text: chunk.text,
         metadata: chunk.metadata || {},
         relevanceScore: chunk.relevanceScore || 0,
@@ -162,11 +199,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Prepare system message with context
+    // Prepare system message with context and instructions
     const contextStr = chunks.map((chunk) => chunk.text).join("\n\n");
     const systemMessage = {
       role: "system",
-      content: `You are a helpful AI assistant. Use the following context to answer the user's question:\n\n${contextStr}\n\nIf the context doesn't contain relevant information, say so. Always cite your sources using [1], [2], etc.`,
+      content: `You are a helpful AI assistant. Use the following context to answer the user's question. The context contains relevant information from the selected documents:\n\n${contextStr}\n\nIf you find relevant information in the context, use it to provide a detailed and accurate response. If the context doesn't contain information relevant to the user's question, clearly state that you don't have the necessary information in the provided documents. Always maintain a helpful and professional tone.`,
     };
 
     // Calculate input tokens
@@ -227,7 +264,10 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error in chat route:", error);
     return NextResponse.json(
-      { error: "An error occurred during the chat request" },
+      {
+        error: "Failed to process your request",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
