@@ -29,9 +29,9 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto py-4 sm:py-6 px-4 space-y-4 sm:space-y-6">
       {/* Breadcrumb */}
-      <nav className="flex mb-6" aria-label="Breadcrumb">
+      <nav className="flex mb-4 sm:mb-6" aria-label="Breadcrumb">
         <ol className="flex items-center space-x-2">
           <li>
             <Link href="/" className="text-gray-500 hover:text-gray-700">
@@ -50,18 +50,22 @@ export default function ChatPage() {
         </ol>
       </nav>
 
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Chat Assistant</h1>
-        <p className="text-muted-foreground text-lg">
+      <div className="space-y-1 sm:space-y-2">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          Chat Assistant
+        </h1>
+        <p className="text-muted-foreground text-base sm:text-lg">
           Select a use case to start chatting with our AI assistant
         </p>
       </div>
 
-      <div className="w-full max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+      <div className="w-full max-w-2xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
         <div className="space-y-4">
           <div>
-            <h2 className="text-xl font-semibold mb-1">Select Use Case</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <h2 className="text-lg sm:text-xl font-semibold mb-1">
+              Select Use Case
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
               Choose a specific use case or select &quot;General&quot; for a
               versatile assistant
             </p>

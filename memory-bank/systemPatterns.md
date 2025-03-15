@@ -1,4 +1,29 @@
-# System Patterns - Updated [2024-03-11 09:00:00]
+# System Patterns - Updated [2025-03-15 09:45:00]
+
+## UI Patterns
+
+### Responsive Design Pattern - Updated [2025-03-15 09:45:00]
+
+- **Mobile-First Approach**
+
+  - Base styles for mobile devices
+  - Progressive enhancement for larger screens
+  - Breakpoint system using Tailwind's sm, md, lg, xl classes
+  - Conditional rendering based on screen size
+
+- **Responsive Table Pattern**
+
+  - Hidden columns on smaller screens
+  - Essential data always visible
+  - Secondary information displayed inline on mobile
+  - Horizontal scrolling for data-dense tables
+  - Appropriate spacing and touch targets for mobile
+
+- **Adaptive Navigation**
+  - Hamburger menu for mobile devices
+  - Horizontal navigation for desktop
+  - Consistent breadcrumb navigation across all pages
+  - Context-aware active state indicators
 
 ## Architecture Patterns
 

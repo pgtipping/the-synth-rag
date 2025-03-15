@@ -1,4 +1,22 @@
-# Cursor Rules - Updated on May 29, 2024 11:15 EST
+# Cursor Rules - Updated on March 15, 2025 09:45:00 EST
+
+## UI Improvements
+
+### Document List UI - March 15, 2025 09:45:00 EST
+
+- Removed the Type column from the document list table to simplify the UI
+- Document list now shows only Name, Size, Status, Use Case, Uploaded, and Actions columns
+- Size column is hidden on mobile devices, but size information is displayed under the document name
+- Table is fully responsive with appropriate column visibility based on screen size
+
+### Responsive Design - March 15, 2025 09:45:00 EST
+
+- All pages (Home, Documents, Chat, Prompts) are now fully responsive
+- Mobile navigation uses a hamburger menu that expands/collapses
+- Typography scales appropriately for different screen sizes
+- Spacing and padding adjust based on viewport width
+- Form controls and buttons are properly sized for touch interactions on mobile
+- Grid layouts adjust from 3 columns on desktop to 1 column on mobile with appropriate breakpoints
 
 ## Project Structure
 
@@ -515,23 +533,27 @@ The TokenUsageTracker class has been simplified to not depend on the database:
 When working with SQL queries in this project, follow these guidelines:
 
 1. **Template Literals with @vercel/postgres**:
-   - Use the `sql` tagged template literal for parameterized queries: `sql<ReturnType>`SELECT * FROM table WHERE id = ${paramValue}`
+
+   - Use the `sql` tagged template literal for parameterized queries: `sql<ReturnType>`SELECT \* FROM table WHERE id = ${paramValue}`
    - Do NOT use `sql()` function with string interpolation inside template literals
    - For dynamic parts of queries (like WHERE clauses), use string concatenation outside the sql tag
 
 2. **Type Safety**:
+
    - Always specify the return type with the generic parameter: `sql<DbRow>`
    - Define proper interfaces for database row types
    - Use parameterized queries to prevent SQL injection
 
 3. **Dynamic Queries**:
+
    - For dynamic WHERE clauses or other SQL parts, construct them outside the sql tag:
+
    ```typescript
    let filterClause = "";
    if (condition) {
      filterClause = "AND column = 'value'";
    }
-   
+
    const result = await sql<DbRow>`
      SELECT * FROM table 
      WHERE true ${filterClause}

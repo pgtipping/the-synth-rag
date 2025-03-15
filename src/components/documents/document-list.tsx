@@ -297,11 +297,13 @@ export function DocumentList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold tracking-tight">Documents</h2>
-        <div className="flex items-center space-x-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-2">
+        <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
+          Documents
+        </h2>
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
           <Select value={selectedUseCase} onValueChange={setSelectedUseCase}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Filter by use case" />
             </SelectTrigger>
             <SelectContent>
@@ -318,6 +320,7 @@ export function DocumentList() {
             size="sm"
             onClick={() => fetchDocuments()}
             disabled={loading}
+            className="whitespace-nowrap"
           >
             {loading ? (
               <>
@@ -340,17 +343,24 @@ export function DocumentList() {
           No documents found. Upload a document to get started.
         </div>
       ) : (
-        <div className="border rounded-md">
+        <div className="border rounded-md overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Use Case</TableHead>
-                <TableHead>Uploaded</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="min-w-[200px]">Name</TableHead>
+                <TableHead className="min-w-[80px] hidden sm:table-cell">
+                  Size
+                </TableHead>
+                <TableHead className="min-w-[100px]">Status</TableHead>
+                <TableHead className="min-w-[140px] hidden lg:table-cell">
+                  Use Case
+                </TableHead>
+                <TableHead className="min-w-[120px] hidden md:table-cell">
+                  Uploaded
+                </TableHead>
+                <TableHead className="text-right min-w-[120px]">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -363,11 +373,15 @@ export function DocumentList() {
                         Error: {document.errorMessage}
                       </div>
                     )}
+                    <div className="md:hidden text-xs text-muted-foreground mt-1">
+                      {formatFileSize(document.sizeBytes)}
+                    </div>
                   </TableCell>
-                  <TableCell>{document.contentType}</TableCell>
-                  <TableCell>{formatFileSize(document.sizeBytes)}</TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    {formatFileSize(document.sizeBytes)}
+                  </TableCell>
                   <TableCell>{getStatusBadge(document.status)}</TableCell>
-                  <TableCell>
+                  <TableCell className="hidden lg:table-cell">
                     {updatingUseCase === document.id ? (
                       <Select
                         defaultValue={document.useCase}
@@ -399,9 +413,11 @@ export function DocumentList() {
                       </span>
                     )}
                   </TableCell>
-                  <TableCell>{formatDate(document.createdAt)}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {formatDate(document.createdAt)}
+                  </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex justify-end space-x-1 sm:space-x-2">
                       <DocumentHealthCheck
                         documentId={document.id}
                         onHealthCheck={handleHealthCheck}

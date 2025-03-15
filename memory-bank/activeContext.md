@@ -1,6 +1,12 @@
-# Active Context - Updated 2025-03-15 04:35:00 EDT
+# Active Context - Updated 2025-03-15 09:45:00 EDT
 
 ## Recent Changes
+
+### Document List UI Improvement - 2025-03-15 09:45:00 EDT
+
+- Removed the Type column from the document list table to simplify the UI
+- Improved the responsive design of the document list for better mobile experience
+- Maintained the document size information display under the document name on mobile devices
 
 ### Document Health Check Fix - 2025-03-15 04:35:00 EDT
 

@@ -67,18 +67,21 @@ export function DocumentHealthCheck({
     if (!documentId) return;
 
     try {
+      console.log(`Checking reconciliation status for document ${documentId}`);
       const response = await fetch(
         `/api/documents/reconcile?documentId=${documentId}`
       );
 
       if (!response.ok) {
         const errorData = await response.json();
+        console.error("Reconciliation status check failed:", errorData);
         throw new Error(
           errorData.error || "Failed to check reconciliation status"
         );
       }
 
       const status = await response.json();
+      console.log("Reconciliation status:", status);
       setReconciliationStatus(status);
 
       // If reconciliation is complete or failed, stop polling and refresh health check
@@ -128,16 +131,34 @@ export function DocumentHealthCheck({
       setIsChecking(true);
       setHealthResult(null);
 
+      console.log(`Performing health check for document ${documentId}`);
       const response = await fetch(
         `/api/documents/health?documentId=${documentId}`
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to check document health");
+        const errorText = await response.text();
+        console.error("Health check failed:", {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+        });
+
+        let errorMessage = "Failed to check document health";
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (e) {
+          console.error("Error parsing error response:", e);
+        }
+
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
+      console.log("Health check result:", result);
       setHealthResult(result);
 
       if (onHealthCheck) {
@@ -165,6 +186,7 @@ export function DocumentHealthCheck({
     try {
       setIsReconciling(true);
 
+      console.log(`Starting reconciliation for document ${documentId}`);
       const response = await fetch(`/api/documents/reconcile`, {
         method: "POST",
         headers: {
@@ -174,8 +196,24 @@ export function DocumentHealthCheck({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to reconcile document");
+        const errorText = await response.text();
+        console.error("Reconciliation failed:", {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+        });
+
+        let errorMessage = "Failed to reconcile document";
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (e) {
+          console.error("Error parsing error response:", e);
+        }
+
+        throw new Error(errorMessage);
       }
 
       // Successfully started reconciliation

@@ -16,9 +16,9 @@ export default async function PromptsPage() {
   const categories = await fetchPromptCategories();
 
   return (
-    <div className="container py-8">
+    <div className="container py-4 sm:py-8 px-4">
       {/* Breadcrumb */}
-      <nav className="flex mb-6" aria-label="Breadcrumb">
+      <nav className="flex mb-4 sm:mb-6" aria-label="Breadcrumb">
         <ol className="flex items-center space-x-2">
           <li>
             <Link href="/" className="text-gray-500 hover:text-gray-700">
@@ -37,15 +37,17 @@ export default async function PromptsPage() {
         </ol>
       </nav>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Example Prompts</h1>
-        <p className="mt-2 text-gray-500">
+      <div className="mb-4 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold">Example Prompts</h1>
+        <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-500">
           Browse through our collection of example prompts or filter by category
           to find the perfect starting point for your use case.
         </p>
       </div>
 
-      <Suspense fallback={<div>Loading prompts...</div>}>
+      <Suspense
+        fallback={<div className="py-8 text-center">Loading prompts...</div>}
+      >
         <PromptList categories={categories} showStats />
       </Suspense>
     </div>

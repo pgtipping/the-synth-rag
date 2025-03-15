@@ -96,9 +96,9 @@ export function PromptList({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
         <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Filter by category" />
           </SelectTrigger>
           <SelectContent className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
@@ -117,7 +117,7 @@ export function PromptList({
       ) : prompts.length === 0 ? (
         <div className="text-center py-8 text-gray-500">No prompts found</div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {prompts.map((prompt) => (
             <PromptCard
               key={prompt.id}
@@ -130,21 +130,25 @@ export function PromptList({
       )}
 
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-6">
+        <div className="flex flex-wrap justify-center gap-2 mt-6">
           <Button
             variant="outline"
+            size="sm"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1 || isLoading}
+            className="text-xs sm:text-sm"
           >
             Previous
           </Button>
-          <span className="py-2 px-4">
+          <span className="py-2 px-3 text-xs sm:text-sm">
             Page {currentPage} of {totalPages}
           </span>
           <Button
             variant="outline"
+            size="sm"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages || isLoading}
+            className="text-xs sm:text-sm"
           >
             Next
           </Button>
