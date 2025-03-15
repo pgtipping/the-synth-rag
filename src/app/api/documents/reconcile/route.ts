@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import pool from "../../../../lib/db";
 import { indexDocument } from "../../../../lib/pinecone-index";
 import { Pinecone } from "@pinecone-database/pinecone";
+import { storage } from "../../../../lib/storage";
+import { processFile } from "../../../../lib/file-processor";
 
 // Initialize Pinecone client
 const pinecone = new Pinecone({
@@ -14,6 +16,7 @@ interface DocumentRow {
   content_type: string;
   status: string;
   error_message: string | null;
+  storage_url: string;
 }
 
 interface ChunkRow {
@@ -176,8 +179,99 @@ async function reconcileDocumentChunks(documentId: number): Promise<void> {
       [documentId]
     );
 
+    // If document has no chunks, we need to reprocess it from scratch
     if (chunksResult.rows.length === 0) {
-      throw new Error(`Document ${documentId} has no chunks to reconcile`);
+      console.log(
+        `Document ${documentId} has no chunks, reprocessing from scratch`
+      );
+
+      // Update document status to processing
+      await client.query(
+        `UPDATE documents SET status = 'processing', processed_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [documentId]
+      );
+
+      // Get the file from storage
+      try {
+        // Extract filename from storage_url
+        const filename = document.storage_url.split("/").pop();
+        if (!filename) {
+          throw new Error(`Invalid storage URL for document ${documentId}`);
+        }
+
+        // Get the file from storage
+        const fileBuffer = await storage.retrieve(filename);
+
+        // Ensure we have a Buffer
+        const buffer = Buffer.isBuffer(fileBuffer)
+          ? fileBuffer
+          : Buffer.from(
+              await new Response(fileBuffer as ReadableStream).arrayBuffer()
+            );
+
+        // Create a File object from the buffer
+        const file = new File(
+          [buffer],
+          document.original_name || "unknown_file",
+          {
+            type: document.content_type || "application/octet-stream",
+          }
+        );
+
+        // Process the file to extract text
+        const processedContent = await processFile(file, buffer);
+
+        // Index all document chunks in Pinecone
+        for (let i = 0; i < processedContent.chunks.length; i++) {
+          const chunk = processedContent.chunks[i];
+
+          // Save chunk to database
+          await client.query(
+            `INSERT INTO document_chunks (document_id, chunk_index, text_content, token_count)
+             VALUES ($1, $2, $3, $4)
+             ON CONFLICT (document_id, chunk_index)
+             DO UPDATE SET text_content = $3, token_count = $4`,
+            [documentId, i, chunk.text, chunk.tokens]
+          );
+
+          // Index in Pinecone
+          const vectorId = await indexDocument(chunk.text, {
+            documentId: document.id,
+            chunkIndex: i,
+            originalName: document.original_name,
+            mimeType: document.content_type,
+            processedAt: new Date().toISOString(),
+            text: chunk.text,
+          });
+
+          // Update vector ID in database
+          await client.query(
+            `UPDATE document_chunks SET vector_id = $1 WHERE document_id = $2 AND chunk_index = $3`,
+            [vectorId, documentId, i]
+          );
+        }
+
+        // Update document status to indexed
+        await client.query(
+          `UPDATE documents SET status = 'indexed', indexed_at = CURRENT_TIMESTAMP, error_message = NULL WHERE id = $1`,
+          [documentId]
+        );
+
+        console.log(
+          `Successfully reprocessed document ${documentId} from scratch`
+        );
+        return;
+      } catch (error) {
+        console.error(
+          `Error reprocessing document ${documentId} from scratch:`,
+          error
+        );
+        throw new Error(
+          `Failed to reprocess document: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+      }
     }
 
     // Check for chunks without vector IDs

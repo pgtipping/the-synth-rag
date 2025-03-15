@@ -1,6 +1,15 @@
-# Active Context - Updated 2025-03-15 00:15:00 EDT
+# Active Context - Updated 2025-03-15 04:35:00 EDT
 
 ## Recent Changes
+
+### Document Health Check Fix - 2025-03-15 04:35:00 EDT
+
+- Fixed document health check and reconciliation process
+- Modified reconciliation endpoint to handle documents with no chunks
+- Added functionality to reprocess documents from scratch when no chunks are found
+- Improved error handling in the reconciliation process
+- Enhanced the document health check to provide more detailed diagnostics
+- Updated the DocumentRow interface to include storage_url property
 
 ### Document Health Check Implementation - 2025-03-15 00:15:00 EDT
 
