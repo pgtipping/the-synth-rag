@@ -159,7 +159,6 @@ export const processFile = async (file: File, buffer: Buffer) => {
       return {
         chunks: chunks.map((chunk) => ({
           text: chunk.text,
-          index: chunk.index,
           tokens: chunk.tokens,
         })),
         metadata: {

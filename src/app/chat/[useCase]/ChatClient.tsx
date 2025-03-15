@@ -1,17 +1,21 @@
 "use client";
 
-import { useChatStore } from "@/src/lib/stores/chat";
-import { useAppStore } from "@/src/lib/stores/app";
-import { ChatStream } from "@/src/components/chat/ChatStream";
-import { ChatInput } from "@/src/components/chat/ChatInput";
-import { Button } from "@/src/components/ui/button";
-import { sendChatMessage } from "@/src/lib/api/chat";
+import { useChatStore } from "../../../lib/stores/chat";
+import { useAppStore } from "../../../lib/stores/app";
+import { ChatStream } from "../../../components/chat/ChatStream";
+import { ChatInput } from "../../../components/chat/ChatInput";
+import { Button } from "../../../components/ui/button";
+import { sendChatMessage } from "../../../lib/api/chat";
 import { useEffect, useState } from "react";
-import { Sidebar } from "@/src/components/sidebar";
-import { useFileStore } from "@/src/lib/store";
-import { ChatPromptSuggestions } from "@/src/components/prompts/chat-prompt-suggestions";
+import { Sidebar } from "../../../components/sidebar";
+import { useFileStore } from "../../../lib/store";
+import { ChatPromptSuggestions } from "../../../components/prompts/chat-prompt-suggestions";
 import { DocumentSelector } from "../../../components/documents/document-selector";
-import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "../../../components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 interface Document {

@@ -1,10 +1,9 @@
 "use client";
 
-import { useProgressStore } from "@/lib/stores/progress-store";
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
+import { useProgressStore } from "../../lib/stores/progress-store";
+import { Progress } from "../ui/progress";
 import { CheckIcon, XIcon, AlertTriangleIcon } from "lucide-react";
-import type { ProgressStep } from "@/types/progress";
+import type { ProgressStep } from "../../types/progress";
 
 export function ProgressSteps() {
   const { currentSession } = useProgressStore();

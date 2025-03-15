@@ -14,7 +14,7 @@ const pool = new Pool({
 
 // Export the pool as the db object
 export const db = {
-  query: (text: string, params?: any[]) => pool.query(text, params),
+  query: (text: string, params?: unknown[]) => pool.query(text, params),
   end: () => pool.end(),
 };
 
@@ -25,11 +25,12 @@ export interface DbResult<T> {
 }
 
 export interface DbResultRow {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // Handle pool errors
-pool.on("error", (err) => {
+// Use type assertion to access the 'on' method
+(pool as any).on("error", (err: Error) => {
   console.error("Unexpected error on idle client", err);
   process.exit(-1);
 });

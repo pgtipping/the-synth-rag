@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { ProgressService } from "../services/progress-service";
-import type { SessionProgress, ProgressUpdate } from "@/types/progress";
+import type { SessionProgress, ProgressUpdate } from "../../types/progress";
 
 interface ProgressState {
   currentSession: SessionProgress | null;

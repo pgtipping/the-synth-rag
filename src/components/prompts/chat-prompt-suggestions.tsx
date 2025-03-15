@@ -1,12 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ExamplePrompt, PromptMetadata } from "@/src/lib/types/prompts";
-import { Button } from "@/src/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
-import { Badge } from "@/src/components/ui/badge";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 import { Edit, MessageSquare } from "lucide-react";
-import { cn } from "@/src/lib/utils";
+import { cn } from "../../lib/utils";
+
+interface ExamplePrompt {
+  id: string;
+  title: string;
+  content: string;
+  metadata?: PromptMetadata;
+}
+
+interface PromptMetadata {
+  category?: string;
+}
 
 interface ChatPromptSuggestionsProps {
   useCase: string;
@@ -23,8 +32,6 @@ export function ChatPromptSuggestions({
   onSelectPrompt,
 }: ChatPromptSuggestionsProps) {
   const [prompts, setPrompts] = useState<ExamplePrompt[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,16 +78,6 @@ export function ChatPromptSuggestions({
         );
 
         setPrompts(filteredItems);
-
-        // Extract unique categories from prompts
-        const uniqueCategories = Array.from(
-          new Set(
-            filteredItems.map((prompt: ExamplePrompt) =>
-              getCategory(prompt.metadata)
-            )
-          )
-        );
-        setCategories(["all", ...uniqueCategories]);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
         console.error("Error fetching prompts:", err);
@@ -96,14 +93,6 @@ export function ChatPromptSuggestions({
   const needsCustomization = (promptText: string): boolean => {
     return /\[.*?\]|\{.*?\}/.test(promptText);
   };
-
-  // Filter prompts by selected category
-  const filteredPrompts =
-    selectedCategory === "all"
-      ? prompts
-      : prompts.filter(
-          (prompt) => getCategory(prompt.metadata) === selectedCategory
-        );
 
   if (isLoading) {
     return (
@@ -136,7 +125,7 @@ export function ChatPromptSuggestions({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {filteredPrompts.map((prompt) => {
+        {prompts.map((prompt) => {
           const requiresCustomization = needsCustomization(prompt.content);
 
           return (

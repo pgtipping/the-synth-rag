@@ -1,4 +1,4 @@
-import { db } from "@/src/lib/db";
+import { db } from "../src/lib/db/index";
 import { promises as fs } from "fs";
 import path from "path";
 

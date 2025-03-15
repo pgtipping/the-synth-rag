@@ -1,16 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
-import { Badge } from "@/src/components/ui/badge";
-import { Button } from "@/src/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/components/ui/card";
-import { Switch } from "@/src/components/ui/switch";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Loader2, AlertTriangle, AlertCircle, Info } from "lucide-react";
 
 interface UsageAlert {
@@ -22,6 +16,19 @@ interface UsageAlert {
   created_at: string;
   resolved: boolean;
 }
+
+// Helper function to safely format numbers
+const safeToFixed = (value: unknown, digits: number): string => {
+  if (typeof value === "number") {
+    return value.toFixed(digits);
+  }
+  return "0";
+};
+
+// Helper function to check if a property exists and is not null/undefined
+const hasProperty = (obj: Record<string, unknown>, prop: string): boolean => {
+  return obj && prop in obj && obj[prop] !== null && obj[prop] !== undefined;
+};
 
 export default function UsageAlerts() {
   const [alerts, setAlerts] = useState<UsageAlert[]>([]);
@@ -143,10 +150,13 @@ export default function UsageAlerts() {
         <CardTitle>Usage Alerts</CardTitle>
         <div className="flex items-center space-x-2">
           <span className="text-sm text-muted-foreground">Show Resolved</span>
-          <Switch
-            checked={includeResolved}
-            onCheckedChange={setIncludeResolved}
-          />
+          <Button
+            variant={includeResolved ? "outline" : "default"}
+            size="sm"
+            onClick={() => setIncludeResolved(!includeResolved)}
+          >
+            {includeResolved ? "Hide Resolved" : "Show Resolved"}
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -205,33 +215,36 @@ export default function UsageAlerts() {
                       </div>
                       {alert.type === "cost_spike" && (
                         <div className="mt-2 text-sm">
-                          Today's cost: ${alert.details.today_cost?.toFixed(4)}{" "}
-                          | Average cost: ${alert.details.avg_cost?.toFixed(4)}{" "}
-                          | Increase:{" "}
-                          {alert.details.increase_factor?.toFixed(1)}x
+                          Today&apos;s cost: $
+                          {safeToFixed(alert.details.today_cost, 4)} | Average
+                          cost: ${safeToFixed(alert.details.avg_cost, 4)} |
+                          Increase:{" "}
+                          {safeToFixed(alert.details.increase_factor, 1)}x
                         </div>
                       )}
                       {alert.type === "quota_approaching" && (
                         <div className="mt-2 text-sm">
-                          {alert.details.daily_percentage && (
+                          {hasProperty(alert.details, "daily_percentage") && (
                             <div>
                               Daily usage:{" "}
-                              {alert.details.daily_percentage.toFixed(1)}%
+                              {safeToFixed(alert.details.daily_percentage, 1)}%
                             </div>
                           )}
-                          {alert.details.monthly_percentage && (
+                          {hasProperty(alert.details, "monthly_percentage") && (
                             <div>
                               Monthly usage:{" "}
-                              {alert.details.monthly_percentage.toFixed(1)}%
+                              {safeToFixed(alert.details.monthly_percentage, 1)}
+                              %
                             </div>
                           )}
                         </div>
                       )}
                       {alert.type === "unusual_activity" && (
                         <div className="mt-2 text-sm">
-                          Requests: {alert.details.requests_ratio?.toFixed(1)}x
-                          normal | Tokens:{" "}
-                          {alert.details.tokens_ratio?.toFixed(1)}x normal
+                          Requests:{" "}
+                          {safeToFixed(alert.details.requests_ratio, 1)}x normal
+                          | Tokens: {safeToFixed(alert.details.tokens_ratio, 1)}
+                          x normal
                         </div>
                       )}
                     </AlertDescription>

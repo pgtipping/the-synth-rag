@@ -1,12 +1,12 @@
 "use client";
 
-import { useProgressStore } from "@/lib/stores/progress-store";
+import { useProgressStore } from "../../lib/stores/progress-store";
 import { ProgressSteps } from "./ProgressSteps";
 import { ProgressMetrics } from "./ProgressMetrics";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
 import { XIcon, AlertTriangleIcon } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "../ui/alert";
 import { useState } from "react";
 
 export function Progress() {

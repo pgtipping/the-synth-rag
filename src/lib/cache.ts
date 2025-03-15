@@ -26,7 +26,7 @@ export class CacheService {
   async get<T>(key: string): Promise<T | null> {
     const cacheKey = this.generateKey(key);
     const data = await redis.get(cacheKey);
-    return data ? JSON.parse(data) : null;
+    return data ? JSON.parse(data as string) : null;
   }
 
   async set(key: string, value: unknown): Promise<void> {

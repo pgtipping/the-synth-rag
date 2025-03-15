@@ -1,10 +1,10 @@
 "use client";
 
-import { useProgressStore } from "@/lib/stores/progress-store";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { useProgressStore } from "../../lib/stores/progress-store";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Progress } from "../ui/progress";
 import { formatDistanceToNow } from "date-fns";
-import type { ProgressStep } from "@/types/progress";
+import type { ProgressStep } from "../../types/progress";
 
 export function ProgressMetrics() {
   const { currentSession } = useProgressStore();

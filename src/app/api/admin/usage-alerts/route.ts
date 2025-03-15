@@ -11,6 +11,22 @@ interface UsageAlert {
   details: Record<string, unknown>;
   created_at: string;
   resolved: boolean;
+  timestamp?: string;
+  acknowledged?: boolean;
+}
+
+interface HourlyData {
+  hour: string;
+  request_count: string;
+  total_tokens: string;
+}
+
+interface QuotaData {
+  user_id: string;
+  daily_limit: number;
+  monthly_limit: number;
+  current_daily_usage: number;
+  current_monthly_usage: number;
 }
 
 export async function GET(request: NextRequest) {
@@ -77,7 +93,7 @@ async function detectCostSpikes(): Promise<UsageAlert[]> {
       ORDER BY date ASC
     `);
 
-    const dailyCosts = result.rows;
+    const dailyCosts = result.rows as { date: string; daily_cost: string }[];
     if (dailyCosts.length < 7) {
       return []; // Not enough data
     }
@@ -140,7 +156,7 @@ async function detectQuotaApproaching(): Promise<UsageAlert[]> {
         (monthly_limit IS NOT NULL AND current_monthly_usage > monthly_limit * 0.8)
     `);
 
-    return result.rows.map((row) => {
+    return (result.rows as QuotaData[]).map((row) => {
       const isDailyApproaching =
         row.daily_limit && row.current_daily_usage > row.daily_limit * 0.8;
       const isMonthlyApproaching =
@@ -200,69 +216,78 @@ async function detectQuotaApproaching(): Promise<UsageAlert[]> {
 
 async function detectUnusualActivity(): Promise<UsageAlert[]> {
   try {
+    const alerts: UsageAlert[] = [];
+
     // Get hourly usage data for the past 24 hours
     const result = await db.query(`
       SELECT 
-        EXTRACT(HOUR FROM created_at) as hour,
+        EXTRACT(HOUR FROM created_at AT TIME ZONE 'UTC') as hour,
         COUNT(*) as request_count,
         SUM(total_tokens) as total_tokens
-      FROM token_usage
-      WHERE created_at >= NOW() - INTERVAL '24 hours'
-      GROUP BY EXTRACT(HOUR FROM created_at)
-      ORDER BY hour ASC
+      FROM chat_sessions
+      WHERE created_at > NOW() - INTERVAL '24 hours'
+      GROUP BY hour
+      ORDER BY hour
     `);
 
-    const hourlyData = result.rows;
+    const hourlyData = result.rows as HourlyData[];
     if (hourlyData.length < 12) {
       return []; // Not enough data
     }
 
-    // Calculate average hourly usage
-    const avgRequests =
-      hourlyData.reduce((sum, row) => sum + parseInt(row.request_count), 0) /
-      hourlyData.length;
-    const avgTokens =
-      hourlyData.reduce((sum, row) => sum + parseInt(row.total_tokens), 0) /
-      hourlyData.length;
+    // Calculate average requests per hour
+    const avgRequestsPerHour =
+      hourlyData.reduce(
+        (sum: number, row: HourlyData) => sum + parseInt(row.request_count),
+        0
+      ) / hourlyData.length;
+
+    // Calculate average tokens per request
+    const avgTokensPerRequest =
+      hourlyData.reduce(
+        (sum: number, row: HourlyData) => sum + parseInt(row.total_tokens),
+        0
+      ) /
+      hourlyData.reduce(
+        (sum: number, row: HourlyData) => sum + parseInt(row.request_count),
+        0
+      );
 
     // Check for unusual activity in the past hour
     const currentHour = new Date().getHours();
     const currentHourData = hourlyData.find(
-      (row) => parseInt(row.hour) === currentHour
+      (row: HourlyData) => parseInt(row.hour) === currentHour
     );
 
     if (currentHourData) {
       const requestsRatio =
-        parseInt(currentHourData.request_count) / avgRequests;
-      const tokensRatio = parseInt(currentHourData.total_tokens) / avgTokens;
+        parseInt(currentHourData.request_count) / avgRequestsPerHour;
+      const tokensRatio =
+        parseInt(currentHourData.total_tokens) / avgTokensPerRequest;
 
       if (requestsRatio > 3 || tokensRatio > 3) {
-        return [
-          {
-            id: `unusual_activity_${new Date().toISOString()}`,
-            type: "unusual_activity",
-            severity: requestsRatio > 5 || tokensRatio > 5 ? "high" : "medium",
-            message: `Unusual activity detected: ${requestsRatio.toFixed(
-              1
-            )}x normal request volume and ${tokensRatio.toFixed(
-              1
-            )}x normal token usage`,
-            details: {
-              current_requests: parseInt(currentHourData.request_count),
-              avg_requests: avgRequests,
-              requests_ratio: requestsRatio,
-              current_tokens: parseInt(currentHourData.total_tokens),
-              avg_tokens: avgTokens,
-              tokens_ratio: tokensRatio,
-            },
-            created_at: new Date().toISOString(),
-            resolved: false,
+        alerts.push({
+          id: crypto.randomUUID(),
+          type: "unusual_activity",
+          severity: requestsRatio > 5 || tokensRatio > 5 ? "high" : "medium",
+          message: `Unusual activity detected in the past hour (${requestsRatio.toFixed(
+            1
+          )}x requests, ${tokensRatio.toFixed(1)}x tokens)`,
+          created_at: new Date().toISOString(),
+          resolved: false,
+          details: {
+            current_requests: parseInt(currentHourData.request_count),
+            avg_requests: avgRequestsPerHour,
+            requests_ratio: requestsRatio,
+            current_tokens: parseInt(currentHourData.total_tokens),
+            avg_tokens: avgTokensPerRequest,
+            tokens_ratio: tokensRatio,
           },
-        ];
+        });
       }
     }
 
-    return [];
+    return alerts;
   } catch (error) {
     console.error("Error detecting unusual activity:", error);
     return [];

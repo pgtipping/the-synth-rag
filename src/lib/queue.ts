@@ -94,7 +94,7 @@ new Worker(
           metadata: {
             useCase,
             blobUrl: blob.url,
-            text: textContent.text,
+            text: textContent.chunks[0]?.text || "",
             originalName: textContent.metadata.originalName,
             mimeType: textContent.metadata.mimeType,
             processedAt: textContent.metadata.processedAt,

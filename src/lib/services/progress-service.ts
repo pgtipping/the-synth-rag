@@ -7,7 +7,7 @@ import {
   ProgressUpdate,
   SessionProgress,
   StepType,
-} from "@/types/progress";
+} from "../../types/progress";
 
 interface DbRow {
   id: number;
@@ -154,12 +154,16 @@ export class ProgressService {
       paramCount++;
     }
 
-    const result = await sql<DbRow>`
+    // Construct the query string
+    const queryString = `
       UPDATE progress_steps 
-      SET ${sql(updates.join(", "))}
+      SET ${updates.join(", ")}
       WHERE id = $1
       RETURNING *
     `;
+
+    // Execute the query with the values
+    const result = await sql.query<DbRow>(queryString, values);
 
     return this.mapRowToStep(result.rows[0]);
   }
@@ -305,7 +309,7 @@ export class ProgressService {
         SELECT *
         FROM progress_sessions s
         WHERE s.created_at >= NOW() - INTERVAL '${timeFilter.hours} hours'
-        ${sql(filterClause)}
+        ${filterClause}
         ORDER BY 
           CASE 
             WHEN status = 'failed' THEN 1

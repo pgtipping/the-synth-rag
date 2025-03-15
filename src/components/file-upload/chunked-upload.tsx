@@ -127,44 +127,47 @@ export default function ChunkedUpload({
 
     uppy.use(Tus, tusOptions);
 
-    // Event Handlers
+    // Use type assertion to work around type issues
+    const anyUppy = uppy as any;
 
-    // Handle successful uploads
-    uppy.on("upload-success", (file: UppyFile<FileMetadata>) => {
-      if (file?.id) {
-        onUploadComplete?.(file.id);
+    // Event Handlers
+    anyUppy.on(
+      "upload-success",
+      (file: UppyFile<FileMetadata>, response: any) => {
+        if (file?.id) {
+          onUploadComplete?.(file.id);
+        }
       }
-    });
+    );
 
     // Handle upload errors
-    uppy.on("upload-error", (event: { error: { message: string } }) => {
-      if (event.error?.message) {
-        onUploadError?.(new Error(event.error.message));
-      }
+    anyUppy.on("upload-error", (file: UppyFile<FileMetadata>, error: Error) => {
+      console.error("Upload error:", error);
+      onUploadError?.(new Error(error.message || "Upload failed"));
     });
 
-    // Log upload progress
-    uppy.on(
+    // Handle upload progress
+    anyUppy.on(
       "upload-progress",
-      (event: {
-        file: UppyFile<FileMetadata>;
-        progress: { bytesUploaded: number; bytesTotal: number };
-      }) => {
-        if (event.file?.meta?.name && event.progress) {
+      (
+        file: UppyFile<FileMetadata>,
+        progress: { bytesUploaded: number; bytesTotal: number }
+      ) => {
+        if (file?.meta?.name) {
           console.log(
-            `Upload progress for ${event.file.meta.name}: ${event.progress.bytesUploaded}/${event.progress.bytesTotal} bytes (${event.file.progress?.percentage}%)`
+            `Progress ${file.meta.name}: ${progress.bytesUploaded}/${progress.bytesTotal}`
           );
         }
       }
     );
 
     // Log when upload starts
-    uppy.on("upload-started", (files: UppyFile<FileMetadata>[]) => {
+    anyUppy.on("upload-started", (files: UppyFile<FileMetadata>[]) => {
       console.log(`Starting upload of ${files.length} files`);
     });
 
     // Log upload completion
-    uppy.on(
+    anyUppy.on(
       "upload-complete",
       (result: {
         successful: UppyFile<FileMetadata>[];

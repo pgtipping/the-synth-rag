@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { ProgressService } from "@/lib/services/progress-service";
+import { ProgressService } from "../../../../lib/services/progress-service";
 import { sql } from "@vercel/postgres";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "../../../../lib/rate-limit";
 
 export async function GET(request: Request) {
   try {
