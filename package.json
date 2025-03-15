@@ -13,7 +13,8 @@
     "test:ui": "vitest --ui",
     "test:integration": "vitest integration/",
     "test:watch": "vitest --watch",
-    "migrate": "ts-node scripts/migrate.ts"
+    "migrate": "ts-node scripts/migrate.ts",
+    "migrate:sql": "node scripts/run-sql-migrations.js"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.1.2",

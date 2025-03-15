@@ -1,6 +1,16 @@
-# Active Context - Updated 2025-03-15 09:45:00 EDT
+# Active Context - Updated 2025-03-15 10:45:00 EDT
 
 ## Recent Changes
+
+### Database Schema and ResponseOptimizer Fixes - 2025-03-15 10:45:00 EDT
+
+- Fixed database schema issues by running migrations to add missing columns:
+  - Added `metadata` column to the `document_chunks` table
+  - Added `token_count` column to the `document_chunks` table
+- Created scripts to run SQL migrations and add sample document chunks for existing documents
+- Fixed ResponseOptimizer to handle document chunks with `text_content` instead of `content` property
+- Added proper TypeScript interfaces to eliminate type errors in ResponseOptimizer
+- Resolved console errors related to missing database columns and property access
 
 ### Document List UI Improvement - 2025-03-15 09:45:00 EDT
 

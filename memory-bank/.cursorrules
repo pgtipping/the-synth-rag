@@ -569,3 +569,26 @@ When working with SQL queries in this project, follow these guidelines:
    ```
 
 These patterns help avoid type errors during build and ensure proper SQL query construction.
+
+## Database Schema Patterns - 2025-03-15 10:45:00 EDT
+
+- The database schema includes tables for documents and document_chunks
+- The document_chunks table requires the following columns:
+  - id (SERIAL PRIMARY KEY)
+  - document_id (INTEGER REFERENCES documents(id) ON DELETE CASCADE)
+  - chunk_index (INTEGER NOT NULL)
+  - text_content (TEXT NOT NULL)
+  - token_count (INTEGER NOT NULL DEFAULT 0)
+  - vector_id (TEXT)
+  - metadata (JSONB NOT NULL DEFAULT '{}'::jsonb)
+  - created_at (TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
+- Migration scripts are located in the migrations directory
+- Run migrations using the scripts/run-sql-migrations.js script
+
+## ResponseOptimizer Patterns - 2025-03-15 10:45:00 EDT
+
+- The ResponseOptimizer class is used to optimize responses from the AI model
+- It handles document chunks with either text or text_content properties
+- It uses a DocumentChunk interface to define the structure of document chunks
+- It calculates metrics such as token count, compression ratio, and citation count
+- It formats citations based on metadata.source and metadata.page properties

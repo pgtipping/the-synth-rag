@@ -23,6 +23,16 @@ interface OptimizationMetrics {
   averageChunkScore: number;
 }
 
+interface DocumentChunk {
+  text?: string;
+  text_content?: string;
+  metadata?: {
+    source?: string;
+    page?: number;
+    [key: string]: any;
+  };
+}
+
 export class ResponseOptimizer {
   private templates: Map<string, ResponseTemplate>;
   private defaultConfig: OptimizationConfig;
@@ -72,7 +82,7 @@ export class ResponseOptimizer {
 
   public async optimizeResponse(
     content: string,
-    context: { chunks: any[]; scores: number[] },
+    context: { chunks: DocumentChunk[]; scores: number[] },
     config: Partial<OptimizationConfig> = {}
   ): Promise<{ response: string; metrics: OptimizationMetrics }> {
     const finalConfig = { ...this.defaultConfig, ...config };
@@ -148,22 +158,23 @@ export class ResponseOptimizer {
 
   private async addCitations(
     content: string,
-    context: { chunks: any[] }
+    context: { chunks: DocumentChunk[] }
   ): Promise<string> {
     // Add inline citations to the content
     let citedContent = content;
     context.chunks.forEach((chunk, index) => {
       if (chunk.metadata?.source) {
+        const chunkText = chunk.text || chunk.text_content || "";
         citedContent = citedContent.replace(
-          new RegExp(chunk.content.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
-          `${chunk.content} [${index + 1}]`
+          new RegExp(chunkText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
+          `${chunkText} [${index + 1}]`
         );
       }
     });
     return citedContent;
   }
 
-  private formatCitations(context: { chunks: any[] }): string {
+  private formatCitations(context: { chunks: DocumentChunk[] }): string {
     return context.chunks
       .map((chunk, index) => {
         if (!chunk.metadata?.source) return "";
@@ -177,11 +188,12 @@ export class ResponseOptimizer {
 
   private calculateMetrics(
     content: string,
-    context: { chunks: any[]; scores: number[] }
+    context: { chunks: DocumentChunk[]; scores: number[] }
   ): OptimizationMetrics {
     const inputTokens = encode(content).length;
     const outputTokens = context.chunks.reduce(
-      (sum, chunk) => sum + encode(chunk.content).length,
+      (sum, chunk) =>
+        sum + encode(chunk.text || chunk.text_content || "").length,
       0
     );
     const citationCount = context.chunks.filter(
